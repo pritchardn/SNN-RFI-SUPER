@@ -13,13 +13,14 @@ class LatencySpikeEncoder(SpikeConverter):
         self.normalize = normalize
 
     def encode_x(self, x_data: np.ndarray) -> np.ndarray:
+        out_shape = (x_data.shape[0], self.exposure, x_data.shape[1], x_data.shape[2], x_data.shape[3])
+        output = np.zeros(out_shape)
         for i, frame in enumerate(x_data):
             frame = torch.from_numpy(np.moveaxis(frame, 0, -1))
-            # TODO: Build proper output object
             frame = spikegen.latency(frame, num_steps=self.exposure, tau=self.tau, normalize=True)
             frame = np.moveaxis(frame.numpy(), -1, 1)
-            x_data[i] = frame
-        return x_data
+            output[i] = frame
+        return output
 
     def encode_y(self, y_data: np.ndarray) -> np.ndarray:
         return y_data
