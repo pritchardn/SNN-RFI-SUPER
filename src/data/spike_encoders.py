@@ -20,10 +20,10 @@ class LatencySpikeEncoder(SpikeConverter):
             frame = spikegen.latency(frame, num_steps=self.exposure, tau=self.tau, normalize=True)
             frame = np.moveaxis(frame.numpy(), -1, 1)
             output[i] = frame
-        return output
+        return output.astype("float32")
 
     def encode_y(self, y_data: np.ndarray) -> np.ndarray:
-        return y_data
+        return self.encode_x(y_data)
 
     def plot_sample(
             self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
