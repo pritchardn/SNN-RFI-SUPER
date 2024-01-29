@@ -11,13 +11,13 @@ def main():
     TAU = 1.0
     BETA = 0.95
     data_builder = DataModuleBuilder()
-    data_source = HeraDataLoader("./data", limit=0.1)
+    data_source = HeraDataLoader("./data", limit=0.1, patch_size=32, stride=32)
     data_builder.set_dataset(data_source)
     spike_converter = LatencySpikeEncoder(exposure=EXPOSURE, tau=TAU, normalize=True)
     data_builder.set_encoding(spike_converter)
     data_module = data_builder.build(32)
     print("Built data module")
-    model = LitFcLatency(512, 2048, 512, EXPOSURE, BETA)
+    model = LitFcLatency(32, 128, 32, EXPOSURE, BETA)
     print("Built model")
     trainer = pl.trainer.Trainer()
     trainer.fit(model, data_module)

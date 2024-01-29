@@ -40,6 +40,8 @@ class HeraDataLoader(RawDataLoader):
         self.test_x = self._normalize(self.test_x, self.test_y)
         self.train_x = self._normalize(self.train_x, self.train_y)
         self._convert_pytorch()
+        if self.patch_size:
+            self.create_patches(self.patch_size, self.stride)
 
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:

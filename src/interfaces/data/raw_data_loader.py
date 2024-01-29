@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
+import torch
+
+from data.utils import extract_patches
 
 
 def _calc_limit_int(limit: float, data_len: int) -> int:
@@ -12,7 +15,8 @@ def _calc_limit_int(limit: float, data_len: int) -> int:
 
 class RawDataLoader(ABC):
 
-    def __init__(self, data_dir: str, limit: float = None):
+    def __init__(self, data_dir: str, limit: float = None, patch_size: int = None,
+                 stride: int = None):
         self.train_x = None
         self.train_y = None
         self.test_x = None
@@ -20,6 +24,8 @@ class RawDataLoader(ABC):
         self.rfi_models = []
         self.data_dir = data_dir
         self.limit = limit
+        self.patch_size = patch_size
+        self.stride = stride if stride else patch_size
 
     @abstractmethod
     def load_data(self, excluded_rfi=None):
@@ -40,3 +46,9 @@ class RawDataLoader(ABC):
     def fetch_test_y(self) -> np.ndarray:
         limit = _calc_limit_int(self.limit, self.test_y.shape[0])
         return self.test_y[:limit]
+
+    def create_patches(self, patch_size: int, stride: int):
+        self.train_x = extract_patches(torch.from_numpy(self.train_x), patch_size, stride).numpy()
+        self.train_y = extract_patches(torch.from_numpy(self.train_y), patch_size, stride).numpy()
+        self.test_x = extract_patches(torch.from_numpy(self.test_x), patch_size, stride).numpy()
+        self.test_y = extract_patches(torch.from_numpy(self.test_y), patch_size, stride).numpy()
