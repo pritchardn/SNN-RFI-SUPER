@@ -7,7 +7,7 @@ from models.fc_latency import LitFcLatency
 
 
 def main():
-    EXPOSURE = 32
+    EXPOSURE = 16
     TAU = 1.0
     BETA = 0.95
     data_builder = DataModuleBuilder()
@@ -17,7 +17,7 @@ def main():
     data_builder.set_encoding(spike_converter)
     data_module = data_builder.build(32)
     print("Built data module")
-    model = LitFcLatency(32, 128, 32, EXPOSURE, BETA)
+    model = LitFcLatency(32, 128, 32, BETA)
     print("Built model")
     trainer = pl.trainer.Trainer()
     trainer.fit(model, data_module)
