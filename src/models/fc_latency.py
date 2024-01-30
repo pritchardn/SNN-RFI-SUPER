@@ -3,6 +3,9 @@ import snntorch as snn
 import snntorch.functional as SF
 import torch
 import torch.nn as nn
+from sklearn.metrics import balanced_accuracy_score
+
+from plotting import plot_example_inference
 
 
 class LitFcLatency(pl.LightningModule):
@@ -14,6 +17,10 @@ class LitFcLatency(pl.LightningModule):
         self.lif2 = snn.Leaky(beta=beta)
         self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()
+
+    def calc_accuracy(self, y_hat, y):
+        score = balanced_accuracy_score(y_hat.flatten(), y.flatten())
+        self.log("accuracy", score)
 
     def forward(self, x):
         full_spike = []
@@ -37,7 +44,8 @@ class LitFcLatency(pl.LightningModule):
             full_mem.append(torch.stack(mem_out, dim=1))
         full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
         full_mem = torch.stack(full_mem, dim=0)
-        return torch.moveaxis(full_spike, 0, -1).unsqueeze(2), torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
+        return torch.moveaxis(full_spike, 0, -1).unsqueeze(2), torch.moveaxis(full_mem, 0,
+                                                                              -1).unsqueeze(2)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -50,6 +58,13 @@ class LitFcLatency(pl.LightningModule):
         x, y = batch
         spike_hat, mem_hat = self(x)
         loss = self.loss(spike_hat, y)
+        if batch_idx == 0:
+            plot_example_inference(spike_hat[0, :, 0, ::].detach().cpu(), str(self.current_epoch))
+            plot_example_inference(y[0, :, 0, ::].detach().cpu(),
+                                   str(self.current_epoch) + "_target")
+            self.calc_accuracy(spike_hat.detach().cpu().numpy(),
+                               y.detach().cpu().numpy())  # TODO: I don't like it, but this will do while developing
+
         self.log("val_loss", loss)
 
     def test_step(self, batch, batch_idx):
