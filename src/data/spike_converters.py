@@ -5,7 +5,7 @@ from snntorch import spikegen
 from interfaces.data.spiking_data_module import SpikeConverter
 
 
-class LatencySpikeEncoder(SpikeConverter):
+class LatencySpikeConverter(SpikeConverter):
 
     def __init__(self, exposure: int, tau: float, normalize: bool):
         self.exposure = exposure

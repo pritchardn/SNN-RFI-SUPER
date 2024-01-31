@@ -2,7 +2,7 @@ import pytorch_lightning as pl
 
 from data.data_loaders import HeraDataLoader
 from data.data_module_builder import DataModuleBuilder
-from data.spike_converters import LatencySpikeEncoder
+from data.spike_converters import LatencySpikeConverter
 from models.fc_latency import LitFcLatency
 
 
@@ -13,7 +13,7 @@ def main():
     data_builder = DataModuleBuilder()
     data_source = HeraDataLoader("./data", limit=0.1, patch_size=32, stride=32)
     data_builder.set_dataset(data_source)
-    spike_converter = LatencySpikeEncoder(exposure=EXPOSURE, tau=TAU, normalize=True)
+    spike_converter = LatencySpikeConverter(exposure=EXPOSURE, tau=TAU, normalize=True)
     data_builder.set_encoding(spike_converter)
     data_module = data_builder.build(32)
     print("Built data module")

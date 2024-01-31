@@ -4,7 +4,7 @@ import numpy as np
 
 from data.data_loaders import HeraDataLoader
 from data.data_module_builder import DataModuleBuilder
-from data.spike_converters import LatencySpikeEncoder
+from data.spike_converters import LatencySpikeConverter
 from interfaces.data.raw_data_loader import RawDataLoader
 
 
@@ -17,7 +17,7 @@ def _fetch_example_dataset():
 
 def _test_decode_inference(data_source: RawDataLoader, data_builder: DataModuleBuilder,
                            exposure: int):
-    converter = LatencySpikeEncoder(exposure=exposure, tau=1.0, normalize=True)
+    converter = LatencySpikeConverter(exposure=exposure, tau=1.0, normalize=True)
     data_builder.set_encoding(converter)
     data_builder.build(32)
     mask = data_source.test_y
