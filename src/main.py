@@ -2,7 +2,7 @@ import pytorch_lightning as pl
 
 from data.data_loaders import HeraDataLoader
 from data.data_module_builder import DataModuleBuilder
-from data.spike_encoders import LatencySpikeEncoder
+from data.spike_converters import LatencySpikeEncoder
 from models.fc_latency import LitFcLatency
 
 
