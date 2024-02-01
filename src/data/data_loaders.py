@@ -5,7 +5,7 @@ from typing import Union
 import numpy as np
 
 from data.utils import filter_noiseless_patches
-from interfaces.data.raw_data_loader import RawDataLoader
+from interfaces.data.raw_data_loader import RawDataLoader, calc_limit_int
 
 
 class HeraDataLoader(RawDataLoader):
@@ -33,8 +33,8 @@ class HeraDataLoader(RawDataLoader):
         self.test_x = np.moveaxis(self.test_x, -1, 1).astype(np.float32)
         self.test_y = np.moveaxis(self.test_y, -1, 1).astype(np.float32)
 
-    def _filter_noiseless_test_patches(self):
-        self.test_x, self.test_y = filter_noiseless_patches(self.test_x, self.test_y)
+    def _filter_noiseless_val_patches(self):
+        self.val_x, self.val_y = filter_noiseless_patches(self.val_x, self.val_y)
 
     def _filter_noiseless_train_patches(self):
         self.train_x, self.train_y = filter_noiseless_patches(self.train_x, self.train_y)
@@ -47,10 +47,9 @@ class HeraDataLoader(RawDataLoader):
         self.test_x = self._normalize(self.test_x, self.test_y)
         self.train_x = self._normalize(self.train_x, self.train_y)
         self._convert_pytorch()
-        if self.patch_size:
-            self.create_patches(self.patch_size, self.stride)
-        self._filter_noiseless_test_patches()
-        self._filter_noiseless_train_patches()
+        self.val_x = self.test_x.copy()
+        self.val_y = self.test_y.copy()
+        self.limit_datasets()
 
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
@@ -75,6 +74,10 @@ class HeraDataLoader(RawDataLoader):
         self.test_y = test_y
         self.rfi_models = rfi_models
         self._prepare_data()
+        if self.patch_size:
+            self.create_patches(self.patch_size, self.stride)
+        self._filter_noiseless_val_patches()
+        self._filter_noiseless_train_patches()
 
 
 class LofarDataLoader(RawDataLoader):
