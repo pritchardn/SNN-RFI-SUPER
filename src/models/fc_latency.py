@@ -4,12 +4,7 @@ import snntorch.functional as SF
 import torch
 import torch.nn as nn
 from sklearn.metrics import balanced_accuracy_score
-from tqdm import tqdm
 
-from data.data_module import ConfiguredDataModule
-from data.data_module_builder import DataModuleBuilder
-from data.utils import reconstruct_patches
-from interfaces.data.spiking_data_module import SpikeConverter
 from plotting import plot_example_inference
 
 
