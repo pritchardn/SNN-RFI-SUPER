@@ -44,8 +44,9 @@ class LitFcLatency(pl.LightningModule):
             full_mem.append(torch.stack(mem_out, dim=1))
         full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
         full_mem = torch.stack(full_mem, dim=0)
-        return torch.moveaxis(full_spike, 0, -1).unsqueeze(2), torch.moveaxis(full_mem, 0,
-                                                                              -1).unsqueeze(2)
+        return torch.moveaxis(full_spike, 0, -1).unsqueeze(2), torch.moveaxis(
+            full_mem, 0, -1
+        ).unsqueeze(2)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -59,11 +60,15 @@ class LitFcLatency(pl.LightningModule):
         spike_hat, mem_hat = self(x)
         loss = self.loss(spike_hat, y)
         if batch_idx == 0:
-            plot_example_inference(spike_hat[0, :, 0, ::].detach().cpu(), str(self.current_epoch))
-            plot_example_inference(y[0, :, 0, ::].detach().cpu(),
-                                   str(self.current_epoch) + "_target")
-            self.calc_accuracy(spike_hat.detach().cpu().numpy(),
-                               y.detach().cpu().numpy())  # TODO: I don't like it, but this will do while developing
+            plot_example_inference(
+                spike_hat[0, :, 0, ::].detach().cpu(), str(self.current_epoch)
+            )
+            plot_example_inference(
+                y[0, :, 0, ::].detach().cpu(), str(self.current_epoch) + "_target"
+            )
+            self.calc_accuracy(
+                spike_hat.detach().cpu().numpy(), y.detach().cpu().numpy()
+            )  # TODO: I don't like it, but this will do while developing
 
         self.log("val_loss", loss)
 

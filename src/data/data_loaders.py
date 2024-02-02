@@ -9,7 +9,6 @@ from interfaces.data.raw_data_loader import RawDataLoader, calc_limit_int
 
 
 class HeraDataLoader(RawDataLoader):
-
     def _normalize(self, image_data: np.ndarray, masks: np.ndarray) -> np.ndarray:
         max_threshold = 4
         min_threshold = 1
@@ -37,7 +36,9 @@ class HeraDataLoader(RawDataLoader):
         self.val_x, self.val_y = filter_noiseless_patches(self.val_x, self.val_y)
 
     def _filter_noiseless_train_patches(self):
-        self.train_x, self.train_y = filter_noiseless_patches(self.train_x, self.train_y)
+        self.train_x, self.train_y = filter_noiseless_patches(
+            self.train_x, self.train_y
+        )
 
     def _prepare_data(self):
         self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
@@ -81,7 +82,6 @@ class HeraDataLoader(RawDataLoader):
 
 
 class LofarDataLoader(RawDataLoader):
-
     def load_data(self, excluded_rfi=None):
         filepath = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset.pkl")
         print(f"Loading LOFAR data from {filepath}")

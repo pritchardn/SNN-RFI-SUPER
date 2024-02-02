@@ -15,8 +15,9 @@ def _fetch_example_dataset():
     return data_source, data_builder
 
 
-def _test_decode_inference(data_source: RawDataLoader, data_builder: DataModuleBuilder,
-                           exposure: int):
+def _test_decode_inference(
+    data_source: RawDataLoader, data_builder: DataModuleBuilder, exposure: int
+):
     converter = LatencySpikeConverter(exposure=exposure, tau=1.0, normalize=True)
     data_builder.set_encoding(converter)
     data_builder.build(32)
@@ -26,7 +27,6 @@ def _test_decode_inference(data_source: RawDataLoader, data_builder: DataModuleB
 
 
 class TestLatencySpikeEncoder(TestCase):
-
     def test_decode_inference_1(self):
         data_source, data_builder = _fetch_example_dataset()
         self.assertFalse(_test_decode_inference(data_source, data_builder, 1))

@@ -14,9 +14,13 @@ def calc_limit_int(limit: float, data_len: int) -> int:
 
 
 class RawDataLoader(ABC):
-
-    def __init__(self, data_dir: str, limit: float = None, patch_size: int = None,
-                 stride: int = None):
+    def __init__(
+        self,
+        data_dir: str,
+        limit: float = None,
+        patch_size: int = None,
+        stride: int = None,
+    ):
         self.train_x = None
         self.train_y = None
         self.test_x = None
@@ -52,12 +56,24 @@ class RawDataLoader(ABC):
         return self.val_y
 
     def create_patches(self, patch_size: int, stride: int):
-        self.train_x = extract_patches(torch.from_numpy(self.train_x), patch_size, stride).numpy()
-        self.train_y = extract_patches(torch.from_numpy(self.train_y), patch_size, stride).numpy()
-        self.test_x = extract_patches(torch.from_numpy(self.test_x), patch_size, stride).numpy()
-        self.test_y = extract_patches(torch.from_numpy(self.test_y), patch_size, stride).numpy()
-        self.val_x = extract_patches(torch.from_numpy(self.val_x), patch_size, stride).numpy()
-        self.val_y = extract_patches(torch.from_numpy(self.val_y), patch_size, stride).numpy()
+        self.train_x = extract_patches(
+            torch.from_numpy(self.train_x), patch_size, stride
+        ).numpy()
+        self.train_y = extract_patches(
+            torch.from_numpy(self.train_y), patch_size, stride
+        ).numpy()
+        self.test_x = extract_patches(
+            torch.from_numpy(self.test_x), patch_size, stride
+        ).numpy()
+        self.test_y = extract_patches(
+            torch.from_numpy(self.test_y), patch_size, stride
+        ).numpy()
+        self.val_x = extract_patches(
+            torch.from_numpy(self.val_x), patch_size, stride
+        ).numpy()
+        self.val_y = extract_patches(
+            torch.from_numpy(self.val_y), patch_size, stride
+        ).numpy()
 
     def limit_datasets(self):
         limit = calc_limit_int(self.limit, len(self.train_x))

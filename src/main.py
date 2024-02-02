@@ -1,8 +1,13 @@
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from sklearn.metrics import roc_curve, accuracy_score, mean_squared_error, auc, \
-    precision_recall_curve
+from sklearn.metrics import (
+    roc_curve,
+    accuracy_score,
+    mean_squared_error,
+    auc,
+    precision_recall_curve,
+)
 from tqdm import tqdm
 
 from data.data_loaders import HeraDataLoader
@@ -17,19 +22,26 @@ from models.fc_latency import LitFcLatency
 def _calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):
     y_true = ensure_tflow(y_true)
     y_pred = ensure_tflow(y_pred)
-    false_pos_rate, true_pos_rate, _ = roc_curve(y_true.flatten() > 0,
-                                                 y_pred.flatten() > 0)
+    false_pos_rate, true_pos_rate, _ = roc_curve(
+        y_true.flatten() > 0, y_pred.flatten() > 0
+    )
     accuracy = accuracy_score(y_true.flatten(), y_pred.flatten())
     mse = mean_squared_error(y_true.flatten(), y_pred.flatten())
     auroc = auc(false_pos_rate, true_pos_rate)
-    precision, recall, _ = precision_recall_curve(y_true.flatten() > 0, y_pred.flatten() > 0)
+    precision, recall, _ = precision_recall_curve(
+        y_true.flatten() > 0, y_pred.flatten() > 0
+    )
     auprc = auc(recall, precision)
     f1 = 2 * (precision * recall) / (precision + recall)
     return accuracy, mse, auroc, auprc, f1
 
 
-def final_evaluation(model: pl.LightningModule, data_module: ConfiguredDataModule,
-                     converter: SpikeConverter, mask_orig):
+def final_evaluation(
+    model: pl.LightningModule,
+    data_module: ConfiguredDataModule,
+    converter: SpikeConverter,
+    mask_orig,
+):
     # Run through the whole validation set
     full_spike_hat = []
     for x, y in tqdm(data_module.test_dataloader()):

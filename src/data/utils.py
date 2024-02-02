@@ -51,7 +51,9 @@ def reconstruct_patches(images: np.array, original_size: int, kernel_size: int):
     return recon.transpose(0, 3, 2, 1)
 
 
-def filter_noiseless_patches(x_data: np.ndarray, y_data: np.ndarray) -> (np.ndarray, np.ndarray):
+def filter_noiseless_patches(
+    x_data: np.ndarray, y_data: np.ndarray
+) -> (np.ndarray, np.ndarray):
     index_vales = np.any(y_data, axis=(1, 2, 3))
     out_x = x_data[index_vales]
     out_y = y_data[index_vales]
