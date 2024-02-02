@@ -35,9 +35,12 @@ class DataModuleBuilder:
             train_y = torch.from_numpy(self.spike_encoder.encode_y(self.data_loader.fetch_train_y()))
             test_x = torch.from_numpy(self.spike_encoder.encode_x(self.data_loader.fetch_test_x()))
             test_y = torch.from_numpy(self.spike_encoder.encode_y(self.data_loader.fetch_test_y()))
+            val_x = torch.from_numpy(self.spike_encoder.encode_x(self.data_loader.fetch_val_x()))
+            val_y = torch.from_numpy(self.spike_encoder.encode_y(self.data_loader.fetch_val_y()))
             train_dset = TensorDataset(train_x, train_y)
             test_dset = TensorDataset(test_x, test_y)
-            return ConfiguredDataModule(train_dset, test_dset, batch_size)
+            val_dset = TensorDataset(val_x, val_y)
+            return ConfiguredDataModule(train_dset, test_dset, val_dset, batch_size)
         else:
             raise Exception("DataModuleBuilder has not been properly configured.")
 
