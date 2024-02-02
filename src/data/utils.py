@@ -56,3 +56,10 @@ def filter_noiseless_patches(x_data: np.ndarray, y_data: np.ndarray) -> (np.ndar
     out_x = x_data[index_vales]
     out_y = y_data[index_vales]
     return out_x, out_y
+
+
+def ensure_tflow(data: np.ndarray):
+    if data.shape[1] == 1:
+        return np.moveaxis(data, 1, -1)
+    else:
+        return data
