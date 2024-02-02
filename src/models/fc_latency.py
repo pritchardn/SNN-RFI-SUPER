@@ -4,7 +4,12 @@ import snntorch.functional as SF
 import torch
 import torch.nn as nn
 from sklearn.metrics import balanced_accuracy_score
+from tqdm import tqdm
 
+from data.data_module import ConfiguredDataModule
+from data.data_module_builder import DataModuleBuilder
+from data.utils import reconstruct_patches
+from interfaces.data.spiking_data_module import SpikeConverter
 from plotting import plot_example_inference
 
 
@@ -12,9 +17,9 @@ class LitFcLatency(pl.LightningModule):
     def __init__(self, num_inputs: int, num_hidden: int, num_outputs: int, beta: float):
         super().__init__()
         self.fc1 = nn.Linear(num_inputs, num_hidden)
-        self.lif1 = snn.Leaky(beta=beta)
+        self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
         self.fc2 = nn.Linear(num_hidden, num_outputs)
-        self.lif2 = snn.Leaky(beta=beta)
+        self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
         self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()
 
