@@ -58,18 +58,17 @@ def final_evaluation(
     recon_output = reconstruct_patches(output, mask_orig.shape[-1], full_spike_hat.shape[-1])
     # Calculate metrics on the whole dataset
     accuracy, mse, auroc, auprc, f1 = _calculate_metrics(mask_orig, recon_output)
+    output = json.dumps(
+        {
+            "accuracy": accuracy,
+            "mse": mse,
+            "auroc": auroc,
+            "auprc": auprc,
+            "f1": f1,
+        })
     # Write output
-    with open(os.path.join(outdir, "metrics.json", "w")) as ofile:
-        json.dump(
-            {
-                "accuracy": accuracy,
-                "mse": mse,
-                "auroc": auroc,
-                "auprc": auprc,
-                "f1": f1,
-            },
-            ofile,
-        )
+    with open(os.path.join(outdir, "metrics.json"), "w") as ofile:
+        json.dump(output, ofile, indent=4)
     # Plot a sample
 
 
@@ -88,7 +87,8 @@ def main():
     print("Built data module")
     model = LitFcLatency(32, 128, 32, BETA)
     print("Built model")
-    trainer = pl.trainer.Trainer(max_epochs=10, benchmark=True)
+    early_stopping_callback = pl.callbacks.EarlyStopping(monitor="val_loss", mode="min", patience=5, min_delta=1e-4)
+    trainer = pl.trainer.Trainer(max_epochs=50, benchmark=True, callbacks=[early_stopping_callback])
     trainer.fit(model, data_module)
     model.eval()
     mask_orig = reconstruct_patches(data_source.fetch_test_y(), ORIGINAL_SHAPE[0], STRIDE)
