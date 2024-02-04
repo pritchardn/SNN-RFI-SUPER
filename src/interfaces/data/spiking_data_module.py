@@ -14,7 +14,7 @@ class SpikeConverter(ABC):
 
     @abstractmethod
     def plot_sample(
-        self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
+            self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
     ):
         pass
 

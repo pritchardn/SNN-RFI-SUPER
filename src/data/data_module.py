@@ -4,11 +4,11 @@ from torch.utils.data import DataLoader, Dataset
 
 class ConfiguredDataModule(pl.LightningDataModule):
     def __init__(
-        self,
-        train_dataset: Dataset,
-        test_dataset: Dataset,
-        val_dataset: Dataset,
-        batch_size: int,
+            self,
+            train_dataset: Dataset,
+            test_dataset: Dataset,
+            val_dataset: Dataset,
+            batch_size: int,
     ):
         super().__init__()
         self.train = train_dataset
