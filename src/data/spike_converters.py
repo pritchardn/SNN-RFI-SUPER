@@ -30,10 +30,13 @@ class LatencySpikeConverter(SpikeConverter):
         return output.astype("float32")
 
     def encode_y(self, y_data: np.ndarray) -> np.ndarray:
-        return self.encode_x(y_data)
+        output_timings = np.zeros(y_data.shape, dtype=y_data.dtype)
+        output_timings[y_data > 0] = 0
+        output_timings[y_data == 0] = self.exposure - 1
+        return output_timings
 
     def plot_sample(
-        self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
+            self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
     ):
         pass
 
@@ -44,4 +47,4 @@ class LatencySpikeConverter(SpikeConverter):
         Assumes a shape of [N, exposure, C, freq, time]
         :return: [N, C, freq, time]
         """
-        return inference[:, :-1, :, :, :].sum(axis=1)
+        return inference[:-1, :, :, :, :].sum(axis=0)
