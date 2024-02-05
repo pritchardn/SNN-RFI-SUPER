@@ -17,3 +17,13 @@ def plot_example_mask(mask: np.ndarray, name: str, log_dir: str):
     ax.imshow(mask)
     plt.savefig(os.path.join(log_dir, f"example_mask_{name}.png"))
     plt.close(fig)
+
+
+def plot_final_examples(y_true: np.ndarray, y_pred: np.ndarray, name: str, log_dir: str):
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+    axs[0].imshow(y_true)
+    axs[0].set_title("Mask")
+    axs[1].imshow(y_pred)
+    axs[1].set_title("Decoded Output")
+    plt.savefig(os.path.join(log_dir, f"final_{name}.png"))
+    plt.close(fig)

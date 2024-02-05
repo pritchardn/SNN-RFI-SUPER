@@ -19,6 +19,7 @@ from data.spike_converters import LatencySpikeConverter
 from data.utils import reconstruct_patches, ensure_tflow
 from interfaces.data.spiking_data_module import SpikeConverter
 from models.fc_latency import LitFcLatency
+from plotting import plot_final_examples
 
 
 def _calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):
@@ -45,6 +46,7 @@ def final_evaluation(
     mask_orig,
     outdir: str,
 ):
+    os.makedirs(outdir, exist_ok=True)
     # Run through the whole validation set
     full_spike_hat = []
     for x, y in tqdm(data_module.test_dataloader()):
@@ -73,6 +75,8 @@ def final_evaluation(
     with open(os.path.join(outdir, "metrics.json"), "w") as ofile:
         json.dump(output, ofile, indent=4)
     # Plot a sample
+    for i in range(10):
+        plot_final_examples(np.moveaxis(mask_orig[i], 0, -1), np.moveaxis(recon_output[i], 0, -1), f"final_{i}", outdir)
 
 
 def main():
