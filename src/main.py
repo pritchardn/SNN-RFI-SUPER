@@ -39,11 +39,11 @@ def _calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):
 
 
 def final_evaluation(
-        model: pl.LightningModule,
-        data_module: ConfiguredDataModule,
-        converter: SpikeConverter,
-        mask_orig,
-        outdir: str
+    model: pl.LightningModule,
+    data_module: ConfiguredDataModule,
+    converter: SpikeConverter,
+    mask_orig,
+    outdir: str,
 ):
     # Run through the whole validation set
     full_spike_hat = []
@@ -55,7 +55,9 @@ def final_evaluation(
     output = converter.decode_inference(full_spike_hat.detach().cpu().numpy())
 
     # Stitch masks together
-    recon_output = reconstruct_patches(output, mask_orig.shape[-1], full_spike_hat.shape[-1])
+    recon_output = reconstruct_patches(
+        output, mask_orig.shape[-1], full_spike_hat.shape[-1]
+    )
     # Calculate metrics on the whole dataset
     accuracy, mse, auroc, auprc, f1 = _calculate_metrics(mask_orig, recon_output)
     output = json.dumps(
@@ -65,7 +67,8 @@ def final_evaluation(
             "auroc": auroc,
             "auprc": auprc,
             "f1": f1,
-        })
+        }
+    )
     # Write output
     with open(os.path.join(outdir, "metrics.json"), "w") as ofile:
         json.dump(output, ofile, indent=4)
@@ -87,11 +90,17 @@ def main():
     print("Built data module")
     model = LitFcLatency(32, 128, 32, BETA)
     print("Built model")
-    early_stopping_callback = pl.callbacks.EarlyStopping(monitor="val_loss", mode="min", patience=5, min_delta=1e-4)
-    trainer = pl.trainer.Trainer(max_epochs=50, benchmark=True, callbacks=[early_stopping_callback])
+    early_stopping_callback = pl.callbacks.EarlyStopping(
+        monitor="val_loss", mode="min", patience=5, min_delta=1e-4
+    )
+    trainer = pl.trainer.Trainer(
+        max_epochs=50, benchmark=True, callbacks=[early_stopping_callback]
+    )
     trainer.fit(model, data_module)
     model.eval()
-    mask_orig = reconstruct_patches(data_source.fetch_test_y(), ORIGINAL_SHAPE[0], STRIDE)
+    mask_orig = reconstruct_patches(
+        data_source.fetch_test_y(), ORIGINAL_SHAPE[0], STRIDE
+    )
     final_evaluation(model, data_module, spike_converter, mask_orig, trainer.log_dir)
 
 

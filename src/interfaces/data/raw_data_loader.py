@@ -15,11 +15,11 @@ def calc_limit_int(limit: float, data_len: int) -> int:
 
 class RawDataLoader(ABC):
     def __init__(
-            self,
-            data_dir: str,
-            limit: float = None,
-            patch_size: int = None,
-            stride: int = None,
+        self,
+        data_dir: str,
+        limit: float = None,
+        patch_size: int = None,
+        stride: int = None,
     ):
         self.train_x = None
         self.train_y = None

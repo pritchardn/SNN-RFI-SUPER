@@ -62,9 +62,15 @@ class LitFcLatency(pl.LightningModule):
         loss = self.loss(spike_hat, y)
         if batch_idx == 0:
             plot_example_inference(
-                spike_hat[:, 0, 0, ::].detach().cpu(), str(self.current_epoch), self.trainer.log_dir
+                spike_hat[:, 0, 0, ::].detach().cpu(),
+                str(self.current_epoch),
+                self.trainer.log_dir,
             )
-            plot_example_mask(np.moveaxis(y[0].detach().cpu().numpy(), 0, -1), str(self.current_epoch), self.trainer.log_dir)
+            plot_example_mask(
+                np.moveaxis(y[0].detach().cpu().numpy(), 0, -1),
+                str(self.current_epoch),
+                self.trainer.log_dir,
+            )
 
         self.log("val_loss", loss)
 
