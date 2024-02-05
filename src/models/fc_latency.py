@@ -3,9 +3,10 @@ import snntorch as snn
 import snntorch.functional as SF
 import torch
 import torch.nn as nn
+import numpy as np
 from sklearn.metrics import balanced_accuracy_score
 
-from plotting import plot_example_inference
+from plotting import plot_example_inference, plot_example_mask
 
 
 class LitFcLatency(pl.LightningModule):
@@ -63,13 +64,7 @@ class LitFcLatency(pl.LightningModule):
             plot_example_inference(
                 spike_hat[:, 0, 0, ::].detach().cpu(), str(self.current_epoch), self.trainer.log_dir
             )
-            # plot_example_inference(
-            #     y[0, :, 0, ::].detach().cpu(), str(self.current_epoch) + "_target"
-            #
-            # )
-            # self.calc_accuracy(
-            #     spike_hat.detach().cpu().numpy(), y.detach().cpu().numpy()
-            # )  # TODO: I don't like it, but this will do while developing
+            plot_example_mask(np.moveaxis(y[0].detach().cpu().numpy(), 0, -1), str(self.current_epoch), self.trainer.log_dir)
 
         self.log("val_loss", loss)
 
