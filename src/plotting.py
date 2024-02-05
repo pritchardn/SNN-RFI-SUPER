@@ -19,7 +19,9 @@ def plot_example_mask(mask: np.ndarray, name: str, log_dir: str):
     plt.close(fig)
 
 
-def plot_final_examples(y_true: np.ndarray, y_pred: np.ndarray, name: str, log_dir: str):
+def plot_final_examples(
+    y_true: np.ndarray, y_pred: np.ndarray, name: str, log_dir: str
+):
     fig, axs = plt.subplots(1, 2, figsize=(10, 5))
     axs[0].imshow(y_true)
     axs[0].set_title("Mask")
