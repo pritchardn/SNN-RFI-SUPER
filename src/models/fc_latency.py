@@ -18,6 +18,7 @@ class LitFcLatency(pl.LightningModule):
         self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
         self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()
+        self.save_hyperparameters()
 
     def calc_accuracy(self, y_hat, y):
         score = balanced_accuracy_score(y_hat.flatten(), y.flatten())

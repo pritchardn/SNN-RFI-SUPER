@@ -28,6 +28,7 @@ class RawDataLoader(ABC):
         self.val_x = None
         self.val_y = None
         self.rfi_models = []
+        self.original_size = None
         self.data_dir = data_dir
         self.limit = limit
         self.patch_size = patch_size

@@ -74,6 +74,7 @@ class HeraDataLoader(RawDataLoader):
         self.test_x = test_x
         self.test_y = test_y
         self.rfi_models = rfi_models
+        self.original_size = self.train_x.shape[1]
         self._prepare_data()
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
