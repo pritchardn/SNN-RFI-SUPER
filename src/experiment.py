@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 
@@ -8,9 +9,9 @@ from data.data_module import ConfiguredDataModule
 from data.data_module_builder import DataModuleBuilder
 from data.spike_converters import LatencySpikeConverter
 from data.utils import reconstruct_patches
+from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
 from interfaces.data.spiking_data_module import SpikeConverter
-from evaluation import final_evaluation
 from models.fc_latency import LitFcLatency
 
 
@@ -30,7 +31,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -104,8 +105,12 @@ class Experiment:
         if self.configuration.get("trainer"):
             self.trainer = trainer_from_config(config.get("trainer"), self.root_dir)
 
-    def from_checkpoint(self, checkpoint_path: str):
-        raise NotImplementedError("Checkpoint loading not implemented.")
+    def from_checkpoint(self, working_dir: str):
+        self.load_config(os.path.join(working_dir, "config.json"))
+        checkpoint_dir = os.path.join(working_dir, "checkpoints", "*.ckpt")
+        checkpoint_file = glob.glob(checkpoint_dir)[0]
+        self.checkpoint_path = checkpoint_file
+        self.from_config(self.configuration)
 
     def add_dataset(self, data_source: RawDataLoader):
         self.data_source = data_source
@@ -116,6 +121,10 @@ class Experiment:
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, "config.json"), "w") as ofile:
             json.dump(self.configuration, ofile, indent=4)
+
+    def load_config(self, config_path: str):
+        with open(config_path, "r") as ifile:
+            self.configuration = json.load(ifile)
 
     def prepare(self):
         err_msg = ""
@@ -144,7 +153,7 @@ class Experiment:
             raise RuntimeError("Experiment not ready.")
         self.model.train()
         if self.checkpoint_path:
-            self.trainer.fit(self.model, self.dataset, self.checkpoint_path)
+            self.trainer.fit(self.model, self.dataset, ckpt_path=self.checkpoint_path)
         else:
             self.trainer.fit(self.model, self.dataset)
 
