@@ -14,22 +14,29 @@ def main(optuna_db):
             study_name=os.getenv("STUDY_NAME"), storage=storage
         )
         complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
-        best_trial = study.best_trial
+        best_trials = study.best_trials
         print("Study statistics: ")
         print("  Number of finished trials: ", len(study.trials))
         print("  Number of complete trials: ", len(complete_trials))
-        print("Best trial:")
-        print("  Value: ", best_trial.value)
-        print("  Params: ")
-        for key, value in best_trial.params.items():
-            print(f"    {key}: {value}")
+        for trial in best_trials:
+            print("  Best trial: ")
+            print("    Value: ", trial.values)
+            print("    Params: ")
+            for key, value in trial.params.items():
+                print(f"      {key}: {value}")
         with open("trials.json", "w") as ofile:
             completed_trials_out = []
             for trial_params in complete_trials:
                 completed_trials_out.append(trial_params.params)
             json.dump(completed_trials_out, ofile, indent=4)
         with open("best_trial.json", "w") as ofile:
-            json.dump(best_trial.params, ofile, indent=4)
+            best_trials_out = []
+            for trial_params in best_trials:
+                best_trials_out.append({
+                    "params": trial_params.params,
+                    "values": trial_params.values,
+                })
+            json.dump(best_trials_out, ofile, indent=4)
     else:
         raise ValueError("No optuna DB specified.")
 
