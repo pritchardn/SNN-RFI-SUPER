@@ -10,9 +10,7 @@ def main(optuna_db):
             url=optuna_db,
         )
         print(f"Optuna DB: {optuna_db}")
-        study = optuna.load_study(
-            study_name=os.getenv("STUDY_NAME"), storage=storage
-        )
+        study = optuna.load_study(study_name=os.getenv("STUDY_NAME"), storage=storage)
         complete_trials = study.get_trials(deepcopy=False, states=[TrialState.COMPLETE])
         best_trials = study.best_trials
         print("Study statistics: ")
@@ -32,10 +30,12 @@ def main(optuna_db):
         with open("best_trial.json", "w") as ofile:
             best_trials_out = []
             for trial_params in best_trials:
-                best_trials_out.append({
-                    "params": trial_params.params,
-                    "values": trial_params.values,
-                })
+                best_trials_out.append(
+                    {
+                        "params": trial_params.params,
+                        "values": trial_params.values,
+                    }
+                )
             json.dump(best_trials_out, ofile, indent=4)
     else:
         raise ValueError("No optuna DB specified.")

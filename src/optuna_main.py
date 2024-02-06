@@ -47,13 +47,13 @@ def main():
             url=optuna_db,
             heartbeat_interval=60,
             grace_period=120,
-            failed_trial_callback=RetryFailedTrialCallback(max_retry=3)
+            failed_trial_callback=RetryFailedTrialCallback(max_retry=3),
         )
         study = optuna.create_study(
             study_name=os.getenv("STUDY_NAME"),
             storage=storage,
             load_if_exists=True,
-            directions=direction
+            directions=direction,
         )
         study.optimize(objective, n_trials=1)
     else:
@@ -74,7 +74,7 @@ def main():
         print("  Params: ")
         for key, value in trial.params.items():
             print(f"    {key}: {value}")
-        with(open("study.json", "w")) as ofile:
+        with open("study.json", "w") as ofile:
             json.dump(study.best_trial.params, ofile, indent=4)
 
 
