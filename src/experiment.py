@@ -164,6 +164,7 @@ class Experiment:
             self.data_source.original_size,
             self.data_source.stride,
         )
-        final_evaluation(
+        metrics = final_evaluation(
             self.model, self.dataset, self.encoder, mask_orig, self.trainer.log_dir
         )
+        return metrics
