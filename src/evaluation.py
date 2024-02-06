@@ -62,7 +62,7 @@ def final_evaluation(
             f"final_{i}",
             outdir,
         )
-    return output
+    return accuracy, mse, auroc, auprc, f1
 
 
 def _calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):

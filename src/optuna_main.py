@@ -24,17 +24,19 @@ def objective(trial):
     config["model"]["num_outputs"] = int(os.getenv("STRIDE", 32))
     config["model"]["beta"] = trial.suggest_float("beta", 0.5, 0.99)
 
-    config["trainer"]["epochs"] = trial.suggest_int("epochs", 10, 125)
+    config["trainer"]["epochs"] = trial.suggest_int("epochs", 5, 10)
 
     config["encoder"]["method"] = os.getenv("ENCODER_METHOD", "LATENCY")
     config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 32)
+
+    print(json.dumps(config, indent=4))
 
     experiment = Experiment()
     experiment.from_config(config)
     experiment.prepare()
     experiment.train()
-    metrics = experiment.evaluate()
-    return metrics["accuracy"], metrics["mse"], metrics["auroc"], metrics["auprc"], metrics["f1"]
+    accuracy, mse, auroc, auprc, f1 = experiment.evaluate()
+    return accuracy, mse, auroc, auprc, f1
 
 
 def main():
