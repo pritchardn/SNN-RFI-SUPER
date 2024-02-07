@@ -12,7 +12,7 @@
 module load python/3.10.10
 
 cd /software/projects/pawsey0411/npritchard/setonix/2023.08/python/SNN-RFI-SUPER/src
-source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-super/bin/activate
+source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/bin/activate
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB="postgresql://${DBUSR}:${DBPW}@${DBHOST}:5432"
