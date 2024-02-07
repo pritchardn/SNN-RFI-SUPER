@@ -18,20 +18,20 @@ class ConfiguredDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(
-            self.train, batch_size=self.batch_size, shuffle=True, num_workers=16
+            self.train, batch_size=self.batch_size, shuffle=True, num_workers=8
         )
 
     def val_dataloader(self):
         return DataLoader(
-            self.val, batch_size=self.batch_size, shuffle=False, num_workers=16
+            self.val, batch_size=self.batch_size, shuffle=False, num_workers=8
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test, batch_size=self.batch_size, shuffle=False, num_workers=16
+            self.test, batch_size=self.batch_size, shuffle=False, num_workers=8
         )
 
     def predict_dataloader(self):
         return DataLoader(
-            self.test, batch_size=self.batch_size, shuffle=False, num_workers=16
+            self.test, batch_size=self.batch_size, shuffle=False, num_workers=8
         )
