@@ -24,7 +24,7 @@ def objective(trial):
     config["model"]["num_outputs"] = int(os.getenv("STRIDE", 32))
     config["model"]["beta"] = trial.suggest_float("beta", 0.5, 0.99)
 
-    config["trainer"]["epochs"] = trial.suggest_int("epochs", 5, 10)
+    config["trainer"]["epochs"] = trial.suggest_int("epochs", 5, 100)
 
     config["encoder"]["method"] = os.getenv("ENCODER_METHOD", "LATENCY")
     config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 32)
