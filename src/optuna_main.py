@@ -30,8 +30,8 @@ def objective(trial):
     config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 32)
 
     print(json.dumps(config, indent=4))
-
-    experiment = Experiment()
+    root_dir = os.getenv("OUTPUT_DIR", "./")
+    experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)
     experiment.prepare()
     experiment.train()

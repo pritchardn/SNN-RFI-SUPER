@@ -17,5 +17,6 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-super
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB="postgresql://${DBUSR}:${DBPW}@${DBHOST}:5432"
 export STUDY_NAME="SNN-SUPER-HERA-LATENCY-10"
+export ROOT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/hera"
 
 srun -N 1 -n 1 -c 8 --gres=gpu:1 --gpus-per-task=1 python3 main_hpc.py
