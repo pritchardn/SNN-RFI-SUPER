@@ -1,3 +1,5 @@
+import os
+
 DEFAULT_CONFIG = {
     "data_source": {
         "data_path": "./data",
@@ -18,6 +20,7 @@ DEFAULT_CONFIG = {
     },
     "trainer": {
         "epochs": 60,
+        "num_nodes": os.getenv("NNODES", 1),
     },
     "encoder": {
         "method": "LATENCY",

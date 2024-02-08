@@ -67,7 +67,7 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
         callbacks=[early_stopping_callback],
         default_root_dir=root_dir,
         devices=num_gpus,
-        num_nodes=int(os.getenv("NNODES", 1))
+        num_nodes=config.get("num_nodes")
     )
     return trainer
 
