@@ -16,7 +16,7 @@ class LitFcLatency(pl.LightningModule):
         self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
         self.fc2 = nn.Linear(num_hidden, num_outputs)
         self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
-        self.loss = SF.mse_temporal_loss(target_is_time=True)
+        self.loss = SF.mse_temporal_loss(target_is_time=True, multi_spike=True)
         self.float()
         self.save_hyperparameters()
 
@@ -28,9 +28,9 @@ class LitFcLatency(pl.LightningModule):
         full_spike = []
         full_mem = []
         # x -> [N x exp x C x freq x time]
+        mem1 = self.lif1.init_leaky()
+        mem2 = self.lif2.init_leaky()
         for t in range(x.shape[-1]):
-            mem1 = self.lif1.init_leaky()
-            mem2 = self.lif2.init_leaky()
             spike_out = []
             mem_out = []
             for step in range(x.shape[1]):
