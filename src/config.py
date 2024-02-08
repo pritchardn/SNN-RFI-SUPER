@@ -3,7 +3,7 @@ import os
 DEFAULT_CONFIG = {
     "data_source": {
         "data_path": "./data",
-        "limit": 1.0,
+        "limit": 0.1,
         "patch_size": 32,
         "stride": 32,
         "dataset": "HERA",

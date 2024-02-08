@@ -6,6 +6,8 @@ from experiment import Experiment
 def main():
     config = DEFAULT_CONFIG
     config["data_source"]["data_path"] = os.getenv("DATA_PATH", config["data_source"]["data_path"])
+    config["model"]["type"] = "FC_RATE"
+    config["encoder"]["method"] = "RATE"
     root_dir = os.getenv("OUTPUT_DIR", "./")
     experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)

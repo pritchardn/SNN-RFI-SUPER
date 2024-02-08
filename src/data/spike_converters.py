@@ -36,7 +36,7 @@ class LatencySpikeConverter(SpikeConverter):
         return output_timings
 
     def plot_sample(
-        self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
+            self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
     ):
         pass
 
@@ -48,3 +48,25 @@ class LatencySpikeConverter(SpikeConverter):
         :return: [N, C, freq, time]
         """
         return inference[:-1, :, :, :, :].sum(axis=0)
+
+
+class RateSpikeConverter(SpikeConverter):
+
+    def __init__(self, exposure: int):
+        self.exposure = exposure
+
+    def encode_x(self, x_data: np.ndarray) -> np.ndarray:
+        encoded = spikegen.rate(torch.from_numpy(x_data), num_steps=self.exposure).numpy()
+        return np.moveaxis(encoded, 0, 1)
+
+    def encode_y(self, y_data: np.ndarray) -> np.ndarray:
+        return y_data
+
+    def plot_sample(
+            self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
+    ):
+        pass
+
+    def decode_inference(self, inference: np.ndarray) -> np.ndarray:
+        return inference.mean(axis=1)  # Assuming [N, exp C, freq, time]
+        # Could also explore taking average > 0.5, or any spiking pixels at all.
