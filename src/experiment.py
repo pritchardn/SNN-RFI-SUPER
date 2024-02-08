@@ -3,6 +3,7 @@ import json
 import os
 
 import pytorch_lightning as pl
+import torch
 
 from data.data_loaders import HeraDataLoader
 from data.data_module import ConfiguredDataModule
@@ -55,6 +56,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
 
 
 def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
+    num_gpus = torch.cuda.device_count()
     epochs = config.get("epochs")
     early_stopping_callback = pl.callbacks.EarlyStopping(
         monitor="val_loss", mode="min", patience=5, min_delta=1e-4
@@ -64,6 +66,8 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
         benchmark=True,
         callbacks=[early_stopping_callback],
         default_root_dir=root_dir,
+        devices=num_gpus,
+        num_nodes=int(os.getenv("NNODES", 1))
     )
     return trainer
 
