@@ -16,7 +16,7 @@ class LitFcLatency(pl.LightningModule):
         self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
         self.fc2 = nn.Linear(num_hidden, num_outputs)
         self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
-        self.loss = SF.mse_temporal_loss(target_is_time=True, multi_spike=True)
+        self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()
         self.save_hyperparameters()
 
