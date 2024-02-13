@@ -70,7 +70,7 @@ class LitFcRate(pl.LightningModule):
         x, y = batch
         spike_hat, mem_hat = self(x)
         loss = self._calc_loss(spike_hat, y)
-        self.log("train_loss", loss)
+        self.log("train_loss", loss, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -83,13 +83,13 @@ class LitFcRate(pl.LightningModule):
                 str(self.current_epoch),
                 self.trainer.log_dir,
             )
-        self.log("val_loss", loss)
+        self.log("val_loss", loss, sync_dist=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
         spike_hat, mem_hat = self(x)
         loss = self._calc_loss(spike_hat, y)
-        self.log("test_loss", loss)
+        self.log("test_loss", loss, sync_dist=True)
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=1e-3)
