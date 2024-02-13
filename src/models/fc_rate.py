@@ -3,10 +3,9 @@ import snntorch as snn
 import snntorch.functional as SF
 import torch
 import torch.nn as nn
-import numpy as np
 from sklearn.metrics import balanced_accuracy_score
 
-from plotting import plot_example_inference, plot_example_mask
+from plotting import plot_example_inference
 
 
 class LitFcRate(pl.LightningModule):
@@ -16,7 +15,8 @@ class LitFcRate(pl.LightningModule):
         self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
         self.fc2 = nn.Linear(num_hidden, num_outputs)
         self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
-        self.loss = SF.mse_count_loss()  # TODO: Revise loss function here.
+        self.pos_loss = SF.mse_count_loss()
+        self.neg_loss = SF.mse_count_loss(correct_rate=0.0, incorrect_rate=1.0)
         self.float()
         self.save_hyperparameters()
 
@@ -49,36 +49,46 @@ class LitFcRate(pl.LightningModule):
         full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
         return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
 
+    def _calc_loss(self, spike_hat, y):
+        loss = 0.0
+        for i in range(y.shape[0]):
+            example_loss = 0.0
+            for t in range(y.shape[1]):
+                tslice = y[i, t, ::]
+                targets = tslice[torch.where(tslice >= 0)[0]]
+                spikes = spike_hat[:, i, :, t]
+                if len(targets) == 0:
+                    targets = torch.arange(0, spikes.shape[1], device=self.device)
+                    example_loss += self.neg_loss(spikes, targets)
+                else:
+                    example_loss += self.pos_loss(spikes, targets)
+            example_loss /= y.shape[1]
+            loss += example_loss
+        return loss
+
     def training_step(self, batch, batch_idx):
         x, y = batch
         spike_hat, mem_hat = self(x)
-        loss = self.loss(spike_hat, y)
+        loss = self._calc_loss(spike_hat, y)
         self.log("train_loss", loss)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
         spike_hat, mem_hat = self(x)
-        loss = self.loss(spike_hat, y)
-        """
+        loss = self._calc_loss(spike_hat, y)
         if batch_idx == 0:
             plot_example_inference(
                 spike_hat[:, 0, 0, ::].detach().cpu(),
                 str(self.current_epoch),
                 self.trainer.log_dir,
             )
-            plot_example_mask(
-                np.moveaxis(y[0].detach().cpu().numpy(), 0, -1),
-                str(self.current_epoch),
-                self.trainer.log_dir,
-            )
-        """
         self.log("val_loss", loss)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
         spike_hat, mem_hat = self(x)
-        loss = self.loss(spike_hat, y)
+        loss = self._calc_loss(spike_hat, y)
         self.log("test_loss", loss)
 
     def configure_optimizers(self):
