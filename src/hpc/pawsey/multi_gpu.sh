@@ -15,7 +15,9 @@ cd /software/projects/pawsey0411/npritchard/setonix/2023.08/python/SNN-SUPER/src
 source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/bin/activate
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/hera"
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/hera/latency"
 export MPICH_GPU_SUPPORT_ENABLED=1
+export MODEL_TYPE="FC_LATENCY"
+export ENCODER_METHOD="LATENCY"
 
 srun -N 1 -n 1 -c 64 --gres=gpu:8 --gpus-per-task=8 python3 main.py

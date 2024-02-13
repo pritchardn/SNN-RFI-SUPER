@@ -16,9 +16,9 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${OPTUNA_URL} # Need to change on super-computer before submitting
-export STUDY_NAME="SNN-SUPER-HERA-LATENCY-10"
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/hera/latency"
-export MODEL_TYPE="FC_LATENCY"
-export ENCODER_METHOD="LATENCY"
+export STUDY_NAME="SNN-SUPER-HERA-RATE-10"
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/hera/rate"
+export MODEL_TYPE="FC_RATE"
+export ENCODER_METHOD="RATE"
 
 srun -N 1 -n 1 -c 8 --gres=gpu:1 --gpus-per-task=1 python3 optuna_main.py

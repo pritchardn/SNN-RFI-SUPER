@@ -27,7 +27,7 @@ def objective(trial):
     config["trainer"]["epochs"] = trial.suggest_int("epochs", 5, 100)
 
     config["encoder"]["method"] = os.getenv("ENCODER_METHOD", "LATENCY")
-    config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 32)
+    config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 64)
 
     print(json.dumps(config, indent=4))
     root_dir = os.getenv("OUTPUT_DIR", "./")
