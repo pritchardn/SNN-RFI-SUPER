@@ -55,7 +55,7 @@ def final_evaluation(
     with open(os.path.join(outdir, "metrics.json"), "w") as ofile:
         json.dump(output, ofile, indent=4)
     # Plot a sample
-    for i in range(10):
+    for i in range(min(10, mask_orig.shape[0])):
         plot_final_examples(
             np.moveaxis(mask_orig[i], 0, -1),
             np.moveaxis(recon_output[i], 0, -1),
