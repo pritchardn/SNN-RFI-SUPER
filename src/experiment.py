@@ -5,7 +5,7 @@ import os
 import pytorch_lightning as pl
 import torch
 
-from data.data_loaders import HeraDataLoader, LofarDataLoader
+from data.data_loaders import HeraDataLoader, LofarDataLoader, TabascalDataLoader
 from data.data_module import ConfiguredDataModule
 from data.data_module_builder import DataModuleBuilder
 from data.spike_converters import LatencySpikeConverter, RateSpikeConverter
@@ -29,6 +29,10 @@ def data_source_from_config(config: dict) -> RawDataLoader:
         )
     elif dataset == "LOFAR":
         data_source = LofarDataLoader(
+            data_path, patch_size=patch_size, stride=stride, limit=limit
+        )
+    elif dataset == "TABASCAL":
+        data_source = TabascalDataLoader(
             data_path, patch_size=patch_size, stride=stride, limit=limit
         )
     else:

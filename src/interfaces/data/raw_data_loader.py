@@ -35,7 +35,7 @@ class RawDataLoader(ABC):
         self.stride = stride if stride else patch_size
 
     @abstractmethod
-    def load_data(self, excluded_rfi=None):
+    def load_data(self, *args):
         pass
 
     def fetch_train_x(self) -> np.ndarray:
