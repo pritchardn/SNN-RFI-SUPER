@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
-from data.utils import extract_patches
+from data.utils import extract_patches, filter_noiseless_patches
 
 
 def calc_limit_int(limit: float, data_len: int) -> int:
@@ -15,11 +15,11 @@ def calc_limit_int(limit: float, data_len: int) -> int:
 
 class RawDataLoader(ABC):
     def __init__(
-        self,
-        data_dir: str,
-        limit: float = None,
-        patch_size: int = None,
-        stride: int = None,
+            self,
+            data_dir: str,
+            limit: float = None,
+            patch_size: int = None,
+            stride: int = None,
     ):
         self.train_x = None
         self.train_y = None
@@ -86,3 +86,17 @@ class RawDataLoader(ABC):
         limit = calc_limit_int(self.limit, len(self.val_x))
         self.val_x = self.val_x[:limit]
         self.val_y = self.val_y[:limit]
+
+    def filter_noiseless_val_patches(self):
+        self.val_x, self.val_y = filter_noiseless_patches(self.val_x, self.val_y)
+
+    def filter_noiseless_train_patches(self):
+        self.train_x, self.train_y = filter_noiseless_patches(
+            self.train_x, self.train_y
+        )
+
+    def convert_pytorch(self):
+        self.train_x = np.moveaxis(self.train_x, -1, 1).astype(np.float32)
+        self.train_y = np.moveaxis(self.train_y, -1, 1).astype(np.float32)
+        self.test_x = np.moveaxis(self.test_x, -1, 1).astype(np.float32)
+        self.test_y = np.moveaxis(self.test_y, -1, 1).astype(np.float32)

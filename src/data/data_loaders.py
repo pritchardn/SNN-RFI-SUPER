@@ -4,8 +4,7 @@ from typing import Union
 
 import numpy as np
 
-from data.utils import filter_noiseless_patches
-from interfaces.data.raw_data_loader import RawDataLoader, calc_limit_int
+from interfaces.data.raw_data_loader import RawDataLoader
 
 
 class HeraDataLoader(RawDataLoader):
@@ -26,20 +25,6 @@ class HeraDataLoader(RawDataLoader):
         image_data = (image_data - minimum) / (maximum - minimum)
         return image_data
 
-    def _convert_pytorch(self):
-        self.train_x = np.moveaxis(self.train_x, -1, 1).astype(np.float32)
-        self.train_y = np.moveaxis(self.train_y, -1, 1).astype(np.float32)
-        self.test_x = np.moveaxis(self.test_x, -1, 1).astype(np.float32)
-        self.test_y = np.moveaxis(self.test_y, -1, 1).astype(np.float32)
-
-    def _filter_noiseless_val_patches(self):
-        self.val_x, self.val_y = filter_noiseless_patches(self.val_x, self.val_y)
-
-    def _filter_noiseless_train_patches(self):
-        self.train_x, self.train_y = filter_noiseless_patches(
-            self.train_x, self.train_y
-        )
-
     def _prepare_data(self):
         self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
         self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max
@@ -47,7 +32,7 @@ class HeraDataLoader(RawDataLoader):
         self.train_x = self.train_x.astype("float32")
         self.test_x = self._normalize(self.test_x, self.test_y)
         self.train_x = self._normalize(self.train_x, self.train_y)
-        self._convert_pytorch()
+        self.convert_pytorch()
         self.val_x = self.test_x.copy()
         self.val_y = self.test_y.copy()
         self.limit_datasets()
@@ -78,8 +63,8 @@ class HeraDataLoader(RawDataLoader):
         self._prepare_data()
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
-        self._filter_noiseless_val_patches()
-        self._filter_noiseless_train_patches()
+        self.filter_noiseless_val_patches()
+        self.filter_noiseless_train_patches()
 
 
 class LofarDataLoader(RawDataLoader):
