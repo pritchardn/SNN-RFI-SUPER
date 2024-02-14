@@ -7,8 +7,9 @@ import numpy as np
 from interfaces.data.raw_data_loader import RawDataLoader
 
 
-def _normalize(image_data: np.ndarray, masks: np.ndarray, min_threshold: int,
-               max_threshold: int) -> np.ndarray:
+def _normalize(
+    image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
+) -> np.ndarray:
     _max = np.mean(image_data[np.invert(masks)]) + max_threshold * np.std(
         image_data[np.invert(masks)]
     )
@@ -25,7 +26,6 @@ def _normalize(image_data: np.ndarray, masks: np.ndarray, min_threshold: int,
 
 
 class HeraDataLoader(RawDataLoader):
-
     def _prepare_data(self):
         self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
         self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max
@@ -69,7 +69,6 @@ class HeraDataLoader(RawDataLoader):
 
 
 class LofarDataLoader(RawDataLoader):
-
     def _prepare_data(self):
         self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
         self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max

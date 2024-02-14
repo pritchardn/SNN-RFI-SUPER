@@ -150,7 +150,9 @@ class Experiment:
             if self.data_source and self.encoder:
                 if not self.dataset:
                     self.dataset = dataset_from_config(
-                        self.configuration.get("dataset"), self.data_source, self.encoder
+                        self.configuration.get("dataset"),
+                        self.data_source,
+                        self.encoder,
                     )
             else:
                 err_msg += "Data source not set.\n"
