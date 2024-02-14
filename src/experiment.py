@@ -5,7 +5,7 @@ import os
 import pytorch_lightning as pl
 import torch
 
-from data.data_loaders import HeraDataLoader
+from data.data_loaders import HeraDataLoader, LofarDataLoader
 from data.data_module import ConfiguredDataModule
 from data.data_module_builder import DataModuleBuilder
 from data.spike_converters import LatencySpikeConverter, RateSpikeConverter
@@ -25,6 +25,10 @@ def data_source_from_config(config: dict) -> RawDataLoader:
     dataset = config.get("dataset")
     if dataset == "HERA":
         data_source = HeraDataLoader(
+            data_path, patch_size=patch_size, stride=stride, limit=limit
+        )
+    elif dataset == "LOFAR":
+        data_source = LofarDataLoader(
             data_path, patch_size=patch_size, stride=stride, limit=limit
         )
     else:
@@ -127,6 +131,7 @@ class Experiment:
 
     def add_dataset(self, data_source: RawDataLoader):
         self.data_source = data_source
+        self.dataset = None
         self.ready = False
 
     def save_config(self):
@@ -143,9 +148,10 @@ class Experiment:
         err_msg = ""
         if not self.ready:
             if self.data_source and self.encoder:
-                self.dataset = dataset_from_config(
-                    self.configuration.get("dataset"), self.data_source, self.encoder
-                )
+                if not self.dataset:
+                    self.dataset = dataset_from_config(
+                        self.configuration.get("dataset"), self.data_source, self.encoder
+                    )
             else:
                 err_msg += "Data source not set.\n"
             if not self.model:
