@@ -5,7 +5,7 @@ from experiment import Experiment
 
 
 def main():
-    config = get_default_params("TABASCAL", "FC_LATENCY")
+    config = get_default_params("HERA", "FC_LATENCY")
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
     )

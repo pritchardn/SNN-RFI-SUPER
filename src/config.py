@@ -1,4 +1,5 @@
 import os
+import copy
 
 DEFAULT_HERA_LATENCY = {
     "data_source": {
@@ -30,9 +31,9 @@ DEFAULT_HERA_LATENCY = {
     },
 }
 
-DEFAULT_LOFAR_LATENCY = DEFAULT_HERA_LATENCY.copy()
+DEFAULT_LOFAR_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_LOFAR_LATENCY["data_source"]["dataset"] = "LOFAR"
-DEFAULT_TABASCAL_LATENCY = DEFAULT_HERA_LATENCY.copy()
+DEFAULT_TABASCAL_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_TABASCAL_LATENCY["data_source"]["dataset"] = "TABASCAL"
 
 DEFAULT_HERA_RATE = {
@@ -65,9 +66,9 @@ DEFAULT_HERA_RATE = {
     },
 }
 
-DEFAULT_LOFAR_RATE = DEFAULT_HERA_RATE.copy()
+DEFAULT_LOFAR_RATE = copy.deepcopy(DEFAULT_HERA_RATE)
 DEFAULT_LOFAR_RATE["data_source"]["dataset"] = "LOFAR"
-DEFAULT_TABASCAL_RATE = DEFAULT_HERA_RATE.copy()
+DEFAULT_TABASCAL_RATE = copy.deepcopy(DEFAULT_HERA_RATE)
 DEFAULT_TABASCAL_RATE["data_source"]["dataset"] = "TABASCAL"
 
 
@@ -95,5 +96,3 @@ def get_default_params(dataset: str, model_type: str):
             raise ValueError(f"Unknown model type {model_type}")
     else:
         raise ValueError(f"Unknown dataset {dataset}")
-
-    return DEFAULT_CONFIG

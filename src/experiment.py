@@ -75,14 +75,23 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
     early_stopping_callback = pl.callbacks.EarlyStopping(
         monitor="val_loss", mode="min", patience=5, min_delta=1e-4
     )
-    trainer = pl.trainer.Trainer(
-        max_epochs=epochs,
-        benchmark=True,
-        callbacks=[early_stopping_callback],
-        default_root_dir=root_dir,
-        devices=num_gpus,
-        num_nodes=config.get("num_nodes"),
-    )
+    if num_gpus > 0:
+        trainer = pl.trainer.Trainer(
+            max_epochs=epochs,
+            benchmark=True,
+            callbacks=[early_stopping_callback],
+            default_root_dir=root_dir,
+            devices=num_gpus,
+            num_nodes=config.get("num_nodes"),
+        )
+    else:
+        trainer = pl.trainer.Trainer(
+            max_epochs=epochs,
+            benchmark=True,
+            callbacks=[early_stopping_callback],
+            default_root_dir=root_dir,
+            num_nodes=config.get("num_nodes"),
+        )
     return trainer
 
 
