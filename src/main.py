@@ -1,15 +1,14 @@
 import os
 
-from config import DEFAULT_CONFIG
+from config import get_default_params
 from experiment import Experiment
 
 
 def main():
-    config = DEFAULT_CONFIG
+    config = get_default_params("TABASCAL", "FC_LATENCY")
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
     )
-    config["data_source"]["dataset"] = "TABASCAL"
     root_dir = os.getenv("OUTPUT_DIR", "./")
     experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)

@@ -1,24 +1,24 @@
-import os
 import json
+import os
+
 import optuna
 from optuna.storages import RetryFailedTrialCallback
 
-from config import DEFAULT_CONFIG
+from config import get_default_params
 from experiment import Experiment
 
 
 def objective(trial):
-    config = DEFAULT_CONFIG
+    dataset = os.getenv("DATASET", "HERA")
+    model_type = os.getenv("MODEL_TYPE", "FC_LATENCY")
+    config = get_default_params(dataset, model_type)
 
     config["data_source"]["data_path"] = os.getenv("DATA_PATH", "./data")
     config["data_source"]["limit"] = float(os.getenv("LIMIT", 0.1))
     config["data_source"]["patch_size"] = int(os.getenv("PATCH_SIZE", 32))
     config["data_source"]["stride"] = int(os.getenv("STRIDE", 32))
-    config["data_source"]["dataset"] = os.getenv("DATASET", "HERA")
 
     config["dataset"]["batch_size"] = trial.suggest_int("batch_size", 16, 128)
-
-    config["model"]["type"] = os.getenv("MODEL_TYPE", "FC_LATENCY")
     config["model"]["num_inputs"] = int(os.getenv("STRIDE", 32))
     config["model"]["num_hidden"] = int(os.getenv("NUM_HIDDEN", 128))
     config["model"]["num_outputs"] = int(os.getenv("STRIDE", 32))
