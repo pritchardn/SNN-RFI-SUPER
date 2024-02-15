@@ -15,8 +15,8 @@ class LitFcRate(pl.LightningModule):
         self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
         self.fc2 = nn.Linear(num_hidden, num_outputs)
         self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
-        self.pos_loss = SF.mse_count_loss()
-        self.neg_loss = SF.mse_count_loss(correct_rate=0.0, incorrect_rate=1.0)
+        self.pos_loss = SF.mse_count_loss(correct_rate=0.8, incorrect_rate=0.2)
+        self.neg_loss = SF.mse_count_loss(correct_rate=0.2, incorrect_rate=0.8)
         self.float()
         self.save_hyperparameters()
 
@@ -58,7 +58,8 @@ class LitFcRate(pl.LightningModule):
                 targets = tslice[torch.where(tslice >= 0)[0]]
                 spikes = spike_hat[:, i, :, t]
                 if len(targets) == 0:
-                    targets = torch.arange(0, spikes.shape[1], device=self.device)
+                    continue
+                    targets = torch.arange(0, spikes.shape[-1], device=self.device)
                     example_loss += self.neg_loss(spikes, targets)
                 else:
                     example_loss += self.pos_loss(spikes, targets)

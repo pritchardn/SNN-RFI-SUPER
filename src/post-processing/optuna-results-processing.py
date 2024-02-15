@@ -27,4 +27,4 @@ def main(filename: str):
 
 
 if __name__ == "__main__":
-    main("SNN-SUPER-HERA-LATENCY-10_best_trial.json")
+    main("SNN-SUPER-HERA-RATE-10_best_trial.json")

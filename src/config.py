@@ -60,7 +60,7 @@ DEFAULT_HERA_RATE = {
     },
     "encoder": {
         "method": "RATE",
-        "exposure": 13,
+        "exposure": 16,
         "tau": 1.0,
         "normalize": True,
     },

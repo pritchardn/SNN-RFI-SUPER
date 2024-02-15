@@ -8,7 +8,7 @@ def main():
     model_type = os.getenv("MODEL_TYPE", "FC_LATENCY")
     dataset = os.getenv("DATASET", "HERA")
     num_hidden = int(os.getenv("NUM_HIDDEN", 128))
-    config = get_default_params(model_type, dataset)
+    config = get_default_params(dataset, model_type)
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
     )
