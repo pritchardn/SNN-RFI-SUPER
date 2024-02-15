@@ -5,10 +5,13 @@ from experiment import Experiment
 
 
 def main():
-    config = get_default_params("HERA", "FC_LATENCY")
+    model_type = os.getenv("MODEL_TYPE", "FC_LATENCY")
+    dataset = os.getenv("DATASET", "HERA")
+    config = get_default_params(model_type, dataset)
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
     )
+    config["data_source"]["limit"] = float(os.getenv("LIMIT", config["data_source"]["limit"]))
     root_dir = os.getenv("OUTPUT_DIR", "./")
     experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)
