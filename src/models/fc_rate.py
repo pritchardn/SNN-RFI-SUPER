@@ -1,9 +1,9 @@
 import snntorch as snn
 import torch
 import torch.nn as nn
-from sklearn.metrics import balanced_accuracy_score
+import pytorch_lightning as pl
 
-from plotting import plot_example_inference
+from loss_functions.mse_count_balanced_loss import mse_count_loss_balanced
 
 
 class LitFcRate(pl.LightningModule):
