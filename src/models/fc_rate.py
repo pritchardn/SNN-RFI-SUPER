@@ -1,10 +1,10 @@
 import pytorch_lightning as pl
 import snntorch as snn
-import snntorch.functional as SF
 import torch
 import torch.nn as nn
 from sklearn.metrics import balanced_accuracy_score
 
+from loss_functions.mse_count_balanced_loss import mse_count_loss_balanced
 from plotting import plot_example_inference
 
 
@@ -15,8 +15,7 @@ class LitFcRate(pl.LightningModule):
         self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
         self.fc2 = nn.Linear(num_hidden, num_outputs)
         self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
-        self.pos_loss = SF.mse_count_loss(correct_rate=0.8, incorrect_rate=0.2)
-        self.neg_loss = SF.mse_count_loss(correct_rate=0.2, incorrect_rate=0.8)
+        self.loss = mse_count_loss_balanced(correct_rate=0.8, incorrect_rate=0.2)
         self.float()
         self.save_hyperparameters()
 
@@ -57,12 +56,7 @@ class LitFcRate(pl.LightningModule):
                 tslice = y[i, t, ::]
                 targets = tslice[torch.where(tslice >= 0)[0]]
                 spikes = spike_hat[:, i, :, t]
-                if len(targets) == 0:
-                    continue
-                    targets = torch.arange(0, spikes.shape[-1], device=self.device)
-                    example_loss += self.neg_loss(spikes, targets)
-                else:
-                    example_loss += self.pos_loss(spikes, targets)
+                example_loss += self.loss(spikes, targets)
             example_loss /= y.shape[1]
             loss += example_loss
         return loss

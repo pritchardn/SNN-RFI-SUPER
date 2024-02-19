@@ -13,7 +13,9 @@ def main():
         "DATA_PATH", config["data_source"]["data_path"]
     )
     config["model"]["num_hidden"] = num_hidden
-    config["data_source"]["limit"] = float(os.getenv("LIMIT", config["data_source"]["limit"]))
+    config["data_source"]["limit"] = float(
+        os.getenv("LIMIT", config["data_source"]["limit"])
+    )
     root_dir = os.getenv("OUTPUT_DIR", "./")
     experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)
