@@ -73,7 +73,7 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
     num_gpus = torch.cuda.device_count()
     epochs = config.get("epochs")
     early_stopping_callback = pl.callbacks.EarlyStopping(
-        monitor="val_loss", mode="min", patience=5, min_delta=1e-4
+        monitor="val_loss", mode="min", patience=10, min_delta=1e-4
     )
     if num_gpus > 0:
         trainer = pl.trainer.Trainer(

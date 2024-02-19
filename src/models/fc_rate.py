@@ -1,14 +1,12 @@
-import pytorch_lightning as pl
 import snntorch as snn
 import snntorch.functional as SF
 import torch
 import torch.nn as nn
-from sklearn.metrics import balanced_accuracy_score
 
-from plotting import plot_example_inference
+from interfaces.models.model import LitModel
 
 
-class LitFcRate(pl.LightningModule):
+class LitFcRate(LitModel):
     def __init__(self, num_inputs: int, num_hidden: int, num_outputs: int, beta: float):
         super().__init__()
         self.fc1 = nn.Linear(num_inputs, num_hidden)
@@ -19,10 +17,6 @@ class LitFcRate(pl.LightningModule):
         self.neg_loss = SF.mse_count_loss(correct_rate=0.0, incorrect_rate=1.0)
         self.float()
         self.save_hyperparameters()
-
-    def calc_accuracy(self, y_hat, y):
-        score = balanced_accuracy_score(y_hat.flatten(), y.flatten())
-        self.log("accuracy", score)
 
     def forward(self, x):
         full_spike = []
@@ -49,7 +43,7 @@ class LitFcRate(pl.LightningModule):
         full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
         return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
 
-    def _calc_loss(self, spike_hat, y):
+    def calc_loss(self, spike_hat, y):
         loss = 0.0
         for i in range(y.shape[0]):
             example_loss = 0.0
@@ -65,31 +59,3 @@ class LitFcRate(pl.LightningModule):
             example_loss /= y.shape[1]
             loss += example_loss
         return loss
-
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-        spike_hat, mem_hat = self(x)
-        loss = self._calc_loss(spike_hat, y)
-        self.log("train_loss", loss, sync_dist=True)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        x, y = batch
-        spike_hat, mem_hat = self(x)
-        loss = self._calc_loss(spike_hat, y)
-        if batch_idx == 0:
-            plot_example_inference(
-                spike_hat[:, 0, 0, ::].detach().cpu(),
-                str(self.current_epoch),
-                self.trainer.log_dir,
-            )
-        self.log("val_loss", loss, sync_dist=True)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-        spike_hat, mem_hat = self(x)
-        loss = self._calc_loss(spike_hat, y)
-        self.log("test_loss", loss, sync_dist=True)
-
-    def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-3)

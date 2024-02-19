@@ -1,15 +1,15 @@
-import pytorch_lightning as pl
+import numpy as np
 import snntorch as snn
 import snntorch.functional as SF
 import torch
 import torch.nn as nn
-import numpy as np
 from sklearn.metrics import balanced_accuracy_score
 
+from interfaces.models.model import LitModel
 from plotting import plot_example_inference, plot_example_mask
 
 
-class LitFcLatency(pl.LightningModule):
+class LitFcLatency(LitModel):
     def __init__(self, num_inputs: int, num_hidden: int, num_outputs: int, beta: float):
         super().__init__()
         self.fc1 = nn.Linear(num_inputs, num_hidden)
@@ -23,6 +23,10 @@ class LitFcLatency(pl.LightningModule):
     def calc_accuracy(self, y_hat, y):
         score = balanced_accuracy_score(y_hat.flatten(), y.flatten())
         self.log("accuracy", score)
+
+    def calc_loss(self, y_hat, y):
+        loss = self.loss(y_hat, y)
+        return loss
 
     def forward(self, x):
         full_spike = []
@@ -80,6 +84,3 @@ class LitFcLatency(pl.LightningModule):
         spike_hat, mem_hat = self(x)
         loss = self.loss(spike_hat, y)
         self.log("test_loss", loss, sync_dist=True)
-
-    def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-3)
