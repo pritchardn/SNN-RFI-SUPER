@@ -4,28 +4,28 @@ import copy
 DEFAULT_HERA_LATENCY = {
     "data_source": {
         "data_path": "./data",
-        "limit": 0.1,
+        "limit": 1.0,
         "patch_size": 32,
         "stride": 32,
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 27,
+        "batch_size": 36,
     },
     "model": {
         "type": "FC_LATENCY",
         "num_inputs": 32,
         "num_hidden": 128,
         "num_outputs": 32,
-        "beta": 0.8417118385641611,
+        "beta": 0.7270826938643781,
     },
     "trainer": {
-        "epochs": 34,
+        "epochs": 44,
         "num_nodes": os.getenv("NNODES", 1),
     },
     "encoder": {
         "method": "LATENCY",
-        "exposure": 13,
+        "exposure": 6,
         "tau": 1.0,
         "normalize": True,
     },
