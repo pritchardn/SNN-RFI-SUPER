@@ -8,11 +8,16 @@ import torch
 from data.data_loaders import HeraDataLoader, LofarDataLoader, TabascalDataLoader
 from data.data_module import ConfiguredDataModule
 from data.data_module_builder import DataModuleBuilder
-from data.spike_converters import LatencySpikeConverter, RateSpikeConverter
+from data.spike_converters import (
+    LatencySpikeConverter,
+    RateSpikeConverter,
+    DeltaSpikeConverter,
+)
 from data.utils import reconstruct_patches
 from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
 from interfaces.data.spiking_data_module import SpikeConverter
+from models.fc_delta import LitFcDelta
 from models.fc_latency import LitFcLatency
 from models.fc_rate import LitFcRate
 
@@ -64,6 +69,11 @@ def model_from_config(config: dict) -> pl.LightningModule:
         num_hidden = config.get("num_hidden")
         num_outputs = config.get("num_outputs")
         model = LitFcRate(num_inputs, num_hidden, num_outputs, beta)
+    elif model_type == "FC_DELTA":
+        num_inputs = config.get("num_inputs")
+        num_hidden = config.get("num_hidden")
+        num_outputs = config.get("num_outputs")
+        model = LitFcDelta(num_inputs, num_hidden, num_outputs, beta)
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model
@@ -105,6 +115,10 @@ def encoder_from_config(config: dict) -> SpikeConverter:
     elif config.get("method") == "RATE":
         exposure = config.get("exposure")
         encoder = RateSpikeConverter(exposure=exposure)
+    elif config.get("method") == "DELTA":
+        threshold = config.get("threshold")
+        off_spikes = config.get("off_spikes")
+        encoder = DeltaSpikeConverter(threshold=threshold, off_spikes=off_spikes)
     return encoder
 
 
