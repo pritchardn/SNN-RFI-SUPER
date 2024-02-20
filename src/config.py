@@ -93,6 +93,7 @@ DEFAULT_HERA_DELTA = {
     "trainer": {
         "epochs": 50,
         "num_nodes": os.getenv("NNODES", 1),
+        "patience": 100,
     },
     "encoder": {"method": "DELTA", "threshold": 0.1, "off_spikes": True},
 }
