@@ -20,10 +20,6 @@ class LitFcLatency(LitModel):
         self.float()
         self.save_hyperparameters()
 
-    def calc_accuracy(self, y_hat, y):
-        score = balanced_accuracy_score(y_hat.flatten(), y.flatten())
-        self.log("accuracy", score)
-
     def calc_loss(self, y_hat, y):
         loss = self.loss(y_hat, y)
         return loss
@@ -54,17 +50,10 @@ class LitFcLatency(LitModel):
         full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
         return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
 
-    def training_step(self, batch, batch_idx):
-        x, y = batch
-        spike_hat, mem_hat = self(x)
-        loss = self.loss(spike_hat, y)
-        self.log("train_loss", loss, sync_dist=True)
-        return loss
-
     def validation_step(self, batch, batch_idx):
         x, y = batch
         spike_hat, mem_hat = self(x)
-        loss = self.loss(spike_hat, y)
+        loss = self.calc_loss(spike_hat, y)
         if batch_idx == 0:
             plot_example_inference(
                 spike_hat[:, 0, 0, ::].detach().cpu(),
@@ -78,9 +67,3 @@ class LitFcLatency(LitModel):
             )
 
         self.log("val_loss", loss, sync_dist=True)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-        spike_hat, mem_hat = self(x)
-        loss = self.loss(spike_hat, y)
-        self.log("test_loss", loss, sync_dist=True)

@@ -1,12 +1,12 @@
 import snntorch as snn
 import torch
 import torch.nn as nn
-import pytorch_lightning as pl
 
+from interfaces.models.model import LitModel
 from loss_functions.mse_count_balanced_loss import mse_count_loss_balanced
 
 
-class LitFcRate(pl.LightningModule):
+class LitFcRate(LitModel):
     def __init__(self, num_inputs: int, num_hidden: int, num_outputs: int, beta: float):
         super().__init__()
         self.fc1 = nn.Linear(num_inputs, num_hidden)
