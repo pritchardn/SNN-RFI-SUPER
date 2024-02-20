@@ -73,7 +73,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
         num_inputs = config.get("num_inputs")
         num_hidden = config.get("num_hidden")
         num_outputs = config.get("num_outputs")
-        model = LitFcDelta(num_inputs, num_hidden, num_outputs, beta)
+        reconstruct_loss = config.get("reconstruct_loss")
+        model = LitFcDelta(num_inputs, num_hidden, num_outputs, beta, reconstruct_loss)
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model

@@ -88,6 +88,7 @@ DEFAULT_HERA_DELTA = {
         "num_hidden": 128,
         "num_outputs": 64,
         "beta": 0.7270826938643781,
+        "reconstruct_loss": False,
     },
     "trainer": {
         "epochs": 50,

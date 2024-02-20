@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 import torch
 
@@ -52,7 +54,7 @@ def reconstruct_patches(images: np.array, original_size: int, kernel_size: int):
 
 
 def filter_noiseless_patches(
-    x_data: np.ndarray, y_data: np.ndarray
+        x_data: np.ndarray, y_data: np.ndarray
 ) -> (np.ndarray, np.ndarray):
     index_vales = np.any(y_data, axis=(1, 2, 3))
     out_x = x_data[index_vales]
@@ -65,3 +67,79 @@ def ensure_tflow(data: np.ndarray):
         return np.moveaxis(data, 1, -1)
     else:
         return data
+
+
+def _decode_delta_inference_numpy(spike_hat: np.ndarray) -> np.ndarray:
+    # Assuming [exp, N, C, freq * 2, time]
+    inference = np.squeeze(spike_hat, axis=0)  # [N, C, freq, time]
+    out = np.zeros(
+        (
+            inference.shape[0],
+            inference.shape[1],
+            inference.shape[2] // 2,
+            inference.shape[3],
+        ),
+        dtype=inference.dtype,
+    )
+    # Copy even frequency channels
+    out[:, :, :, :] = inference[:, :, ::2, :]
+    # Copy odd frequency channels but spikes are converted to off spikes
+    out[:, :, :, :] = np.where(inference[:, :, 1::2, :] == 1, -1, out[:, :, :, :])
+    for i in range(out.shape[0]):
+        for j in range(out.shape[2]):
+            flag = False
+            for k in range(out.shape[3]):
+                curr = out[i, :, j, k]
+                if flag:
+                    if curr == 0 or curr == 1:
+                        out[i, :, j, k] = 1
+                    elif curr == -1:
+                        flag = False
+                        out[i, :, j, k] = 0
+                else:
+                    if curr == 1:
+                        flag = True
+                        out[i, :, j, k] = 1
+                    elif curr == -1:
+                        out[i, :, j, k] = 0
+
+    return out  # [N, C, freq, time]
+
+
+def _decode_delta_inference_torch(spike_hat: torch.Tensor) -> torch.Tensor:
+    # Assuming [exp, N, C, freq * 2, time]
+    inference = torch.squeeze(spike_hat, dim=0)  # [N, C, freq, time]
+    out = torch.zeros(
+        (inference.shape[0], inference.shape[1], inference.shape[2] // 2, inference.shape[3]),
+        dtype=inference.dtype, device=inference.device)
+    # Copy even frequency channels
+    out[:, :, :, :] = inference[:, :, ::2, :]
+    # Copy odd frequency channels but spikes are converted to off spikes
+    out[:, :, :, :] = torch.where(inference[:, :, 1::2, :] == 1, -1, out[:, :, :, :])
+
+    for i in range(out.shape[0]):
+        for j in range(out.shape[2]):
+            flag = False
+            for k in range(out.shape[3]):
+                curr = out[i, :, j, k]
+                if flag:
+                    if curr == 0 or curr == 1:
+                        out[i, :, j, k] = 1
+                    elif curr == -1:
+                        flag = False
+                        out[i, :, j, k] = 0
+                else:
+                    if curr == 1:
+                        flag = True
+                        out[i, :, j, k] = 1
+                    elif curr == -1:
+                        out[i, :, j, k] = 0
+
+    return out
+
+
+def decode_delta_inference(spike_hat, use_numpy: bool) -> Union[np.ndarray, torch.Tensor]:
+    if use_numpy:
+        return _decode_delta_inference_numpy(spike_hat)
+    else:
+        return _decode_delta_inference_torch(spike_hat)

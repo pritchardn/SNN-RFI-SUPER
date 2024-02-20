@@ -3,6 +3,7 @@ import torch
 from snntorch import spikegen
 
 from data.data_loaders import HeraDataLoader
+from data.utils import decode_delta_inference
 from interfaces.data.spiking_data_module import SpikeConverter
 
 
@@ -58,40 +59,7 @@ class DeltaSpikeConverter(SpikeConverter):
         pass
 
     def decode_inference(self, inference: np.ndarray) -> np.ndarray:
-        # Assuming [exp, N, C, freq * 2, time]
-        inference = np.squeeze(inference, axis=0)  # [N, C, freq, time]
-        out = np.zeros(
-            (
-                inference.shape[0],
-                inference.shape[1],
-                inference.shape[2] // 2,
-                inference.shape[3],
-            ),
-            dtype=inference.dtype,
-        )
-        # Copy even frequency channels
-        out[:, :, :, :] = inference[:, :, ::2, :]
-        # Copy odd frequency channels but spikes are converted to off spikes
-        out[:, :, :, :] = np.where(inference[:, :, 1::2, :] == 1, -1, out[:, :, :, :])
-        for i in range(out.shape[0]):
-            for j in range(out.shape[2]):
-                flag = False
-                for k in range(out.shape[3]):
-                    curr = out[i, :, j, k]
-                    if flag:
-                        if curr == 0 or curr == 1:
-                            out[i, :, j, k] = 1
-                        elif curr == -1:
-                            flag = False
-                            out[i, :, j, k] = 0
-                    else:
-                        if curr == 1:
-                            flag = True
-                            out[i, :, j, k] = 1
-                        elif curr == -1:
-                            out[i, :, j, k] = 0
-
-        return out  # [N, C, freq, time]
+        return decode_delta_inference(inference, use_numpy=True)
 
 
 if __name__ == "__main__":
