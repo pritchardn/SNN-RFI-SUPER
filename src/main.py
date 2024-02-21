@@ -17,7 +17,7 @@ def main():
         os.getenv("LIMIT", config["data_source"]["limit"])
     )
     config["encoder"]["exposure"] = int(
-        os.getenv("EXPOSURE", config["encoder"].get("exposure", None))
+        os.getenv("EXPOSURE", config["encoder"].get("exposure", 1))
     )
     root_dir = os.getenv("OUTPUT_DIR", "./")
     experiment = Experiment(root_dir=root_dir)
