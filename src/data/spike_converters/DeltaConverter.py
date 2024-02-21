@@ -12,14 +12,23 @@ class DeltaSpikeConverter(SpikeConverter):
         self.threshold = threshold
         self.off_spikes = off_spikes
 
-    def encode_x(self, x_data: np.ndarray) -> np.ndarray:
+    def _encode_x_off_spikes(self, x_data: np.ndarray) -> np.ndarray:
         encoded = spikegen.delta(
             torch.from_numpy(np.moveaxis(x_data, -1, 0)),
             threshold=self.threshold,
-            off_spike=self.off_spikes,
+            off_spike=True,
         ).numpy()
         encoded = np.moveaxis(encoded, 0, -1)
         return np.expand_dims(encoded, axis=1)  # [N, exp, C, freq, time]
+
+    def _encode_x_on_spikes(self, x_data: np.ndarray) -> np.ndarray:
+        return self.encode_y(x_data)
+
+    def encode_x(self, x_data: np.ndarray) -> np.ndarray:
+        if self.off_spikes:
+            return self._encode_x_off_spikes(x_data)
+        else:
+            return self._encode_x_on_spikes(x_data)
 
     def encode_y(self, y_data: np.ndarray) -> np.ndarray:
         """
@@ -31,7 +40,7 @@ class DeltaSpikeConverter(SpikeConverter):
         :param y_data:
         :return: An array of purely positive spikes where even-indexed frequency channels contain on spike, and odd-indexed frequency channels contain off spikes.
         """
-        original_encoded = self.encode_x(y_data)
+        original_encoded = self._encode_x_off_spikes(y_data)
         out = np.zeros(
             (y_data.shape[0], 1, y_data.shape[1], y_data.shape[2] * 2, y_data.shape[3]),
             dtype=y_data.dtype,

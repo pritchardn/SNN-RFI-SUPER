@@ -103,6 +103,38 @@ DEFAULT_LOFAR_DELTA["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_DELTA = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_TABASCAL_DELTA["data_source"]["dataset"] = "TABASCAL"
 
+DEFAULT_HERA_DELTA_ON = {
+    "data_source": {
+        "data_path": "./data",
+        "limit": 1.0,
+        "patch_size": 32,
+        "stride": 32,
+        "dataset": "HERA",
+    },
+    "dataset": {
+        "batch_size": 36,
+    },
+    "model": {
+        "type": "FC_DELTA_ON",
+        "num_inputs": 64,
+        "num_hidden": 128,
+        "num_outputs": 64,
+        "beta": 0.7270826938643781,
+        "reconstruct_loss": False,
+    },
+    "trainer": {
+        "epochs": 50,
+        "num_nodes": os.getenv("NNODES", 1),
+        "patience": 100,
+    },
+    "encoder": {"method": "DELTA", "threshold": 0.1, "off_spikes": False},
+}
+
+DEFAULT_LOFAR_DELTA_ON = copy.deepcopy(DEFAULT_HERA_DELTA)
+DEFAULT_LOFAR_DELTA_ON["data_source"]["dataset"] = "LOFAR"
+DEFAULT_TABASCAL_DELTA_ON = copy.deepcopy(DEFAULT_HERA_DELTA)
+DEFAULT_TABASCAL_DELTA_ON["data_source"]["dataset"] = "TABASCAL"
+
 
 def get_default_params(dataset: str, model_type: str):
     if dataset == "HERA":
@@ -112,6 +144,8 @@ def get_default_params(dataset: str, model_type: str):
             return DEFAULT_HERA_RATE
         elif model_type == "FC_DELTA":
             return DEFAULT_HERA_DELTA
+        elif model_type == "FC_DELTA_ON":
+            return DEFAULT_HERA_DELTA_ON
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
@@ -121,6 +155,8 @@ def get_default_params(dataset: str, model_type: str):
             return DEFAULT_LOFAR_RATE
         elif model_type == "FC_DELTA":
             return DEFAULT_LOFAR_DELTA
+        elif model_type == "FC_DELTA_ON":
+            return DEFAULT_LOFAR_DELTA_ON
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "TABASCAL":
@@ -130,6 +166,8 @@ def get_default_params(dataset: str, model_type: str):
             return DEFAULT_TABASCAL_RATE
         elif model_type == "FC_DELTA":
             return DEFAULT_TABASCAL_DELTA
+        elif model_type == "FC_DELTA_ON":
+            return DEFAULT_TABASCAL_DELTA_ON
         else:
             raise ValueError(f"Unknown model type {model_type}")
     else:
