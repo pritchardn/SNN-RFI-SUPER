@@ -2,6 +2,7 @@
 #SBATCH --job-name=SNN-SUPER
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:8
+#SBATCH --exclusive
 #SBATCH --time=24:00:00
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
@@ -25,4 +26,4 @@ export STUDY_NAME="SNN-SUPER-${DATASET}-${ENCODER_METHOD}-100-${NUM_HIDDEN}"
 export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/FC/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}"
 export MPICH_GPU_SUPPORT_ENABLED=1
 
-srun -N 1 -n 1 -c 64 --gres=gpu:8 --gpus-per-task=8 python3 optuna_main.py
+srun -N 1 -n 1 -c 64 --gres=gpu:6 --gpus-per-task=6 python3 optuna_main.py
