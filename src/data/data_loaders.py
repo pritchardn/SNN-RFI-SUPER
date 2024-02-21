@@ -96,8 +96,8 @@ class LofarDataLoader(RawDataLoader):
         self._prepare_data()
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
-        # self.filter_noiseless_val_patches()
-        # self.filter_noiseless_train_patches()
+        self.filter_noiseless_val_patches()
+        self.filter_noiseless_train_patches()
 
 
 class TabascalDataLoader(RawDataLoader):
