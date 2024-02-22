@@ -20,10 +20,6 @@ class LitFcLatency(LitModel):
         self.float()
         self.save_hyperparameters()
 
-    def calc_loss(self, y_hat, y):
-        loss = self.loss(y_hat, y)
-        return loss
-
     def validation_step(self, batch, batch_idx):
         x, y = batch
         spike_hat, mem_hat = self(x)

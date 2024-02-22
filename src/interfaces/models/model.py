@@ -38,9 +38,9 @@ class LitModel(pl.LightningModule):
         full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
         return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
 
-    @abstractmethod
     def calc_loss(self, y_hat, y):
-        pass
+        loss = self.loss(y_hat, y)
+        return loss
 
     def training_step(self, batch, batch_idx):
         x, y = batch
