@@ -17,24 +17,21 @@ class ForwardStepConverter(SpikeConverter):
         https://dl.acm.org/doi/10.1145/3584954.3584995
         """
         out = np.zeros(
-            (x_data.shape[0], 1, x_data.shape[1], x_data.shape[2] * 2, x_data.shape[3]))
+            (x_data.shape[0], 1, x_data.shape[1], x_data.shape[2] * 2, x_data.shape[3]), dtype=x_data.dtype)
         for i, frame in enumerate(x_data):
             frame = np.squeeze(frame, axis=0)
-            levels = np.round(frame, 0)
             cumsum = np.cumsum(frame, axis=-1)
             interim = np.vstack((frame, cumsum))
+            levels = np.round(interim[..., 0], 0)
             for t in range(frame.shape[-1]):
-                curr = (interim[..., t] - levels > self.threshold).astype(int) - (
-                        interim[..., t] - levels < -self.threshold).astype(int)
+                curr = (interim[..., t] - levels[..., t] > self.threshold).astype(int) - (
+                        interim[..., t] - levels[..., t] < -self.threshold).astype(int)
                 out[i, :, :, :, t] = curr
-                levels += out[i, ..., t] * self.threshold
+                levels += out[i, :, :, :, t].squeeze() * self.threshold
         return out
 
     def encode_y(self, y_data: np.ndarray) -> np.ndarray:
-        output_timings = np.zeros(y_data.shape, dtype=y_data.dtype)
-        output_timings[y_data > 0] = 0
-        output_timings[y_data == 0] = self.exposure - 1
-        return output_timings
+        return y_data
 
     def plot_sample(
             self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int

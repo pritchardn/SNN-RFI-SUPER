@@ -139,6 +139,41 @@ DEFAULT_LOFAR_DELTA_ON["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_DELTA_ON = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_TABASCAL_DELTA_ON["data_source"]["dataset"] = "TABASCAL"
 
+DEFAULT_HERA_FORWARD = {
+    "data_source": {
+        "data_path": "./data",
+        "limit": 1.0,
+        "patch_size": 32,
+        "stride": 32,
+        "dataset": "HERA",
+    },
+    "dataset": {
+        "batch_size": 36,
+    },
+    "model": {
+        "type": "FC_LATENCY",
+        "num_inputs": 64,
+        "num_hidden": 128,
+        "num_outputs": 32,
+        "beta": 0.7270826938643781,
+    },
+    "trainer": {
+        "epochs": 44,
+        "num_nodes": os.getenv("NNODES", 1),
+    },
+    "encoder": {
+        "method": "FORWARDSTEP",
+        "exposure": 1,
+        "tau": 1.0,
+        "threshold": 0.1,
+    },
+}
+
+DEFAULT_LOFAR_FORWARD = copy.deepcopy(DEFAULT_HERA_LATENCY)
+DEFAULT_LOFAR_FORWARD["data_source"]["dataset"] = "LOFAR"
+DEFAULT_TABASCAL_FORWARD = copy.deepcopy(DEFAULT_HERA_LATENCY)
+DEFAULT_TABASCAL_FORWARD["data_source"]["dataset"] = "TABASCAL"
+
 
 def get_default_params(dataset: str, model_type: str, model_size: int = 128):
     if dataset == "HERA":
@@ -160,6 +195,8 @@ def get_default_params(dataset: str, model_type: str, model_size: int = 128):
             return DEFAULT_HERA_DELTA
         elif model_type == "FC_DELTA_ON":
             return DEFAULT_HERA_DELTA_ON
+        elif model_type == "FC_FORWARD_STEP":
+            return DEFAULT_HERA_FORWARD
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
@@ -171,6 +208,8 @@ def get_default_params(dataset: str, model_type: str, model_size: int = 128):
             return DEFAULT_LOFAR_DELTA
         elif model_type == "FC_DELTA_ON":
             return DEFAULT_LOFAR_DELTA_ON
+        elif model_type == "FC_FORWARD_STEP":
+            return DEFAULT_LOFAR_FORWARD
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "TABASCAL":
@@ -182,6 +221,8 @@ def get_default_params(dataset: str, model_type: str, model_size: int = 128):
             return DEFAULT_TABASCAL_DELTA
         elif model_type == "FC_DELTA_ON":
             return DEFAULT_TABASCAL_DELTA_ON
+        elif model_type == "FC_FORWARD_STEP":
+            return DEFAULT_TABASCAL_FORWARD
         else:
             raise ValueError(f"Unknown model type {model_type}")
     else:

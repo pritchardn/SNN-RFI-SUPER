@@ -13,11 +13,13 @@ from data.spike_converters import (
     RateSpikeConverter,
     DeltaSpikeConverter,
 )
+from data.spike_converters.ForwardStepConverter import ForwardStepConverter
 from data.utils import reconstruct_patches
 from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
 from interfaces.data.spiking_data_module import SpikeConverter
 from models.fc_delta import LitFcDelta
+from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
 from models.fc_rate import LitFcRate
 
@@ -85,6 +87,11 @@ def model_from_config(config: dict) -> pl.LightningModule:
         model = LitFcDelta(
             num_inputs, num_hidden, num_outputs, beta, reconstruct_loss, False
         )
+    elif model_type == "FC_FORWARD_STEP":
+        num_inputs = config.get("num_inputs")
+        num_hidden = config.get("num_hidden")
+        num_outputs = config.get("num_outputs")
+        model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta)
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model
@@ -131,6 +138,10 @@ def encoder_from_config(config: dict) -> SpikeConverter:
         threshold = config.get("threshold")
         off_spikes = config.get("off_spikes")
         encoder = DeltaSpikeConverter(threshold=threshold, off_spikes=off_spikes)
+    elif config.get("method") == "FORWARDSTEP":
+        threshold = config.get("threshold")
+        exposure = config.get("exposure")
+        encoder = ForwardStepConverter(threshold=threshold, exposure=exposure)
     return encoder
 
 
