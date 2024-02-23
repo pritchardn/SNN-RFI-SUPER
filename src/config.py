@@ -151,7 +151,7 @@ DEFAULT_HERA_FORWARD = {
         "batch_size": 36,
     },
     "model": {
-        "type": "FC_LATENCY",
+        "type": "FC_FORWARD_STEP",
         "num_inputs": 64,
         "num_hidden": 128,
         "num_outputs": 32,
