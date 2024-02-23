@@ -41,7 +41,7 @@ def final_evaluation(
         output, mask_orig.shape[-1], full_spike_hat.shape[-1]
     )
     # Calculate metrics on the whole dataset
-    accuracy, mse, auroc, auprc, f1 = _calculate_metrics(mask_orig, recon_output)
+    accuracy, mse, auroc, auprc, f1 = calculate_metrics(mask_orig, recon_output)
     output = json.dumps(
         {
             "accuracy": accuracy,
@@ -65,7 +65,7 @@ def final_evaluation(
     return accuracy, mse, auroc, auprc, f1
 
 
-def _calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):
+def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):
     y_true = ensure_tflow(y_true)
     y_pred = ensure_tflow(y_pred)
     false_pos_rate, true_pos_rate, _ = roc_curve(
