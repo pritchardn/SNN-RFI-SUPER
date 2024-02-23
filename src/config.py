@@ -167,7 +167,7 @@ DEFAULT_HERA_FORWARD = {
         "tau": 1.0,
         "threshold": 0.1,
         "normalize": True,
-        "exposure_mode": "first"
+        "exposure_mode": "first",
     },
 }
 

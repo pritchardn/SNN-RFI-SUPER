@@ -14,8 +14,6 @@ from data.spike_converters import (
     DeltaSpikeConverter,
 )
 from data.spike_converters.ForwardStepConverter import ForwardStepConverter
-from data.utils import reconstruct_patches
-from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
 from interfaces.data.spiking_data_module import SpikeConverter
 from models.fc_delta import LitFcDelta
@@ -48,7 +46,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -144,8 +142,13 @@ def encoder_from_config(config: dict) -> SpikeConverter:
         tau = config.get("tau")
         normalize = config.get("normalize")
         exposure_mode = config.get("exposure_mode")
-        encoder = ForwardStepConverter(threshold=threshold, exposure=exposure, tau=tau,
-                                       normalize=normalize, exposure_mode=exposure_mode)
+        encoder = ForwardStepConverter(
+            threshold=threshold,
+            exposure=exposure,
+            tau=tau,
+            normalize=normalize,
+            exposure_mode=exposure_mode,
+        )
     return encoder
 
 
