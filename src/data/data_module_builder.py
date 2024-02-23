@@ -41,7 +41,7 @@ class DataModuleBuilder:
                 self.spike_encoder.encode_x(self.data_loader.fetch_test_x())
             )
             test_y = torch.from_numpy(
-                self.spike_encoder.encode_y(self.data_loader.fetch_test_y())
+                self.data_loader.fetch_test_y()  # Original labels.
             )
             val_x = torch.from_numpy(
                 self.spike_encoder.encode_x(self.data_loader.fetch_val_x())
