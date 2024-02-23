@@ -218,6 +218,8 @@ class Experiment:
                 self.save_config()
             if not self.encoder:
                 err_msg += "Encoder not set.\n"
+            else:
+                self.model.set_converter(self.encoder)
             if err_msg != "":
                 raise ValueError(err_msg)
             else:
@@ -234,12 +236,22 @@ class Experiment:
 
     def evaluate(self):
         self.model.eval()
-        mask_orig = reconstruct_patches(
-            self.data_source.fetch_test_y(),
-            self.data_source.original_size,
-            self.data_source.stride,
+        metrics = self.trainer.test(self.model, self.dataset.test_dataloader())
+        accuracy = metrics[0]["test_accuracy"]
+        mse = metrics[0]["test_mse"]
+        auroc = metrics[0]["test_auroc"]
+        auprc = metrics[0]["test_auprc"]
+        f1 = metrics[0]["test_f1"]
+        output = json.dumps(
+            {
+                "accuracy": accuracy,
+                "mse": mse,
+                "auroc": auroc,
+                "auprc": auprc,
+                "f1": f1,
+            }
         )
-        metrics = final_evaluation(
-            self.model, self.dataset, self.encoder, mask_orig, self.trainer.log_dir
-        )
-        return metrics
+        # Write output
+        with open(os.path.join(self.trainer.log_dir, "metrics.json"), "w") as ofile:
+            json.dump(output, ofile, indent=4)
+        return accuracy, mse, auroc, auprc, f1

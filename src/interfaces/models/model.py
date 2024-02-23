@@ -5,10 +5,20 @@ import torch
 from sklearn.metrics import balanced_accuracy_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
+from evaluation import calculate_metrics
+from interfaces.data.spiking_data_module import SpikeConverter
 from plotting import plot_example_inference
 
 
 class LitModel(pl.LightningModule):
+
+    def __init__(self):
+        super().__init__()
+        self.converter = None
+
+    def set_converter(self, converter: SpikeConverter):
+        self.converter = converter
+
     def calc_accuracy(self, y_hat, y):
         score = balanced_accuracy_score(y_hat.flatten(), y.flatten())
         self.log("accuracy", score)
@@ -64,8 +74,16 @@ class LitModel(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x, y = batch
         spike_hat, mem_hat = self(x)
-        loss = self.calc_loss(spike_hat, y)
-        self.log("test_loss", loss, sync_dist=True)
+        # Convert output to true output
+        output_pred = self.converter.decode_inference(spike_hat)
+        accuracy, mse, auroc, auprc, f1 = calculate_metrics(y.detach().cpu().numpy(),
+                                                            output_pred.detach().cpu().numpy())
+        self.log("test_accuracy", accuracy, sync_dist=True)
+        self.log("test_mse", mse, sync_dist=True)
+        self.log("test_auroc", auroc, sync_dist=True)
+        self.log("test_auprc", auprc, sync_dist=True)
+        self.log("test_f1", f1, sync_dist=True)
+        return accuracy, mse, auroc, auprc, f1
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
