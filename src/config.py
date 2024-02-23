@@ -158,14 +158,16 @@ DEFAULT_HERA_FORWARD = {
         "beta": 0.7270826938643781,
     },
     "trainer": {
-        "epochs": 44,
+        "epochs": 20,
         "num_nodes": os.getenv("NNODES", 1),
     },
     "encoder": {
         "method": "FORWARDSTEP",
-        "exposure": 1,
+        "exposure": 4,
         "tau": 1.0,
         "threshold": 0.1,
+        "normalize": True,
+        "exposure_mode": "first"
     },
 }
 

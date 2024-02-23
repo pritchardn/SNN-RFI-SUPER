@@ -16,7 +16,7 @@ class LitFcForwardStep(LitModel):
         self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
         self.fc2 = nn.Linear(num_hidden, num_outputs)
         self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
-        self.loss = SF.mse_temporal_loss()  # TODO: Loss function incorrect.
+        self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()
         self.save_hyperparameters()
 

@@ -48,7 +48,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -141,7 +141,11 @@ def encoder_from_config(config: dict) -> SpikeConverter:
     elif config.get("method") == "FORWARDSTEP":
         threshold = config.get("threshold")
         exposure = config.get("exposure")
-        encoder = ForwardStepConverter(threshold=threshold, exposure=exposure)
+        tau = config.get("tau")
+        normalize = config.get("normalize")
+        exposure_mode = config.get("exposure_mode")
+        encoder = ForwardStepConverter(threshold=threshold, exposure=exposure, tau=tau,
+                                       normalize=normalize, exposure_mode=exposure_mode)
     return encoder
 
 
