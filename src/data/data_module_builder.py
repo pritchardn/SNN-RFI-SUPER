@@ -52,6 +52,7 @@ class DataModuleBuilder:
             train_dset = TensorDataset(train_x, train_y)
             test_dset = TensorDataset(test_x, test_y)
             val_dset = TensorDataset(val_x, val_y)
+            self.data_loader.release_memory()
             return ConfiguredDataModule(train_dset, test_dset, val_dset, batch_size)
         else:
             raise Exception("DataModuleBuilder has not been properly configured.")

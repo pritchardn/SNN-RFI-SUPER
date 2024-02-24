@@ -100,3 +100,11 @@ class RawDataLoader(ABC):
         self.train_y = np.moveaxis(self.train_y, -1, 1).astype(np.float32)
         self.test_x = np.moveaxis(self.test_x, -1, 1).astype(np.float32)
         self.test_y = np.moveaxis(self.test_y, -1, 1).astype(np.float32)
+
+    def release_memory(self):
+        del self.train_x
+        del self.train_y
+        del self.test_x
+        del self.test_y
+        del self.val_x
+        del self.val_y
