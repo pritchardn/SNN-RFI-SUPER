@@ -13,6 +13,7 @@ def prepare_singlerun(model, encoding, dataset, size):
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:8
 #SBATCH --time=24:00:00
+#SBATCH --exclusive
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
 #SBATCH --array=0-9
@@ -45,6 +46,7 @@ def prepare_optuna(model, encoding, dataset, size, limit):
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:8
 #SBATCH --time=24:00:00
+#SBATCH --exclusive
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
 #SBATCH --array=0-100%4
