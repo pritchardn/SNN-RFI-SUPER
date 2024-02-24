@@ -1,9 +1,7 @@
 import numpy as np
 import snntorch as snn
 import snntorch.functional as SF
-import torch
 import torch.nn as nn
-from sklearn.metrics import balanced_accuracy_score
 
 from interfaces.models.model import LitModel
 from plotting import plot_example_inference, plot_example_mask

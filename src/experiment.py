@@ -2,7 +2,7 @@ import glob
 import json
 import os
 
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 import torch
 
 from data.data_loaders import HeraDataLoader, LofarDataLoader, TabascalDataLoader
@@ -46,7 +46,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()

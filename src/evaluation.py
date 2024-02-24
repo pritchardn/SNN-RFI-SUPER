@@ -2,7 +2,7 @@ import json
 import os
 
 import numpy as np
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 import torch
 from sklearn.metrics import (
     roc_curve,

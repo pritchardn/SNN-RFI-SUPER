@@ -1,6 +1,4 @@
-from abc import abstractmethod
-
-import pytorch_lightning as pl
+import lightning.pytorch as pl
 import torch
 from sklearn.metrics import balanced_accuracy_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
