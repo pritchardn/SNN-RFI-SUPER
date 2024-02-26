@@ -15,6 +15,7 @@ export LIMIT="1.0"
 export MODEL_TYPE="FC_DELTA"
 export ENCODER_METHOD="DELTA"
 export NUM_HIDDEN="128"
+export FORWARD_EXPOSURE="None"
 
 module load python/3.10.10
 
@@ -22,7 +23,7 @@ cd /software/projects/pawsey0411/npritchard/setonix/2023.08/python/SNN-SUPER/src
 source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/bin/activate
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/FC/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}"
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}"
 export MPICH_GPU_SUPPORT_ENABLED=1
    
 srun -N 1 -n 1 -c 64 --gres=gpu:8 --gpus-per-task=8 python3 main.py
