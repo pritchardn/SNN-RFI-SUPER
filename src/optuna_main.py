@@ -19,15 +19,14 @@ def objective(trial):
     config["data_source"]["stride"] = int(os.getenv("STRIDE", 32))
 
     config["dataset"]["batch_size"] = trial.suggest_int("batch_size", 16, 128)
-    config["model"]["num_inputs"] = int(os.getenv("STRIDE", 32))
     config["model"]["num_hidden"] = int(os.getenv("NUM_HIDDEN", 128))
-    config["model"]["num_outputs"] = int(os.getenv("STRIDE", 32))
     config["model"]["beta"] = trial.suggest_float("beta", 0.5, 0.99)
 
     config["trainer"]["epochs"] = trial.suggest_int("epochs", 5, 100)
 
     config["encoder"]["method"] = os.getenv("ENCODER_METHOD", "LATENCY")
     config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 64)
+    config["encoder"]["exposure_mode"] = os.getenv("FORWARD_EXPOSURE", "latency")
 
     print(json.dumps(config, indent=4))
     root_dir = os.getenv("OUTPUT_DIR", "./")
