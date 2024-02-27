@@ -9,7 +9,7 @@ forwardstep_exposures = ["direct", "first", "latency"]
 
 
 def prepare_singlerun(model, encoding, dataset, size, forward_step_exposure="None"):
-    forward_step_directory = f'''/${{FORWARD_EXPOSURE}}"''' if forward_step_exposure != "None" else '"'
+    forward_step_directory = '''/${{FORWARD_EXPOSURE}}"''' if forward_step_exposure != "None" else '"'
     runfiletext = f'''#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}-{size}
 #SBATCH --nodes=1
@@ -44,8 +44,8 @@ srun -N 1 -n 1 -c 64 --gres=gpu:8 --gpus-per-task=8 python3 main.py
 
 
 def prepare_optuna(model, encoding, dataset, size, limit, forward_step_exposure="None"):
-    forward_step_directory = f'''/${{FORWARD_EXPOSURE}}"''' if forward_step_exposure != "None" else '"'
-    study_name = f'''export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-{limit}-${{NUM_HIDDEN}}''' + (f'''-${{FORWARD_EXPOSURE}}"''' if forward_step_exposure != "None" else '''"''')
+    forward_step_directory = '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
+    study_name = f'''export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-{limit}-${{NUM_HIDDEN}}''' + ('''-${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '''"''')
     runfiletext = f'''#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}-{size}
 #SBATCH --nodes=1
@@ -73,7 +73,7 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${{OPTUNA_URL}} # Need to change on super-computer before submitting\n''' + study_name + '''
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{NUM_HIDDEN}}/${{LIMIT}}''' + forward_step_directory + '''
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}''' + forward_step_directory + '''
 export MPICH_GPU_SUPPORT_ENABLED=1
 
 srun -N 1 -n 1 -c 64 --gres=gpu:8 --gpus-per-task=8 python3 optuna_main.py
