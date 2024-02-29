@@ -21,7 +21,7 @@ DEFAULT_HERA_LATENCY = {
     },
     "trainer": {
         "epochs": 44,
-        "num_nodes": os.getenv("NNODES", 1),
+        "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
         "method": "LATENCY",
@@ -60,7 +60,7 @@ DEFAULT_HERA_RATE = {
     },
     "trainer": {
         "epochs": 34,
-        "num_nodes": os.getenv("NNODES", 1),
+        "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
         "method": "RATE",
@@ -96,7 +96,7 @@ DEFAULT_HERA_DELTA = {
     },
     "trainer": {
         "epochs": 50,
-        "num_nodes": os.getenv("NNODES", 1),
+        "num_nodes": int(os.getenv("NNODES", 1)),
         "patience": 100,
     },
     "encoder": {"method": "DELTA", "threshold": 0.1, "off_spikes": True},
@@ -128,7 +128,7 @@ DEFAULT_HERA_DELTA_ON = {
     },
     "trainer": {
         "epochs": 50,
-        "num_nodes": os.getenv("NNODES", 1),
+        "num_nodes": int(os.getenv("NNODES", 1)),
         "patience": 100,
     },
     "encoder": {"method": "DELTA", "threshold": 0.1, "off_spikes": False},
@@ -159,7 +159,7 @@ DEFAULT_HERA_FORWARD = {
     },
     "trainer": {
         "epochs": 100,
-        "num_nodes": os.getenv("NNODES", 1),
+        "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
         "method": "FORWARDSTEP",
