@@ -46,7 +46,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -118,6 +118,7 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
             callbacks=[early_stopping_callback],
             default_root_dir=root_dir,
             num_nodes=config.get("num_nodes"),
+            accelerator="cpu",
         )
     return trainer
 
