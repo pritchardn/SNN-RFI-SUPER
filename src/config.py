@@ -148,22 +148,22 @@ DEFAULT_HERA_FORWARD = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 36,
+        "batch_size": 79,
     },
     "model": {
         "type": "FC_FORWARD_STEP",
         "num_inputs": 64,
         "num_hidden": 128,
         "num_outputs": 32,
-        "beta": 0.7270826938643781,
+        "beta": 0.9488404532529182,
     },
     "trainer": {
-        "epochs": 20,
+        "epochs": 100,
         "num_nodes": os.getenv("NNODES", 1),
     },
     "encoder": {
         "method": "FORWARDSTEP",
-        "exposure": 4,
+        "exposure": 41,
         "tau": 1.0,
         "threshold": 0.1,
         "normalize": True,
