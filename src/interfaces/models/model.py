@@ -72,9 +72,9 @@ class LitModel(pl.LightningModule):
         x, y = batch
         spike_hat, mem_hat = self(x)
         # Convert output to true output
-        output_pred = self.converter.decode_inference(spike_hat)
+        output_pred = self.converter.decode_inference(spike_hat.detach().cpu().numpy())
         accuracy, mse, auroc, auprc, f1 = calculate_metrics(
-            y.detach().cpu().numpy(), output_pred.detach().cpu().numpy()
+            y.detach().cpu().numpy(), output_pred
         )
         self.log("test_accuracy", accuracy, sync_dist=True)
         self.log("test_mse", mse, sync_dist=True)
