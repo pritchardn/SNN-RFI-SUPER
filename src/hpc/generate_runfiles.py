@@ -1,26 +1,36 @@
 import os
 
-models = {"FC": [
-    ("FC_LATENCY", "LATENCY"), ("FC_RATE", "RATE"), ("FC_DELTA", "DELTA"),
-    ("FC_FORWARD_STEP", "FORWARDSTEP")
-]}
+models = {
+    "FC": [
+        ("FC_LATENCY", "LATENCY"),
+        ("FC_RATE", "RATE"),
+        ("FC_DELTA", "DELTA"),
+        ("FC_FORWARD_STEP", "FORWARDSTEP"),
+    ]
+}
 datasets = ["HERA", "LOFAR", "TABASCAL"]
 forwardstep_exposures = ["direct", "first", "latency"]
 
 
-def prepare_singlerun(model, encoding, dataset, size, forward_step_exposure="None"):
-    forward_step_directory = '''/${{FORWARD_EXPOSURE}}"''' if forward_step_exposure != "None" else '"'
-    runfiletext = f'''#!/bin/bash
+def prepare_singlerun(
+    model, encoding, dataset, size, forward_step_exposure="None", num_nodes=1
+):
+    forward_step_directory = (
+        '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
+    )
+    runfiletext = (
+        f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}-{size}
-#SBATCH --nodes=1
-#SBATCH --gres=gpu:8
+#SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
-#SBATCH --exclusive
+#SBATCH --mem=115G
+#SBATCH --cpus-per-task=32
+#SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
 #SBATCH --array=0-9
-#SBATCH --partition=gpu
-#SBATCH --account=pawsey0411-gpu
+#SBATCH --partition=work
+#SBATCH --account=pawsey0411
 
 export DATASET="{dataset}"
 export LIMIT="1.0"
@@ -28,6 +38,7 @@ export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export NUM_HIDDEN="{size}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
+export NNODES="{num_nodes}"
 
 module load python/3.10.10
 
@@ -35,28 +46,45 @@ cd /software/projects/pawsey0411/npritchard/setonix/2023.08/python/SNN-SUPER/src
 source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/bin/activate
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{NUM_HIDDEN}}/${{LIMIT}}''' + forward_step_directory + '''
-export MPICH_GPU_SUPPORT_ENABLED=1
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{NUM_HIDDEN}}/${{LIMIT}}"""
+        + forward_step_directory
+        + """
+export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
+export MPICH_OFI_STARTUP_CONNECT=1
+export MPICH_OFI_VERBOSE=1
+export OMP_PLACES=cores     
+export OMP_PROC_BIND=close  
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
    
-srun -N 1 -n 1 -c 64 --gres=gpu:8 --gpus-per-task=8 python3 main.py
-    '''
+srun -N $SLURM_JOB_NUM_NODES -n $SLURM_NTASKS -c $OMP_NUM_THREADS -m block:block:block python3 main.py
+    """
+    )
     return runfiletext
 
 
-def prepare_optuna(model, encoding, dataset, size, limit, forward_step_exposure="None"):
-    forward_step_directory = '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
-    study_name = f'''export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-{limit}-${{NUM_HIDDEN}}''' + ('''-${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '''"''')
-    runfiletext = f'''#!/bin/bash
+def prepare_optuna(
+    model, encoding, dataset, size, limit, forward_step_exposure="None", num_nodes=1
+):
+    forward_step_directory = (
+        '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
+    )
+    study_name = (
+        f"""export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-{limit}-${{NUM_HIDDEN}}"""
+        + ('''-${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '''"''')
+    )
+    runfiletext = (
+        f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}-{size}
-#SBATCH --nodes=1
-#SBATCH --gres=gpu:8
+#SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
-#SBATCH --exclusive
+#SBATCH --mem=115G
+#SBATCH --cpus-per-task=32
+#SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
 #SBATCH --array=0-100%4
-#SBATCH --partition=gpu
-#SBATCH --account=pawsey0411-gpu
+#SBATCH --partition=work
+#SBATCH --account=pawsey0411
 
 export DATASET="{dataset}"
 export LIMIT="{limit / 100.0}"
@@ -64,6 +92,7 @@ export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export NUM_HIDDEN="{size}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
+export NNODES="{num_nodes}"
 
 
 module load python/3.10.10
@@ -72,12 +101,22 @@ cd /software/projects/pawsey0411/npritchard/setonix/2023.08/python/SNN-SUPER/src
 source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/bin/activate
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
-export OPTUNA_DB=${{OPTUNA_URL}} # Need to change on super-computer before submitting\n''' + study_name + '''
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}''' + forward_step_directory + '''
-export MPICH_GPU_SUPPORT_ENABLED=1
+export OPTUNA_DB=${{OPTUNA_URL}} # Need to change on super-computer before submitting\n"""
+        + study_name
+        + """
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}"""
+        + forward_step_directory
+        + """
+export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
+export MPICH_OFI_STARTUP_CONNECT=1
+export MPICH_OFI_VERBOSE=1
+export OMP_PLACES=cores     
+export OMP_PROC_BIND=close  
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-srun -N 1 -n 1 -c 64 --gres=gpu:8 --gpus-per-task=8 python3 optuna_main.py
-'''
+srun -N $SLURM_JOB_NUM_NODES -n $SLURM_NTASKS -c $OMP_NUM_THREADS -m block:block:block python3 optuna_main_mpi.py
+"""
+    )
     return runfiletext
 
 
@@ -86,42 +125,86 @@ def write_bashfile(out_dir, name, runfiletext):
         f.write(runfiletext)
 
 
-def write_runfiles(out_dir, model, encoding, dataset, size):
+def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
-            write_bashfile(out_dir, f"{dataset}-{encoding}-{size}-{forward_step_exposure}",
-                           prepare_singlerun(model, encoding, dataset, size, forward_step_exposure))
+            write_bashfile(
+                out_dir,
+                f"{dataset}-{encoding}-{size}-{forward_step_exposure}",
+                prepare_singlerun(
+                    model,
+                    encoding,
+                    dataset,
+                    size,
+                    forward_step_exposure,
+                    num_nodes=num_nodes,
+                ),
+            )
     else:
-        write_bashfile(out_dir, f"{dataset}-{encoding}-{size}",
-                       prepare_singlerun(model, encoding, dataset, size))
+        write_bashfile(
+            out_dir,
+            f"{dataset}-{encoding}-{size}",
+            prepare_singlerun(model, encoding, dataset, size, num_nodes=num_nodes),
+        )
     limit = 10
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
-            write_bashfile(out_dir, f"optuna-{dataset}-{encoding}-{size}-{limit}-{forward_step_exposure}",
-                           prepare_optuna(model, encoding, dataset, size, limit, forward_step_exposure))
+            write_bashfile(
+                out_dir,
+                f"optuna-{dataset}-{encoding}-{size}-{limit}-{forward_step_exposure}",
+                prepare_optuna(
+                    model,
+                    encoding,
+                    dataset,
+                    size,
+                    limit,
+                    forward_step_exposure,
+                    num_nodes=num_nodes,
+                ),
+            )
     else:
-        write_bashfile(out_dir, f"optuna-{dataset}-{encoding}-{size}-{limit}",
-                       prepare_optuna(model, encoding, dataset, size, limit))
+        write_bashfile(
+            out_dir,
+            f"optuna-{dataset}-{encoding}-{size}-{limit}",
+            prepare_optuna(model, encoding, dataset, size, limit, num_nodes=num_nodes),
+        )
     limit = 100
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
-            write_bashfile(out_dir, f"optuna-{dataset}-{encoding}-{size}-{limit}-{forward_step_exposure}",
-                           prepare_optuna(model, encoding, dataset, size, limit, forward_step_exposure))
+            write_bashfile(
+                out_dir,
+                f"optuna-{dataset}-{encoding}-{size}-{limit}-{forward_step_exposure}",
+                prepare_optuna(
+                    model,
+                    encoding,
+                    dataset,
+                    size,
+                    limit,
+                    forward_step_exposure,
+                    num_nodes=num_nodes,
+                ),
+            )
     else:
-        write_bashfile(out_dir, f"optuna-{dataset}-{encoding}-{size}-{limit}",
-                       prepare_optuna(model, encoding, dataset, size, limit))
+        write_bashfile(
+            out_dir,
+            f"optuna-{dataset}-{encoding}-{size}-{limit}",
+            prepare_optuna(model, encoding, dataset, size, limit, num_nodes=num_nodes),
+        )
 
 
-def main(out_dir):
+def main(out_dir, num_nodes):
     for major_model, minor_models in models.items():
         for model, encoding in minor_models:
             for dataset in datasets:
                 for size in [128, 256, 512]:
-                    out_dir_temp = os.path.join(out_dir, major_model, encoding, dataset,
-                                                str(size))
+                    out_dir_temp = os.path.join(
+                        out_dir, major_model, encoding, dataset, str(size)
+                    )
                     os.makedirs(out_dir_temp, exist_ok=True)
-                    write_runfiles(out_dir_temp, model, encoding, dataset, size)
+                    write_runfiles(
+                        out_dir_temp, model, encoding, dataset, size, num_nodes
+                    )
 
 
 if __name__ == "__main__":
-    main(f".{os.sep}src{os.sep}hpc{os.sep}pawsey")
+    main(f".{os.sep}src{os.sep}hpc{os.sep}pawsey", 8)
