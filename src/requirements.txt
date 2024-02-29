@@ -6,3 +6,4 @@ scikit_learn==1.4.0
 snntorch==0.7.0
 torch==2.1.2+cu118
 tqdm==4.66.1
+mpi4py
