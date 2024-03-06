@@ -12,23 +12,6 @@ from plotting import plot_example_inference
 
 class LitModel(pl.LightningModule):
 
-    def _init_ann_layers(self):
-        layers = nn.ModuleList()
-        for i in range(self.num_layers):
-            if i == 0:
-                layers.append(nn.Linear(self.num_inputs, self.num_hidden))
-            elif i == self.num_layers - 1:
-                layers.append(nn.Linear(self.num_hidden, self.num_outputs))
-            else:
-                layers.append(nn.Linear(self.num_hidden, self.num_hidden))
-        return layers
-
-    def _init_snn_layers(self):
-        layers = nn.ModuleList()
-        for i in range(self.num_layers):
-            layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
-        return layers
-
     def __init__(
         self,
         num_inputs: int,
@@ -47,6 +30,23 @@ class LitModel(pl.LightningModule):
 
         self.ann_layers = self._init_ann_layers()
         self.snn_layers = self._init_snn_layers()
+
+    def _init_ann_layers(self):
+        layers = nn.ModuleList()
+        for i in range(self.num_layers):
+            if i == 0:
+                layers.append(nn.Linear(self.num_inputs, self.num_hidden))
+            elif i == self.num_layers - 1:
+                layers.append(nn.Linear(self.num_hidden, self.num_outputs))
+            else:
+                layers.append(nn.Linear(self.num_hidden, self.num_hidden))
+        return layers
+
+    def _init_snn_layers(self):
+        layers = nn.ModuleList()
+        for i in range(self.num_layers):
+            layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
+        return layers
 
     def set_converter(self, converter: SpikeConverter):
         self.converter = converter
