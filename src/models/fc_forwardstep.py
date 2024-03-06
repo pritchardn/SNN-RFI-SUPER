@@ -4,8 +4,15 @@ from interfaces.models.model import LitModel
 
 
 class LitFcForwardStep(LitModel):
-    def __init__(self, num_inputs: int, num_hidden: int, num_outputs: int, beta: float):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, 2)
+    def __init__(
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+    ):
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
         self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()
         self.save_hyperparameters()

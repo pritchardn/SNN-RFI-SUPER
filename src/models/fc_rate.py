@@ -5,8 +5,15 @@ from loss_functions.mse_count_balanced_loss import mse_count_loss_balanced
 
 
 class LitFcRate(LitModel):
-    def __init__(self, num_inputs: int, num_hidden: int, num_outputs: int, beta: float):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, 2)
+    def __init__(
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+    ):
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
         self.loss = mse_count_loss_balanced(correct_rate=0.8, incorrect_rate=0.2)
         self.float()
         self.save_hyperparameters()

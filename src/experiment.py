@@ -59,37 +59,26 @@ def dataset_from_config(
 def model_from_config(config: dict) -> pl.LightningModule:
     model_type = config.get("type")
     beta = config.get("beta")
+    num_inputs = config.get("num_inputs")
+    num_hidden = config.get("num_hidden")
+    num_outputs = config.get("num_outputs")
+    num_layers = config.get("num_layers", 2)
     if model_type == "FC_LATENCY":
-        num_inputs = config.get("num_inputs")
-        num_hidden = config.get("num_hidden")
-        num_outputs = config.get("num_outputs")
-        model = LitFcLatency(num_inputs, num_hidden, num_outputs, beta)
+        model = LitFcLatency(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FC_RATE":
-        num_inputs = config.get("num_inputs")
-        num_hidden = config.get("num_hidden")
-        num_outputs = config.get("num_outputs")
-        model = LitFcRate(num_inputs, num_hidden, num_outputs, beta)
+        model = LitFcRate(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FC_DELTA":
-        num_inputs = config.get("num_inputs")
-        num_hidden = config.get("num_hidden")
-        num_outputs = config.get("num_outputs")
         reconstruct_loss = config.get("reconstruct_loss")
         model = LitFcDelta(
-            num_inputs, num_hidden, num_outputs, beta, reconstruct_loss, True
+            num_inputs, num_hidden, num_outputs, beta, reconstruct_loss, True, num_layers
         )
     elif model_type == "FC_DELTA_ON":
-        num_inputs = config.get("num_inputs")
-        num_hidden = config.get("num_hidden")
-        num_outputs = config.get("num_outputs")
         reconstruct_loss = config.get("reconstruct_loss")
         model = LitFcDelta(
-            num_inputs, num_hidden, num_outputs, beta, reconstruct_loss, False
+            num_inputs, num_hidden, num_outputs, beta, reconstruct_loss, False, num_layers
         )
     elif model_type == "FC_FORWARD_STEP":
-        num_inputs = config.get("num_inputs")
-        num_hidden = config.get("num_hidden")
-        num_outputs = config.get("num_outputs")
-        model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta)
+        model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model

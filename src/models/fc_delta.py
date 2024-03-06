@@ -14,8 +14,9 @@ class LitFcDelta(LitModel):
         beta: float,
         reconstruct_loss: bool,
         off_spikes: bool,
+        num_layers: int,
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, 2)
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
         if off_spikes:
             if num_outputs != num_inputs * 2:
                 raise ValueError("num_outputs must be 2 * num_inputs for delta-coding")

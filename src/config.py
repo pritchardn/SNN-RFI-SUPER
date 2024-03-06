@@ -17,6 +17,7 @@ DEFAULT_HERA_LATENCY = {
         "num_inputs": 32,
         "num_hidden": 128,
         "num_outputs": 32,
+        "num_layers": 2,
         "beta": 0.7270826938643781,
     },
     "trainer": {
@@ -56,6 +57,7 @@ DEFAULT_HERA_RATE = {
         "num_inputs": 32,
         "num_hidden": 128,
         "num_outputs": 32,
+        "num_layers": 2,
         "beta": 0.8417118385641611,
     },
     "trainer": {
@@ -91,6 +93,7 @@ DEFAULT_HERA_DELTA = {
         "num_inputs": 32,
         "num_hidden": 128,
         "num_outputs": 64,
+        "num_layers": 2,
         "beta": 0.7270826938643781,
         "reconstruct_loss": False,
     },
@@ -123,6 +126,7 @@ DEFAULT_HERA_DELTA_ON = {
         "num_inputs": 64,
         "num_hidden": 128,
         "num_outputs": 64,
+        "num_layers": 2,
         "beta": 0.7270826938643781,
         "reconstruct_loss": False,
     },
@@ -155,6 +159,7 @@ DEFAULT_HERA_FORWARD = {
         "num_inputs": 64,
         "num_hidden": 128,
         "num_outputs": 32,
+        "num_layers": 2,
         "beta": 0.9488404532529182,
     },
     "trainer": {
