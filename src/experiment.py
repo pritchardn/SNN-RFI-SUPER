@@ -70,12 +70,24 @@ def model_from_config(config: dict) -> pl.LightningModule:
     elif model_type == "FC_DELTA":
         reconstruct_loss = config.get("reconstruct_loss")
         model = LitFcDelta(
-            num_inputs, num_hidden, num_outputs, beta, reconstruct_loss, True, num_layers
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            reconstruct_loss,
+            True,
+            num_layers,
         )
     elif model_type == "FC_DELTA_ON":
         reconstruct_loss = config.get("reconstruct_loss")
         model = LitFcDelta(
-            num_inputs, num_hidden, num_outputs, beta, reconstruct_loss, False, num_layers
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            reconstruct_loss,
+            False,
+            num_layers,
         )
     elif model_type == "FC_FORWARD_STEP":
         model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
