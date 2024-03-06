@@ -1,4 +1,3 @@
-import snntorch as snn
 import torch
 import torch.nn as nn
 
@@ -16,17 +15,13 @@ class LitFcDelta(LitModel):
         reconstruct_loss: bool,
         off_spikes: bool,
     ):
-        super().__init__()
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, 2)
         if off_spikes:
             if num_outputs != num_inputs * 2:
                 raise ValueError("num_outputs must be 2 * num_inputs for delta-coding")
         else:
             if num_outputs != num_inputs:
                 raise ValueError("num_outputs must be num_inputs for delta-coding")
-        self.fc1 = nn.Linear(num_inputs, num_hidden)
-        self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
-        self.fc2 = nn.Linear(num_hidden, num_outputs)
-        self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
         self.loss = nn.HuberLoss()
         self.float()
         self.save_hyperparameters()

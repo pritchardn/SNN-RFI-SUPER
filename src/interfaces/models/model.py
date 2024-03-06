@@ -1,5 +1,7 @@
 import lightning.pytorch as pl
 import torch
+import torch.nn as nn
+import snntorch as snn
 from sklearn.metrics import balanced_accuracy_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -9,9 +11,42 @@ from plotting import plot_example_inference
 
 
 class LitModel(pl.LightningModule):
-    def __init__(self):
+
+    def _init_ann_layers(self):
+        layers = nn.ModuleList()
+        for i in range(self.num_layers):
+            if i == 0:
+                layers.append(nn.Linear(self.num_inputs, self.num_hidden))
+            elif i == self.num_layers - 1:
+                layers.append(nn.Linear(self.num_hidden, self.num_outputs))
+            else:
+                layers.append(nn.Linear(self.num_hidden, self.num_hidden))
+        return layers
+
+    def _init_snn_layers(self):
+        layers = nn.ModuleList()
+        for i in range(self.num_layers):
+            layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
+        return layers
+
+    def __init__(
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+    ):
         super().__init__()
         self.converter = None
+        self.num_inputs = num_inputs
+        self.num_hidden = num_hidden
+        self.num_outputs = num_outputs
+        self.beta = beta
+        self.num_layers = num_layers
+
+        self.ann_layers = self._init_ann_layers()
+        self.snn_layers = self._init_snn_layers()
 
     def set_converter(self, converter: SpikeConverter):
         self.converter = converter
@@ -20,23 +55,31 @@ class LitModel(pl.LightningModule):
         score = balanced_accuracy_score(y_hat.flatten(), y.flatten())
         self.log("accuracy", score)
 
+    def _init_membranes(self):
+        return [lif.init_leaky() for lif in self.snn_layers]
+
+    def _infer_slice(self, x, membranes):
+        spike = None
+        mem = None
+        for n in range(self.num_layers):
+            curr = self.ann_layers[n](x)
+            spike, mem = self.snn_layers[n](curr, membranes[n])
+            x = spike
+        return spike, mem
+
     def forward(self, x):
         full_spike = []
         full_mem = []
         # x -> [N x exp x C x freq x time]
-        mem1 = self.lif1.init_leaky()
-        mem2 = self.lif2.init_leaky()
+        membranes = self._init_membranes()
         for t in range(x.shape[-1]):
             spike_out = []
             mem_out = []
             for step in range(x.shape[1]):  # [N x C x freq]
                 data = x[:, step, 0, :, t]
-                cur1 = self.fc1(data)
-                spike1, mem1 = self.lif1(cur1, mem1)
-                cur2 = self.fc2(spike1)
-                spike2, mem2 = self.lif2(cur2, mem2)
-                spike_out.append(spike2)
-                mem_out.append(mem2)
+                spike, mem = self._infer_slice(data, membranes)
+                spike_out.append(spike)
+                mem_out.append(mem)
             full_spike.append(torch.stack(spike_out, dim=1))
             full_mem.append(torch.stack(mem_out, dim=1))
         full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]

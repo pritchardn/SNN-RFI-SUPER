@@ -1,6 +1,4 @@
-import snntorch as snn
 import torch
-import torch.nn as nn
 
 from interfaces.models.model import LitModel
 from loss_functions.mse_count_balanced_loss import mse_count_loss_balanced
@@ -8,11 +6,7 @@ from loss_functions.mse_count_balanced_loss import mse_count_loss_balanced
 
 class LitFcRate(LitModel):
     def __init__(self, num_inputs: int, num_hidden: int, num_outputs: int, beta: float):
-        super().__init__()
-        self.fc1 = nn.Linear(num_inputs, num_hidden)
-        self.lif1 = snn.Leaky(beta=beta, learn_threshold=True)
-        self.fc2 = nn.Linear(num_hidden, num_outputs)
-        self.lif2 = snn.Leaky(beta=beta, learn_threshold=True)
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, 2)
         self.loss = mse_count_loss_balanced(correct_rate=0.8, incorrect_rate=0.2)
         self.float()
         self.save_hyperparameters()
