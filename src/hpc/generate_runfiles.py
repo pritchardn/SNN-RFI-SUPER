@@ -13,7 +13,13 @@ forwardstep_exposures = ["direct", "first", "latency"]
 
 
 def prepare_singlerun(
-    model, encoding, dataset, size, forward_step_exposure="None", num_nodes=1
+    model,
+    encoding,
+    dataset,
+    size,
+    forward_step_exposure="None",
+    num_nodes=1,
+    num_layers=2,
 ):
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
@@ -37,6 +43,7 @@ export LIMIT="1.0"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export NUM_HIDDEN="{size}"
+export NUM_LAYERS="{num_layers}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
 export NNODES="{num_nodes}"
 
@@ -46,7 +53,7 @@ cd /software/projects/pawsey0411/npritchard/setonix/2023.08/python/SNN-SUPER/src
 source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/bin/activate
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{NUM_HIDDEN}}/${{LIMIT}}"""
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{NUM_LAYERS}}/${{NUM_HIDDEN}}/${{LIMIT}}"""
         + forward_step_directory
         + """
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
@@ -63,7 +70,14 @@ srun -N $SLURM_JOB_NUM_NODES -n $SLURM_NTASKS -c $OMP_NUM_THREADS -m block:block
 
 
 def prepare_optuna(
-    model, encoding, dataset, size, limit, forward_step_exposure="None", num_nodes=1
+    model,
+    encoding,
+    dataset,
+    size,
+    limit,
+    forward_step_exposure="None",
+    num_nodes=1,
+    num_layers=2,
 ):
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
@@ -91,6 +105,7 @@ export LIMIT="{limit / 100.0}"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export NUM_HIDDEN="{size}"
+export NUM_LAYERS="{num_layers}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
 export NNODES="{num_nodes}"
 
@@ -104,7 +119,7 @@ export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${{OPTUNA_URL}} # Need to change on super-computer before submitting\n"""
         + study_name
         + """
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}"""
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_LAYERS}/${NUM_HIDDEN}/${LIMIT}"""
         + forward_step_directory
         + """
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
@@ -125,7 +140,7 @@ def write_bashfile(out_dir, name, runfiletext):
         f.write(runfiletext)
 
 
-def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
+def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes, num_layers):
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
@@ -138,13 +153,21 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                     size,
                     forward_step_exposure,
                     num_nodes=num_nodes,
+                    num_layers=num_layers,
                 ),
             )
     else:
         write_bashfile(
             out_dir,
             f"{dataset}-{encoding}-{size}",
-            prepare_singlerun(model, encoding, dataset, size, num_nodes=num_nodes),
+            prepare_singlerun(
+                model,
+                encoding,
+                dataset,
+                size,
+                num_nodes=num_nodes,
+                num_layers=num_layers,
+            ),
         )
     limit = 10
     if encoding == "FORWARDSTEP":
@@ -160,13 +183,22 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                     limit,
                     forward_step_exposure,
                     num_nodes=num_nodes,
+                    num_layers=num_layers,
                 ),
             )
     else:
         write_bashfile(
             out_dir,
             f"optuna-{dataset}-{encoding}-{size}-{limit}",
-            prepare_optuna(model, encoding, dataset, size, limit, num_nodes=num_nodes),
+            prepare_optuna(
+                model,
+                encoding,
+                dataset,
+                size,
+                limit,
+                num_nodes=num_nodes,
+                num_layers=num_layers,
+            ),
         )
     limit = 100
     if encoding == "FORWARDSTEP":
@@ -182,13 +214,22 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                     limit,
                     forward_step_exposure,
                     num_nodes=num_nodes,
+                    num_layers=num_layers,
                 ),
             )
     else:
         write_bashfile(
             out_dir,
             f"optuna-{dataset}-{encoding}-{size}-{limit}",
-            prepare_optuna(model, encoding, dataset, size, limit, num_nodes=num_nodes),
+            prepare_optuna(
+                model,
+                encoding,
+                dataset,
+                size,
+                limit,
+                num_nodes=num_nodes,
+                num_layers=num_layers,
+            ),
         )
 
 
@@ -197,13 +238,25 @@ def main(out_dir, num_nodes):
         for model, encoding in minor_models:
             for dataset in datasets:
                 for size in [128, 256, 512]:
-                    out_dir_temp = os.path.join(
-                        out_dir, major_model, encoding, dataset, str(size)
-                    )
-                    os.makedirs(out_dir_temp, exist_ok=True)
-                    write_runfiles(
-                        out_dir_temp, model, encoding, dataset, size, num_nodes
-                    )
+                    for layers in [2, 6]:
+                        out_dir_temp = os.path.join(
+                            out_dir,
+                            major_model,
+                            encoding,
+                            dataset,
+                            str(layers),
+                            str(size),
+                        )
+                        os.makedirs(out_dir_temp, exist_ok=True)
+                        write_runfiles(
+                            out_dir_temp,
+                            model,
+                            encoding,
+                            dataset,
+                            size,
+                            num_nodes,
+                            layers,
+                        )
 
 
 if __name__ == "__main__":
