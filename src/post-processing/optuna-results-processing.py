@@ -18,7 +18,7 @@ def main(filename: str):
     collapsed_trials = []
     for trial in data:
         collapsed_trials.append(_collapse_params_values(trial))
-    with open(f"{filename[:-5]}.csv", "w") as ofile:
+    with open(f"{filename[:-5]}.csv", "w", newline="") as ofile:
         fieldnames = collapsed_trials[0].keys()
         writer = csv.DictWriter(ofile, fieldnames=fieldnames)
         writer.writeheader()
@@ -27,4 +27,7 @@ def main(filename: str):
 
 
 if __name__ == "__main__":
-    main("SNN-SUPER-HERA-LATENCY-100_best_trial.json")
+    experiment_list = ["SNN-SUPER-HERA-DELTA-100-128", "SNN-SUPER-HERA-LATENCY-100", "SNN-SUPER-HERA-RATE-100-128", "SNN-SUPER-HERA-FORWARDSTEP-100-128-direct", "SNN-SUPER-HERA-FORWARDSTEP-100-128-first", "SNN-SUPER-HERA-FORWARDSTEP-100-128-latency"]
+    for experiment_name in experiment_list:
+        main(experiment_name + "_best_trial.json")
+        break
