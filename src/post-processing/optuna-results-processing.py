@@ -28,6 +28,7 @@ def main(filename: str):
 
 if __name__ == "__main__":
     experiment_list = [
+        "SNN-SUPER-HERA-ANN-100-128",
         "SNN-SUPER-HERA-DELTA-100-128",
         "SNN-SUPER-HERA-LATENCY-100",
         "SNN-SUPER-HERA-RATE-100-128",
