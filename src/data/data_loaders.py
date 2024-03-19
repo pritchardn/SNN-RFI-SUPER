@@ -57,10 +57,10 @@ class HeraDataLoader(RawDataLoader):
                 self.data_dir, f'HERA_04-03-2022_{"-".join(rfi_models)}.pkl'
             )
             train_x, train_y, _, _ = np.load(train_file_path, allow_pickle=True)
-        self.train_x = train_x
-        self.train_y = train_y
-        self.test_x = test_x
-        self.test_y = test_y
+        self.train_x = np.moveaxis(train_x, 1, 2)
+        self.train_y = np.moveaxis(train_y, 1, 2)
+        self.test_x = np.moveaxis(test_x, 1, 2)
+        self.test_y = np.moveaxis(test_y, 1, 2)
         self.rfi_models = rfi_models
         self.original_size = self.train_x.shape[1]
         self._prepare_data()
@@ -88,10 +88,10 @@ class LofarDataLoader(RawDataLoader):
         print(f"Loading LOFAR data from {filepath}")
         with open(filepath, "rb") as ifile:
             train_x, train_y, test_x, test_y = pickle.load(ifile)
-            self.train_x = train_x
-            self.train_y = train_y
-            self.test_x = test_x
-            self.test_y = test_y
+            self.train_x = np.moveaxis(train_x, 1, 2)
+            self.train_y = np.moveaxis(train_y, 1, 2)
+            self.test_x = np.moveaxis(test_x, 1, 2)
+            self.test_y = np.moveaxis(test_y, 1, 2)
         self.original_size = self.train_x.shape[1]
         self._prepare_data()
         if self.patch_size:
@@ -130,10 +130,10 @@ class TabascalDataLoader(RawDataLoader):
             image_data, masks, test_size=0.2
         )
         h5file.close()
-        self.train_x = train_x
-        self.train_y = train_y
-        self.test_x = test_x
-        self.test_y = test_y
+        self.train_x = np.moveaxisd(train_x, 1, 2)
+        self.train_y = np.moveaxis(train_y, 1, 2)
+        self.test_x = np.moveaxis(test_x, 1, 2)
+        self.test_y = np.moveaxis(test_y, 1, 2)
         self.original_size = self.train_x.shape[1]
         self._prepare_data()
         if self.patch_size:
