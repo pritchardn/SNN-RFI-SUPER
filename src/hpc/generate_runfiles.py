@@ -83,7 +83,7 @@ def prepare_optuna(
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
     study_name = (
-        f"""export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-{limit}-${{NUM_HIDDEN}}"""
+        f"""export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-{num_layers}-{limit}-${{NUM_HIDDEN}}"""
         + ('''-${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '''"''')
     )
     runfiletext = (
