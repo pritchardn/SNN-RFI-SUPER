@@ -60,12 +60,11 @@ class LitModel(pl.LightningModule):
 
     def _infer_slice(self, x, membranes):
         spike = None
-        mem = None
         for n in range(self.num_layers):
             curr = self.ann_layers[n](x)
-            spike, mem = self.snn_layers[n](curr, membranes[n])
+            spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
             x = spike
-        return spike, mem
+        return spike, membranes[-1]
 
     def forward(self, x):
         full_spike = []
