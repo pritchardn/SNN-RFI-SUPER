@@ -14,8 +14,10 @@ from data.spike_converters import (
     DeltaSpikeConverter,
 )
 from data.spike_converters.ForwardStepConverter import ForwardStepConverter
+from data.spike_converters.NonConverter import NonConverter
 from interfaces.data.raw_data_loader import RawDataLoader
 from interfaces.data.spiking_data_module import SpikeConverter
+from models.fc_ann import LitFcANN
 from models.fc_delta import LitFcDelta
 from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
@@ -91,6 +93,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
         )
     elif model_type == "FC_FORWARD_STEP":
         model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
+    elif model_type == "FC_ANN":
+        model = LitFcANN(num_inputs, num_hidden, num_outputs, num_layers)
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model
@@ -151,6 +155,8 @@ def encoder_from_config(config: dict) -> SpikeConverter:
             normalize=normalize,
             exposure_mode=exposure_mode,
         )
+    elif config.get("method") == "ANN":
+        encoder = NonConverter()
     return encoder
 
 

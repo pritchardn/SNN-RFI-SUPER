@@ -181,6 +181,33 @@ DEFAULT_LOFAR_FORWARD["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_FORWARD = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_TABASCAL_FORWARD["data_source"]["dataset"] = "TABASCAL"
 
+DEFAULT_HERA_ANN = {
+    "data_source": {
+        "data_path": "./data",
+        "limit": 1.0,
+        "patch_size": 32,
+        "stride": 32,
+        "dataset": "HERA",
+    },
+    "dataset": {
+        "batch_size": 80,
+    },
+    "model": {
+        "type": "FC_ANN",
+        "num_inputs": 32,
+        "num_hidden": 128,
+        "num_outputs": 32,
+        "num_layers": 2,
+    },
+    "trainer": {
+        "epochs": 100,
+        "num_nodes": int(os.getenv("NNODES", 1)),
+    },
+    "encoder": {
+        "method": "ANN",
+    },
+}
+
 
 def get_default_params(dataset: str, model_type: str, model_size: int = 128):
     if dataset == "HERA":
@@ -204,6 +231,8 @@ def get_default_params(dataset: str, model_type: str, model_size: int = 128):
             return DEFAULT_HERA_DELTA_ON
         elif model_type == "FC_FORWARD_STEP":
             return DEFAULT_HERA_FORWARD
+        elif model_type == "FC_ANN":
+            return DEFAULT_HERA_ANN
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
@@ -217,6 +246,8 @@ def get_default_params(dataset: str, model_type: str, model_size: int = 128):
             return DEFAULT_LOFAR_DELTA_ON
         elif model_type == "FC_FORWARD_STEP":
             return DEFAULT_LOFAR_FORWARD
+        elif model_type == "FC_ANN":
+            return DEFAULT_HERA_ANN
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "TABASCAL":
@@ -230,6 +261,8 @@ def get_default_params(dataset: str, model_type: str, model_size: int = 128):
             return DEFAULT_TABASCAL_DELTA_ON
         elif model_type == "FC_FORWARD_STEP":
             return DEFAULT_TABASCAL_FORWARD
+        elif model_type == "FC_ANN":
+            return DEFAULT_HERA_ANN
         else:
             raise ValueError(f"Unknown model type {model_type}")
     else:
