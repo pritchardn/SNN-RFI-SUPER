@@ -50,7 +50,7 @@ DEFAULT_HERA_RATE = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 27,
+        "batch_size": 107,
     },
     "model": {
         "type": "FC_RATE",
@@ -58,15 +58,15 @@ DEFAULT_HERA_RATE = {
         "num_hidden": 128,
         "num_outputs": 32,
         "num_layers": 2,
-        "beta": 0.8417118385641611,
+        "beta": 0.599215428763344,
     },
     "trainer": {
-        "epochs": 34,
+        "epochs": 50,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
         "method": "RATE",
-        "exposure": 16,
+        "exposure": 4,
         "tau": 1.0,
         "normalize": True,
     },
@@ -86,7 +86,7 @@ DEFAULT_HERA_DELTA = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 36,
+        "batch_size": 48,
     },
     "model": {
         "type": "FC_DELTA",
@@ -94,11 +94,11 @@ DEFAULT_HERA_DELTA = {
         "num_hidden": 128,
         "num_outputs": 64,
         "num_layers": 2,
-        "beta": 0.7270826938643781,
+        "beta": 0.504376656494665,
         "reconstruct_loss": False,
     },
     "trainer": {
-        "epochs": 50,
+        "epochs": 80,
         "num_nodes": int(os.getenv("NNODES", 1)),
         "patience": 100,
     },
@@ -160,7 +160,7 @@ DEFAULT_HERA_FORWARD = {
         "num_hidden": 128,
         "num_outputs": 32,
         "num_layers": 2,
-        "beta": 0.9488404532529182,
+        "beta": 0.948840453252918,
     },
     "trainer": {
         "epochs": 100,
