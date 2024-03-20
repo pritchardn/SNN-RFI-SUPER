@@ -7,7 +7,6 @@ from interfaces.data.spiking_data_module import SpikeConverter
 
 
 class ForwardStepConverter(SpikeConverter):
-
     def __init__(
         self,
         threshold: float,

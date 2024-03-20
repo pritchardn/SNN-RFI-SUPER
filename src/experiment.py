@@ -50,7 +50,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -275,8 +275,11 @@ class Experiment:
                     self.data_source.stride,
                 )
                 final_evaluation(
-                    self.model, self.dataset, self.encoder,
-                    mask_orig, self.trainer.log_dir
+                    self.model,
+                    self.dataset,
+                    self.encoder,
+                    mask_orig,
+                    self.trainer.log_dir,
                 )
             except RuntimeError as e:
                 print(f"Error during evaluation: {e}")

@@ -11,7 +11,6 @@ from plotting import plot_example_inference
 
 
 class LitModel(pl.LightningModule):
-
     def __init__(
         self,
         num_inputs: int,

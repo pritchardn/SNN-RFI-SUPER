@@ -15,7 +15,7 @@ class NonConverter(SpikeConverter):
         return y_data.astype("float32")
 
     def plot_sample(
-            self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
+        self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
     ):
         pass
 

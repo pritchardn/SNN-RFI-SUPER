@@ -9,7 +9,9 @@ from interfaces.data.spiking_data_module import SpikeConverter
 
 
 class LitFcANN(pl.LightningModule):
-    def __init__(self, num_inputs: int, num_hidden: int, num_outputs: int, num_layers: int):
+    def __init__(
+        self, num_inputs: int, num_hidden: int, num_outputs: int, num_layers: int
+    ):
         super().__init__()
         self.converter = None
         self.num_inputs = num_inputs

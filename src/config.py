@@ -209,8 +209,9 @@ DEFAULT_HERA_ANN = {
 }
 
 
-def get_default_params(dataset: str, model_type: str, model_size: int = 128,
-                       exposure_mode: str = None):
+def get_default_params(
+    dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
+):
     if dataset == "HERA":
         if model_type == "FC_LATENCY":
             if model_size == 128:
