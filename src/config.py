@@ -1,5 +1,5 @@
-import os
 import copy
+import os
 
 DEFAULT_HERA_LATENCY = {
     "data_source": {
@@ -190,7 +190,7 @@ DEFAULT_HERA_ANN = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 80,
+        "batch_size": 18,
     },
     "model": {
         "type": "FC_ANN",
@@ -200,7 +200,7 @@ DEFAULT_HERA_ANN = {
         "num_layers": 2,
     },
     "trainer": {
-        "epochs": 100,
+        "epochs": 68,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
@@ -209,7 +209,8 @@ DEFAULT_HERA_ANN = {
 }
 
 
-def get_default_params(dataset: str, model_type: str, model_size: int = 128):
+def get_default_params(dataset: str, model_type: str, model_size: int = 128,
+                       exposure_mode: str = None):
     if dataset == "HERA":
         if model_type == "FC_LATENCY":
             if model_size == 128:
@@ -230,6 +231,22 @@ def get_default_params(dataset: str, model_type: str, model_size: int = 128):
         elif model_type == "FC_DELTA_ON":
             return DEFAULT_HERA_DELTA_ON
         elif model_type == "FC_FORWARD_STEP":
+            if exposure_mode == "direct":
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+                params["encoder"]["exposure_mode"] = "direct"
+                params["encoder"]["exposure"] = 50
+                params["trainer"]["epochs"] = 43
+                params["model"]["beta"] = 0.920343975816805
+                params["dataset"]["batch_size"] = 79
+                return params
+            elif exposure_mode == "latency":
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+                params["encoder"]["exposure_mode"] = "latency"
+                params["encoder"]["exposure"] = 22
+                params["trainer"]["epochs"] = 83
+                params["model"]["beta"] = 0.920967991589638
+                params["dataset"]["batch_size"] = 54
+                return params
             return DEFAULT_HERA_FORWARD
         elif model_type == "FC_ANN":
             return DEFAULT_HERA_ANN
