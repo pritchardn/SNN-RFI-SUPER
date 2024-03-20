@@ -35,25 +35,10 @@ def final_evaluation(
     full_spike_hat = torch.cat(full_spike_hat, dim=1)
     # Decode outputs into masks
     output = converter.decode_inference(full_spike_hat.detach().cpu().numpy())
-
     # Stitch masks together
     recon_output = reconstruct_patches(
         output, mask_orig.shape[-1], full_spike_hat.shape[-1]
     )
-    # Calculate metrics on the whole dataset
-    accuracy, mse, auroc, auprc, f1 = calculate_metrics(mask_orig, recon_output)
-    output = json.dumps(
-        {
-            "accuracy": accuracy,
-            "mse": mse,
-            "auroc": auroc,
-            "auprc": auprc,
-            "f1": f1,
-        }
-    )
-    # Write output
-    with open(os.path.join(outdir, "metrics.json"), "w") as ofile:
-        json.dump(output, ofile, indent=4)
     # Plot a sample
     for i in range(min(10, mask_orig.shape[0])):
         plot_final_examples(
@@ -62,7 +47,6 @@ def final_evaluation(
             f"final_{i}",
             outdir,
         )
-    return accuracy, mse, auroc, auprc, f1
 
 
 def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):

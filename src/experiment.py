@@ -15,6 +15,8 @@ from data.spike_converters import (
 )
 from data.spike_converters.ForwardStepConverter import ForwardStepConverter
 from data.spike_converters.NonConverter import NonConverter
+from data.utils import reconstruct_patches
+from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
 from interfaces.data.spiking_data_module import SpikeConverter
 from models.fc_ann import LitFcANN
@@ -48,7 +50,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -245,7 +247,7 @@ class Experiment:
         else:
             self.trainer.fit(self.model, self.dataset)
 
-    def evaluate(self):
+    def evaluate(self, plot=False):
         self.model.eval()
         metrics = self.trainer.test(self.model, self.dataset.test_dataloader())
         accuracy = metrics[0]["test_accuracy"]
@@ -265,4 +267,17 @@ class Experiment:
         # Write output
         with open(os.path.join(self.trainer.log_dir, "metrics.json"), "w") as ofile:
             json.dump(output, ofile, indent=4)
+        if plot:
+            try:
+                mask_orig = reconstruct_patches(
+                    self.data_source.fetch_test_y(),
+                    self.data_source.original_size,
+                    self.data_source.stride,
+                )
+                final_evaluation(
+                    self.model, self.dataset, self.encoder,
+                    mask_orig, self.trainer.log_dir
+                )
+            except RuntimeError as e:
+                print(f"Error during evaluation: {e}")
         return accuracy, mse, auroc, auprc, f1

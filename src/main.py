@@ -9,11 +9,12 @@ def main():
     dataset = os.getenv("DATASET", "HERA")
     num_hidden = int(os.getenv("NUM_HIDDEN", 128))
     num_layers = int(os.getenv("NUM_LAYERS", 2))
-    config = get_default_params(dataset, model_type, num_hidden)
+    exposure_mode = os.getenv("EXPOSURE_MODE", None)
+    plot = bool(os.getenv("PLOT", False))
+    config = get_default_params(dataset, model_type, num_hidden, exposure_mode)
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
     )
-    config["model"]["num_hidden"] = num_hidden
     config["model"]["num_layers"] = num_layers
     config["data_source"]["limit"] = float(
         os.getenv("LIMIT", config["data_source"]["limit"])
@@ -28,7 +29,7 @@ def main():
     print("Preparation complete")
     experiment.train()
     print("Training complete")
-    experiment.evaluate()
+    experiment.evaluate(plot)
     print("Evaluation complete")
 
 

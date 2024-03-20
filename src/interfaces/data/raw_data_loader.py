@@ -105,6 +105,5 @@ class RawDataLoader(ABC):
         del self.train_x
         del self.train_y
         del self.test_x
-        del self.test_y
         del self.val_x
         del self.val_y
