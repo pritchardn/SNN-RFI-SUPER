@@ -44,5 +44,5 @@ class RateSpikeConverter(SpikeConverter):
         pass
 
     def decode_inference(self, inference: np.ndarray) -> np.ndarray:
-        return inference.mean(axis=0) > 0.0  # Assuming [exp, N, C, freq, time]
+        return inference.mean(axis=0) > 0.75  # Assuming [exp, N, C, freq, time]
         # Could also explore taking average > 0.5, or any spiking pixels at all.
