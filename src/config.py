@@ -210,12 +210,12 @@ DEFAULT_HERA_ANN = {
 
 
 def get_default_params(
-    dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
+        dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
 ):
     if dataset == "HERA":
-        if model_type == "FC_LATENCY":
+        if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
             if model_size == 128:
-                return DEFAULT_HERA_LATENCY
+                params = DEFAULT_HERA_LATENCY
             elif model_size == 256:
                 params = copy.deepcopy(DEFAULT_HERA_LATENCY)
                 params["dataset"]["batch_size"] = 74
@@ -223,15 +223,15 @@ def get_default_params(
                 params["model"]["beta"] = 0.8333011064675617
                 params["trainer"]["epochs"] = 83
                 params["encoder"]["exposure"] = 20
-                return params
-            raise ValueError(f"Unknown model size {model_size}")
-        elif model_type == "FC_RATE":
-            return DEFAULT_HERA_RATE
-        elif model_type == "FC_DELTA":
-            return DEFAULT_HERA_DELTA
-        elif model_type == "FC_DELTA_ON":
-            return DEFAULT_HERA_DELTA_ON
-        elif model_type == "FC_FORWARD_STEP":
+            else:
+                raise ValueError(f"Unknown model size {model_size}")
+        elif model_type == "FC_RATE" or model_type == "RNN_RATE":
+            params = DEFAULT_HERA_RATE
+        elif model_type == "FC_DELTA" or model_type == "RNN_DELTA":
+            params = DEFAULT_HERA_DELTA
+        elif model_type == "FC_DELTA_ON" or model_type == "RNN_DELTA_ON":
+            params = DEFAULT_HERA_DELTA_ON
+        elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "direct"
@@ -239,7 +239,6 @@ def get_default_params(
                 params["trainer"]["epochs"] = 43
                 params["model"]["beta"] = 0.920343975816805
                 params["dataset"]["batch_size"] = 79
-                return params
             elif exposure_mode == "latency":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "latency"
@@ -247,41 +246,42 @@ def get_default_params(
                 params["trainer"]["epochs"] = 83
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
-                return params
             return DEFAULT_HERA_FORWARD
         elif model_type == "FC_ANN":
-            return DEFAULT_HERA_ANN
+            params = DEFAULT_HERA_ANN
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
-        if model_type == "FC_LATENCY":
-            return DEFAULT_LOFAR_LATENCY
-        elif model_type == "FC_RATE":
-            return DEFAULT_LOFAR_RATE
-        elif model_type == "FC_DELTA":
-            return DEFAULT_LOFAR_DELTA
-        elif model_type == "FC_DELTA_ON":
-            return DEFAULT_LOFAR_DELTA_ON
-        elif model_type == "FC_FORWARD_STEP":
-            return DEFAULT_LOFAR_FORWARD
+        if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
+            params = DEFAULT_LOFAR_LATENCY
+        elif model_type == "FC_RATE" or model_type == "RNN_RATE":
+            params = DEFAULT_LOFAR_RATE
+        elif model_type == "FC_DELTA" or model_type == "RNN_DELTA":
+            params = DEFAULT_LOFAR_DELTA
+        elif model_type == "FC_DELTA_ON" or model_type == "RNN_DELTA_ON":
+            params = DEFAULT_LOFAR_DELTA_ON
+        elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
+            params = DEFAULT_LOFAR_FORWARD
         elif model_type == "FC_ANN":
-            return DEFAULT_HERA_ANN
+            params = DEFAULT_HERA_ANN
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "TABASCAL":
-        if model_type == "FC_LATENCY":
-            return DEFAULT_TABASCAL_LATENCY
-        elif model_type == "FC_RATE":
-            return DEFAULT_TABASCAL_RATE
-        elif model_type == "FC_DELTA":
-            return DEFAULT_TABASCAL_DELTA
-        elif model_type == "FC_DELTA_ON":
-            return DEFAULT_TABASCAL_DELTA_ON
-        elif model_type == "FC_FORWARD_STEP":
-            return DEFAULT_TABASCAL_FORWARD
+        if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
+            params = DEFAULT_TABASCAL_LATENCY
+        elif model_type == "FC_RATE" or model_type == "RNN_RATE":
+            params = DEFAULT_TABASCAL_RATE
+        elif model_type == "FC_DELTA" or model_type == "RNN_DELTA":
+            params = DEFAULT_TABASCAL_DELTA
+        elif model_type == "FC_DELTA_ON" or model_type == "RNN_DELTA_ON":
+            params = DEFAULT_TABASCAL_DELTA_ON
+        elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
+            params = DEFAULT_TABASCAL_FORWARD
         elif model_type == "FC_ANN":
-            return DEFAULT_HERA_ANN
+            params = DEFAULT_HERA_ANN
         else:
             raise ValueError(f"Unknown model type {model_type}")
     else:
         raise ValueError(f"Unknown dataset {dataset}")
+    params["model"]["type"] = model_type
+    return params
