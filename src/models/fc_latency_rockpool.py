@@ -1,5 +1,4 @@
 from torch.nn import MSELoss
-
 from interfaces.models.model_rockpool import LitModelRockpool
 
 
@@ -16,6 +15,6 @@ class LitFcLatencyRockpool(LitModelRockpool):
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        spike_hat, mem_hat, rec = self(x)
+        spike_hat, mem_hat = self(x)
         loss = self.calc_loss(spike_hat, y)
         self.log("val_loss", loss, sync_dist=True)

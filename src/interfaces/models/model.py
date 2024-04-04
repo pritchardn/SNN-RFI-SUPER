@@ -84,6 +84,7 @@ class LitModel(pl.LightningModule):
         full_mem = torch.stack(full_mem, dim=0)
         full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
         full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
+        print(full_spike.shape)
         return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
 
     def calc_loss(self, y_hat, y):

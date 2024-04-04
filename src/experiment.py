@@ -14,6 +14,7 @@ from data.spike_converters import (
     DeltaSpikeConverter,
 )
 from data.spike_converters.ForwardStepConverter import ForwardStepConverter
+from data.spike_converters.LatencyFullConverter import LatencyFullSpikeConverter
 from data.spike_converters.NonConverter import NonConverter
 from data.utils import reconstruct_patches
 from evaluation import final_evaluation
@@ -140,6 +141,11 @@ def encoder_from_config(config: dict) -> SpikeConverter:
         tau = config.get("tau")
         normalize = config.get("normalize")
         encoder = LatencySpikeConverter(exposure=exposure, tau=tau, normalize=normalize)
+    elif config.get("method") == "LATENCY_FULL":
+        exposure = config.get("exposure")
+        tau = config.get("tau")
+        normalize = config.get("normalize")
+        encoder = LatencyFullSpikeConverter(exposure=exposure, tau=tau, normalize=normalize)
     elif config.get("method") == "RATE":
         exposure = config.get("exposure")
         encoder = RateSpikeConverter(exposure=exposure)

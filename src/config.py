@@ -254,6 +254,7 @@ def get_default_params(
         elif model_type == "FC_LATENCY_ROCKPOOL":
             params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["model"]["type"] = "FC_LATENCY_ROCKPOOL"
+            params["encoder"]["method"] = "LATENCY_FULL"
             return params
         else:
             raise ValueError(f"Unknown model type {model_type}")
