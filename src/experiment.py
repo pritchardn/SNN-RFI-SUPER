@@ -105,15 +105,14 @@ def model_from_config(config: dict) -> pl.LightningModule:
 def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
     num_gpus = torch.cuda.device_count()
     epochs = config.get("epochs")
-    patience = config.get("patience", 10)
-    early_stopping_callback = pl.callbacks.EarlyStopping(
-        monitor="val_loss", mode="min", patience=patience, min_delta=1e-4
-    )
+    # patience = config.get("patience", 10)
+    # early_stopping_callback = pl.callbacks.EarlyStopping(
+    #     monitor="val_loss", mode="min", patience=patience, min_delta=1e-4
+    # )
     if num_gpus > 0:
         trainer = pl.trainer.Trainer(
             max_epochs=epochs,
             benchmark=True,
-            callbacks=[early_stopping_callback],
             default_root_dir=root_dir,
             devices=num_gpus,
             num_nodes=config.get("num_nodes", 1),
@@ -122,7 +121,6 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
         trainer = pl.trainer.Trainer(
             max_epochs=epochs,
             benchmark=True,
-            callbacks=[early_stopping_callback],
             default_root_dir=root_dir,
             num_nodes=config.get("num_nodes", 1),
             accelerator="cpu",
