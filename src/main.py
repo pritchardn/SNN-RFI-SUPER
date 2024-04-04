@@ -10,7 +10,7 @@ def main():
     num_hidden = int(os.getenv("NUM_HIDDEN", 128))
     num_layers = int(os.getenv("NUM_LAYERS", 2))
     exposure_mode = os.getenv("EXPOSURE_MODE", None)
-    plot = bool(os.getenv("PLOT", False))
+    plot = False
     config = get_default_params(dataset, model_type, num_hidden, exposure_mode)
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
@@ -23,6 +23,7 @@ def main():
     config["encoder"]["exposure"] = int(
         os.getenv("EXPOSURE", config["encoder"].get("exposure", 1))
     )
+    print(config)
     root_dir = os.getenv("OUTPUT_DIR", "./")
     experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)
@@ -35,4 +36,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    for _ in range(10):
+        main()

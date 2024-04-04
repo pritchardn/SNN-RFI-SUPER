@@ -251,6 +251,10 @@ def get_default_params(
             return DEFAULT_HERA_FORWARD
         elif model_type == "FC_ANN":
             return DEFAULT_HERA_ANN
+        elif model_type == "FC_LATENCY_ROCKPOOL":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            params["model"]["type"] = "FC_LATENCY_ROCKPOOL"
+            return params
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
