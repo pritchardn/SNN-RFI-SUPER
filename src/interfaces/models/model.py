@@ -1,7 +1,7 @@
 import lightning.pytorch as pl
+import snntorch as snn
 import torch
 import torch.nn as nn
-import snntorch as snn
 from sklearn.metrics import balanced_accuracy_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -12,12 +12,13 @@ from plotting import plot_example_inference
 
 class LitModel(pl.LightningModule):
     def __init__(
-        self,
-        num_inputs: int,
-        num_hidden: int,
-        num_outputs: int,
-        beta: float,
-        num_layers: int,
+            self,
+            num_inputs: int,
+            num_hidden: int,
+            num_outputs: int,
+            beta: float,
+            num_layers: int,
+            recurrent: bool,
     ):
         super().__init__()
         self.converter = None
@@ -26,6 +27,7 @@ class LitModel(pl.LightningModule):
         self.num_outputs = num_outputs
         self.beta = beta
         self.num_layers = num_layers
+        self.recurrent = False
 
         self.ann_layers = self._init_ann_layers()
         self.snn_layers = self._init_snn_layers()
@@ -44,7 +46,11 @@ class LitModel(pl.LightningModule):
     def _init_snn_layers(self):
         layers = nn.ModuleList()
         for i in range(self.num_layers):
-            layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
+            if self.recurrent:
+                layers.append(snn.RLeaky(beta=self.beta, learn_threshold=True,
+                                         linear_features=self.num_hidden))
+            else:
+                layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
         return layers
 
     def set_converter(self, converter: SpikeConverter):
