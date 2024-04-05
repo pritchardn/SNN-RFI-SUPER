@@ -1,3 +1,7 @@
+"""
+This script processes the results of the trials and calculates the summary
+statistics for the metrics.
+"""
 import csv
 import json
 import os
@@ -63,7 +67,9 @@ def write_summary_csv(filename: str, data: dict):
             writer.writerow(row)
 
 
-def main(in_dirname: str, out_dirname: str, out_filename: str = "summary", limit: int = None):
+def main(
+    in_dirname: str, out_dirname: str, out_filename: str = "summary", limit: int = None
+):
     # Collect all metrics.json files in directory and subdirectories
     metrics_files = []
     results = []
@@ -86,19 +92,26 @@ def main(in_dirname: str, out_dirname: str, out_filename: str = "summary", limit
 
 
 def main_process_supercomputer():
-    for model, encoding in [("FC_DELTA", "DELTA"),
-                            ("FC_LATENCY", "LATENCY"),
-                            ("FC_RATE", "RATE"),
-                            ("FC_FORWARD_STEP", ("FORWARDSTEP", "first")),
-                            ("FC_FORWARD_STEP", ("FORWARDSTEP", "direct")),
-                            ("FC_FORWARD_STEP", ("FORWARDSTEP", "latency"))]:
+    for model, encoding in [
+        ("FC_DELTA", "DELTA"),
+        ("FC_LATENCY", "LATENCY"),
+        ("FC_RATE", "RATE"),
+        ("FC_FORWARD_STEP", ("FORWARDSTEP", "first")),
+        ("FC_FORWARD_STEP", ("FORWARDSTEP", "direct")),
+        ("FC_FORWARD_STEP", ("FORWARDSTEP", "latency")),
+    ]:
         if model == "FC_FORWARD_STEP":
             encoding, exposure_mode = encoding
             root_dir = f".{os.sep}outputs{os.sep}snn-super{os.sep}{model}{os.sep}{encoding}{os.sep}HERA{os.sep}2{os.sep}128{os.sep}1.0{os.sep}{exposure_mode}"
             print(root_dir)
             log_dir = f"lightning_logs{os.sep}"
             output_dir = f".{os.sep}"
-            main(os.path.join(root_dir, log_dir), output_dir, f"{model}-{exposure_mode}", limit=50)
+            main(
+                os.path.join(root_dir, log_dir),
+                output_dir,
+                f"{model}-{exposure_mode}",
+                limit=50,
+            )
         else:
             root_dir = f".{os.sep}outputs{os.sep}snn-super{os.sep}{model}{os.sep}{encoding}{os.sep}HERA{os.sep}2{os.sep}128{os.sep}1.0"
             log_dir = f"lightning_logs{os.sep}"

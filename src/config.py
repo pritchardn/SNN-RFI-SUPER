@@ -1,3 +1,6 @@
+"""
+This module contains the default configuration parameters for the different models.
+"""
 import copy
 import os
 

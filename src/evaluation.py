@@ -1,4 +1,6 @@
-import json
+"""
+Evaluation functions for the model
+"""
 import os
 
 import numpy as np

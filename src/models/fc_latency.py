@@ -1,3 +1,7 @@
+"""
+This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
+module for a fully connected latency-coding model.
+"""
 import numpy as np
 import snntorch.functional as SF
 
@@ -21,7 +25,7 @@ class LitFcLatency(LitModel):
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        spike_hat, mem_hat = self(x)
+        spike_hat, _ = self(x)
         loss = self.calc_loss(spike_hat, y)
         if batch_idx == 0 and self.trainer.local_rank == 0:
             plot_example_inference(

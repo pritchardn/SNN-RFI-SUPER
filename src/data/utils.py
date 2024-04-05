@@ -1,3 +1,6 @@
+"""
+Utility functions for data processing.
+"""
 from typing import Union
 
 import numpy as np
@@ -65,8 +68,7 @@ def filter_noiseless_patches(
 def ensure_tflow(data: np.ndarray):
     if data.shape[1] == 1:
         return np.moveaxis(data, 1, -1)
-    else:
-        return data
+    return data
 
 
 def _decode_delta_inference_numpy(spike_hat: np.ndarray) -> np.ndarray:
@@ -150,5 +152,4 @@ def decode_delta_inference(
 ) -> Union[np.ndarray, torch.Tensor]:
     if use_numpy:
         return _decode_delta_inference_numpy(spike_hat)
-    else:
-        return _decode_delta_inference_torch(spike_hat)
+    return _decode_delta_inference_torch(spike_hat)

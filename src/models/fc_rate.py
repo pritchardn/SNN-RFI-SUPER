@@ -1,3 +1,7 @@
+"""
+This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
+module for a fully connected rate-coding model.
+"""
 import torch
 
 from interfaces.models.model import LitModel
@@ -18,14 +22,14 @@ class LitFcRate(LitModel):
         self.float()
         self.save_hyperparameters()
 
-    def calc_loss(self, spike_hat, y):
+    def calc_loss(self, y_hat, y):
         loss = 0.0
         for i in range(y.shape[0]):
             example_loss = 0.0
             for t in range(y.shape[1]):
                 tslice = y[i, t, ::]
                 targets = tslice[torch.where(tslice >= 0)[0]]
-                spikes = spike_hat[:, i, :, t]
+                spikes = y_hat[:, i, :, t]
                 example_loss += self.loss(spikes, targets)
             example_loss /= y.shape[1]
             loss += example_loss

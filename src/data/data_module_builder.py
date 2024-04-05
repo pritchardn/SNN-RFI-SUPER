@@ -1,3 +1,6 @@
+"""
+This module is responsible for building a configured data module.
+"""
 import torch
 from torch.utils.data import TensorDataset
 from data.data_module import ConfiguredDataModule
@@ -54,5 +57,4 @@ class DataModuleBuilder:
             val_dset = TensorDataset(val_x, val_y)
             self.data_loader.release_memory()
             return ConfiguredDataModule(train_dset, test_dset, val_dset, batch_size)
-        else:
-            raise Exception("DataModuleBuilder has not been properly configured.")
+        raise Exception("DataModuleBuilder has not been properly configured.")

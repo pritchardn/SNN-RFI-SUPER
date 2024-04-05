@@ -1,5 +1,9 @@
+"""
+This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
+module for a fully connected delta-coding model.
+"""
 import torch
-import torch.nn as nn
+from torch import nn
 
 from data.utils import decode_delta_inference
 from interfaces.models.model import LitModel
@@ -28,12 +32,11 @@ class LitFcDelta(LitModel):
         self.save_hyperparameters()
         self.reconstruct_loss = reconstruct_loss
 
-    def calc_loss(self, spike_hat, y):
+    def calc_loss(self, y_hat, y):
         if self.reconstruct_loss:
-            decoded_spike_hat = decode_delta_inference(spike_hat, use_numpy=False)
+            decoded_spike_hat = decode_delta_inference(y_hat, use_numpy=False)
             decided_targets = decode_delta_inference(
                 torch.moveaxis(y, 0, 1), use_numpy=False
             )
             return self.loss(decoded_spike_hat, decided_targets)
-        else:
-            return self.loss(spike_hat, torch.moveaxis(y, 0, 1))
+        return self.loss(y_hat, torch.moveaxis(y, 0, 1))

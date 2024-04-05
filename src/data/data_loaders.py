@@ -1,8 +1,11 @@
+"""
+Contains implemented data loaders for various radio astronomy datasets.
+"""
 import os
 import pickle
+from typing import Union
 import h5py
 import sklearn.model_selection
-from typing import Union
 
 import numpy as np
 
@@ -83,7 +86,7 @@ class LofarDataLoader(RawDataLoader):
         self.val_y = self.test_y.copy()
         self.limit_datasets()
 
-    def load_data(self, excluded_rfi=None):
+    def load_data(self):
         filepath = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset.pkl")
         print(f"Loading LOFAR data from {filepath}")
         with open(filepath, "rb") as ifile:
