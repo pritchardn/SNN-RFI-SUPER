@@ -1,5 +1,5 @@
 """
-Base class for pytorch lightning models.
+Base class for pytorch lightning models. Handles both fully connected Lif and Recurrent Models.
 """
 import lightning.pytorch as pl
 import torch
@@ -50,8 +50,11 @@ class LitModel(pl.LightningModule):
         layers = nn.ModuleList()
         for i in range(self.num_layers):
             if self.recurrent:
+                num_features = self.num_hidden
+                if i == self.num_layers - 1:
+                    num_features = self.num_outputs
                 layers.append(snn.RLeaky(beta=self.beta, learn_threshold=True,
-                                         linear_features=self.num_hidden))
+                                         linear_features=num_features))
             else:
                 layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
         return layers
@@ -64,6 +67,8 @@ class LitModel(pl.LightningModule):
         self.log("accuracy", score)
 
     def _init_membranes(self):
+        if self.recurrent:
+            return [lif.init_rleaky() for lif in self.snn_layers]
         return [lif.init_leaky() for lif in self.snn_layers]
 
     def _infer_slice(self, x, membranes):
@@ -73,6 +78,13 @@ class LitModel(pl.LightningModule):
             spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
             x = spike
         return spike, membranes[-1]
+
+    def _infer_slice_recurrent(self, x, states):
+        for n in range(self.num_layers):
+            curr = self.ann_layers[n](x)
+            states[n] = self.snn_layers[n](curr, states[n][0], states[n][1])
+            x = states[n][0]
+        return x, states[-1][1]
 
     def forward(self, x):
         full_spike = []
@@ -84,7 +96,10 @@ class LitModel(pl.LightningModule):
             mem_out = []
             for step in range(x.shape[1]):  # [N x C x freq]
                 data = x[:, step, 0, :, t]
-                spike, mem = self._infer_slice(data, membranes)
+                if self.recurrent:
+                    spike, mem = self._infer_slice_recurrent(data, membranes)
+                else:
+                    spike, mem = self._infer_slice(data, membranes)
                 spike_out.append(spike)
                 mem_out.append(mem)
             full_spike.append(torch.stack(spike_out, dim=1))
