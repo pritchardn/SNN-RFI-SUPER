@@ -1,3 +1,6 @@
+"""
+DataModule class for PyTorch Lightning
+"""
 import lightning.pytorch as pl
 from torch.utils.data import DataLoader, Dataset
 

@@ -1,3 +1,6 @@
+"""
+A non-converting encoder and decoder for ANN inference, which does not work with spikes.
+"""
 import numpy as np
 
 from interfaces.data.spiking_data_module import SpikeConverter

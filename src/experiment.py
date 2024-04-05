@@ -1,3 +1,8 @@
+"""
+This module provides a class to manage experiments with the PyTorch Lightning framework.
+It is in charge of loading the configuration, setting up the data, model, and trainer,
+and fitting the model.
+"""
 import glob
 import json
 import os
@@ -12,9 +17,9 @@ from data.spike_converters import (
     LatencySpikeConverter,
     RateSpikeConverter,
     DeltaSpikeConverter,
+    ForwardStepConverter,
+    NonConverter,
 )
-from data.spike_converters.ForwardStepConverter import ForwardStepConverter
-from data.spike_converters.NonConverter import NonConverter
 from data.utils import reconstruct_patches
 from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
@@ -267,8 +272,7 @@ class Experiment:
                 self.model.set_converter(self.encoder)
             if err_msg != "":
                 raise ValueError(err_msg)
-            else:
-                self.ready = True
+            self.ready = True
 
     def train(self):
         if not self.ready:

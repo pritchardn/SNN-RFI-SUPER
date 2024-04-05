@@ -1,3 +1,6 @@
+"""
+Delta-modulation spike encoder and decoder.
+"""
 import numpy as np
 import torch
 from snntorch import spikegen
@@ -27,8 +30,7 @@ class DeltaSpikeConverter(SpikeConverter):
     def encode_x(self, x_data: np.ndarray) -> np.ndarray:
         if self.off_spikes:
             return self._encode_x_off_spikes(x_data)
-        else:
-            return self._encode_x_on_spikes(x_data)
+        return self._encode_x_on_spikes(x_data)
 
     def encode_y(self, y_data: np.ndarray) -> np.ndarray:
         """
@@ -38,7 +40,8 @@ class DeltaSpikeConverter(SpikeConverter):
         1s in the second copy are erased
         -1s in the second copy are replaced with 1s
         :param y_data:
-        :return: An array of purely positive spikes where even-indexed frequency channels contain on spike, and odd-indexed frequency channels contain off spikes.
+        :return: An array of purely positive spikes where even-indexed frequency channels contain
+        on spike, and odd-indexed frequency channels contain off spikes.
         """
         original_encoded = self._encode_x_off_spikes(y_data)
         out = np.zeros(

@@ -1,3 +1,6 @@
+"""
+This script generates runfiles for supercomputer use.
+"""
 import os
 
 models = {

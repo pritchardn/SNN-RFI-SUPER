@@ -1,7 +1,10 @@
+"""
+Base class for pytorch lightning models.
+"""
 import lightning.pytorch as pl
-import snntorch as snn
 import torch
-import torch.nn as nn
+from torch import nn
+import snntorch as snn
 from sklearn.metrics import balanced_accuracy_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -27,7 +30,7 @@ class LitModel(pl.LightningModule):
         self.num_outputs = num_outputs
         self.beta = beta
         self.num_layers = num_layers
-        self.recurrent = False
+        self.recurrent = recurrent
 
         self.ann_layers = self._init_ann_layers()
         self.snn_layers = self._init_snn_layers()
@@ -98,14 +101,14 @@ class LitModel(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        spike_hat, mem_hat = self(x)
+        spike_hat, _ = self(x)
         loss = self.calc_loss(spike_hat, y)
         self.log("train_loss", loss, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        spike_hat, mem_hat = self(x)
+        spike_hat, _ = self(x)
         loss = self.calc_loss(spike_hat, y)
         if batch_idx == 0 and self.trainer.local_rank == 0:
             plot_example_inference(
@@ -117,7 +120,7 @@ class LitModel(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, y = batch
-        spike_hat, mem_hat = self(x)
+        spike_hat, _ = self(x)
         # Convert output to true output
         output_pred = self.converter.decode_inference(spike_hat.detach().cpu().numpy())
         accuracy, mse, auroc, auprc, f1 = calculate_metrics(

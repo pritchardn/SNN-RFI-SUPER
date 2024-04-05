@@ -1,6 +1,9 @@
+"""
+Fully connected artificial neural network model for spectrograms.
+"""
 import lightning.pytorch as pl
 import torch
-import torch.nn as nn
+from torch import nn
 from sklearn.metrics import balanced_accuracy_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
