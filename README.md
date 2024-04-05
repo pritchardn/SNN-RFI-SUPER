@@ -1,6 +1,8 @@
 # SNN-RFI-SUPER
 Supervised SNN for RFI detection
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10929492.svg)](https://doi.org/10.5281/zenodo.10929492)
+
 Contains:
 - Implementation of supervised SNN training for RFI detection
 - Optuna hyperparameter optimization code
