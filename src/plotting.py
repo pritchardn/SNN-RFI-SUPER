@@ -22,7 +22,9 @@ def plot_example_mask(mask: np.ndarray, name: str, log_dir: str):
     plt.close(fig)
 
 
-def plot_image_patch(image: np.ndarray, filename_prefix: str, output_dir: str, cbar=False):
+def plot_image_patch(
+    image: np.ndarray, filename_prefix: str, output_dir: str, cbar=False
+):
     plt.figure(figsize=(5, 5))
     plt.imshow(image)
     plt.ylabel("Frequency Bins")
@@ -30,14 +32,15 @@ def plot_image_patch(image: np.ndarray, filename_prefix: str, output_dir: str, c
     if cbar:
         plt.colorbar(location="right")
     plt.gca().invert_yaxis()
-    plt.savefig(os.path.join(output_dir, f"{filename_prefix}_image.png"),
-                bbox_inches="tight",
-                )
+    plt.savefig(
+        os.path.join(output_dir, f"{filename_prefix}_image.png"),
+        bbox_inches="tight",
+    )
     plt.close("all")
 
 
 def plot_final_examples(
-        x_orig: np.ndarray, y_true: np.ndarray, y_pred: np.ndarray, name: str, log_dir: str
+    x_orig: np.ndarray, y_true: np.ndarray, y_pred: np.ndarray, name: str, log_dir: str
 ):
     # plot original
     plot_image_patch(x_orig, f"{name}_image", log_dir, cbar=True)
