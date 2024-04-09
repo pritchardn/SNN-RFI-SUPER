@@ -29,6 +29,7 @@ def plot_image_patch(image: np.ndarray, filename_prefix: str, output_dir: str, c
     plt.xlabel("Time [s]")
     if cbar:
         plt.colorbar(location="right")
+    plt.gca().invert_yaxis()
     plt.savefig(os.path.join(output_dir, f"{filename_prefix}_image.png"),
                 bbox_inches="tight",
                 )
