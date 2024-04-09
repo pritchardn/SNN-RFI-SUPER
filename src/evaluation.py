@@ -44,9 +44,11 @@ def final_evaluation(
     )
     # Plot a sample
     for i in range(min(10, mask_orig.shape[0])):
+        mask_example = mask_orig[i]
+        mask_example[mask_example > 0.0] = 1.0
         plot_final_examples(
             np.moveaxis(data_orig[i], 0, -1),
-            np.moveaxis(mask_orig[i], 0, -1),
+            np.moveaxis(mask_example, 0, -1),
             np.moveaxis(recon_output[i], 0, -1),
             f"final_{i}",
             outdir,

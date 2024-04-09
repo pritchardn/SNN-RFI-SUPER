@@ -26,11 +26,11 @@ def plot_image_patch(
     image: np.ndarray, filename_prefix: str, output_dir: str, cbar=False
 ):
     plt.figure(figsize=(5, 5))
-    plt.imshow(image)
+    plt.imshow(image, vmin=0, vmax=1, aspect="equal", interpolation="nearest")
     plt.ylabel("Frequency Bins")
     plt.xlabel("Time [s]")
     if cbar:
-        plt.colorbar(location="right")
+        plt.colorbar(location="right", shrink=0.8)
     plt.gca().invert_yaxis()
     plt.savefig(
         os.path.join(output_dir, f"{filename_prefix}_image.png"),
