@@ -25,6 +25,7 @@ def final_evaluation(
     model: pl.LightningModule,
     data_module: ConfiguredDataModule,
     converter: SpikeConverter,
+    data_orig,
     mask_orig,
     outdir: str,
 ):
@@ -44,6 +45,7 @@ def final_evaluation(
     # Plot a sample
     for i in range(min(10, mask_orig.shape[0])):
         plot_final_examples(
+            np.moveaxis(data_orig[i], 0, -1),
             np.moveaxis(mask_orig[i], 0, -1),
             np.moveaxis(recon_output[i], 0, -1),
             f"final_{i}",

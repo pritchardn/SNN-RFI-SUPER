@@ -106,6 +106,5 @@ class RawDataLoader(ABC):
     def release_memory(self):
         del self.train_x
         del self.train_y
-        del self.test_x
         del self.val_x
         del self.val_y

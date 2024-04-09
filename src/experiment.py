@@ -276,10 +276,16 @@ class Experiment:
                     self.data_source.original_size,
                     self.data_source.stride,
                 )
+                original_data = reconstruct_patches(
+                    self.data_source.fetch_test_x(),
+                    self.data_source.original_size,
+                    self.data_source.stride,
+                )
                 final_evaluation(
                     self.model,
                     self.dataset,
                     self.encoder,
+                    original_data,
                     mask_orig,
                     self.trainer.log_dir,
                 )

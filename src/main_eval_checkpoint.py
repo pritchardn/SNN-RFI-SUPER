@@ -14,7 +14,7 @@ def main():
     experiment.from_checkpoint(checkpoint_dir)
     experiment.prepare()
     print("Preparation complete")
-    metrics = experiment.evaluate()
+    metrics = experiment.evaluate(plot=True)
     print("Evaluation complete")
     print(experiment.trainer.log_dir)
     print(json.dumps(metrics, indent=4))
