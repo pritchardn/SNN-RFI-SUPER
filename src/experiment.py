@@ -29,6 +29,7 @@ from models.fc_delta import LitFcDelta
 from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
 from models.fc_rate import LitFcRate
+from models.fcp_delta import LitFcPDelta
 from models.fcp_latency import LitFcPLatency
 from models.fcp_rate import LitFcPRate
 
@@ -108,6 +109,28 @@ def model_from_config(config: dict) -> pl.LightningModule:
         model = LitFcPLatency(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FCP_RATE":
         model = LitFcPRate(num_inputs, num_hidden, num_outputs, beta, num_layers)
+    elif model_type == "FCP_DELTA":
+        reconstruct_loss = config.get("reconstruct_loss")
+        model = LitFcPDelta(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            reconstruct_loss,
+            True,
+            num_layers,
+        )
+    elif model_type == "FCP_DELTA_ON":
+        reconstruct_loss = config.get("reconstruct_loss")
+        model = LitFcPDelta(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            reconstruct_loss,
+            False,
+            num_layers,
+        )
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model
