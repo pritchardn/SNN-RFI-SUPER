@@ -213,7 +213,7 @@ DEFAULT_HERA_ANN = {
 
 
 def get_default_params(
-    dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
+        dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
 ):
     if dataset == "HERA":
         if model_type == "FC_LATENCY":
@@ -258,6 +258,15 @@ def get_default_params(
             params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["model"]["type"] = "FC_LATENCY_ROCKPOOL"
             params["encoder"]["method"] = "LATENCY_FULL"
+            return params
+        elif model_type == "FCP_LATENCY_ROCKPOOL":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            params["model"]["type"] = "FCP_LATENCY_ROCKPOOL"
+            params["encoder"]["method"] = "LATENCY_FULL"
+            stride = params["data_source"]["stride"]
+            params["model"]["num_inputs"] = stride * stride
+            params["model"]["num_outputs"] = stride * stride
+            params["model"]["num_hidden"] = max(model_size, stride * stride)
             return params
         elif model_type == "FCP_LATENCY":
             params = DEFAULT_HERA_LATENCY

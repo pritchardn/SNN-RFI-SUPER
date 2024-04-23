@@ -35,6 +35,7 @@ from models.fc_rate import LitFcRate
 from models.fcp_delta import LitFcPDelta
 from models.fcp_forwardstep import LitFcPForwardStep
 from models.fcp_latency import LitFcPLatency
+from models.fcp_latency_rockpool import LitFcLatencyPatchedRockpool
 from models.fcp_rate import LitFcPRate
 
 
@@ -139,6 +140,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
         model = LitFcPForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FC_LATENCY_ROCKPOOL":
         model = LitFcLatencyRockpool(num_inputs, num_hidden, num_outputs, num_layers)
+    elif model_type == "FCP_LATENCY_ROCKPOOL":
+        model = LitFcLatencyPatchedRockpool(num_inputs, num_hidden, num_outputs, num_layers)
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model

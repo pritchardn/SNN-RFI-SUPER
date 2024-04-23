@@ -133,3 +133,22 @@ class LitModelRockpool(BaseModelRockpool):
         full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
         # full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
         return full_spike, full_mem
+
+
+class LitModelPatchedRockpool(BaseModelRockpool):
+
+    def __init__(self,
+                 num_inputs: int,
+                 num_hidden: int,
+                 num_outputs: int,
+                 num_layers: int):
+        super().__init__(num_inputs, num_hidden, num_outputs, num_layers)
+
+    def forward(self, x):
+        full_mem = []
+        self.model.reset_state()
+        data = x.view(*(x.shape[:-2]), -1).squeeze(2)
+        spike, _, _ = self.model(data)
+        spike = spike.view(*(spike.shape[:-1]), -1, x.shape[-1])
+        full_spike = spike.unsqueeze(2)
+        return full_spike, full_mem

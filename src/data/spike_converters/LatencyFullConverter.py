@@ -53,4 +53,4 @@ class LatencyFullSpikeConverter(SpikeConverter):
         Assumes a shape of [N, exposure, C, freq, time]
         :return: [N, C, freq, time]
         """
-        return inference[:-1, :, :, :, :].sum(axis=0)
+        return inference[:, :-1, :, :, :].sum(axis=1)
