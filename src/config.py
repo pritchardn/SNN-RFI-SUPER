@@ -262,6 +262,14 @@ def get_default_params(
             params["model"]["num_outputs"] = stride * stride
             params["model"]["num_hidden"] = model_size
             return params
+        elif model_type == "FCP_RATE":
+            params = DEFAULT_HERA_RATE
+            stride = params["data_source"]["stride"]
+            params["model"]["type"] = model_type
+            params["model"]["num_inputs"] = stride * stride
+            params["model"]["num_outputs"] = stride * stride
+            params["model"]["num_hidden"] = model_size
+            return params
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
