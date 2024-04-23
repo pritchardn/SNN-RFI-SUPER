@@ -1,3 +1,5 @@
+import abc
+
 import lightning.pytorch as pl
 import torch
 from rockpool.nn.combinators import Sequential
@@ -9,7 +11,7 @@ from evaluation import calculate_metrics
 from interfaces.data.spiking_data_module import SpikeConverter
 
 
-class LitModelRockpool(pl.LightningModule):
+class BaseModelRockpool(pl.LightningModule):
 
     def __init__(self,
                  num_inputs: int,
@@ -48,6 +50,7 @@ class LitModelRockpool(pl.LightningModule):
                     dt=0.001,
                 ))
         self.model = Sequential(*layers)
+        self.model = self.model.to("cuda")
 
     def set_converter(self, converter: SpikeConverter):
         self.converter = converter
@@ -56,25 +59,9 @@ class LitModelRockpool(pl.LightningModule):
         score = balanced_accuracy_score(y_hat.flatten(), y.flatten())
         self.log("accuracy", score)
 
+    @abc.abstractmethod
     def forward(self, x):
-        full_spike = []
-        full_mem = []
-        self.model.reset_state()
-        for t in range(x.shape[-1]):
-            spike_out = []
-            mem_out = []
-            for step in range(x.shape[1]):  # [N x C x freq]
-                data = x[:, step, 0, :, t]
-                spike, mem, recording = self.model(data)
-                spike_out.append(spike.squeeze())
-                # mem_out.append(mem)
-            full_spike.append(torch.stack(spike_out, dim=1))
-            # full_mem.append(torch.stack(mem_out, dim=1))
-        full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
-        # full_mem = torch.stack(full_mem, dim=0)
-        full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
-        # full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
-        return full_spike, full_mem
+        pass
 
     def calc_loss(self, y_hat, y):
         loss = self.loss(y_hat, y)
@@ -116,3 +103,33 @@ class LitModelRockpool(pl.LightningModule):
             "lr_scheduler": scheduler,
             "monitor": "val_loss",
         }
+
+
+class LitModelRockpool(BaseModelRockpool):
+
+    def __init__(self,
+                 num_inputs: int,
+                 num_hidden: int,
+                 num_outputs: int,
+                 num_layers: int):
+        super().__init__(num_inputs, num_hidden, num_outputs, num_layers)
+
+    def forward(self, x):
+        full_spike = []
+        full_mem = []
+        self.model.reset_state()
+        for t in range(x.shape[-1]):
+            spike_out = []
+            mem_out = []
+            for step in range(x.shape[1]):  # [N x C x freq]
+                data = x[:, step, 0, :, t]
+                spike, mem, recording = self.model(data)
+                spike_out.append(spike.squeeze())
+                # mem_out.append(mem)
+            full_spike.append(torch.stack(spike_out, dim=1))
+            # full_mem.append(torch.stack(mem_out, dim=1))
+        full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
+        # full_mem = torch.stack(full_mem, dim=0)
+        full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
+        # full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
+        return full_spike, full_mem
