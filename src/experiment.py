@@ -19,10 +19,9 @@ from data.spike_converters import (
     DeltaSpikeConverter,
     ForwardStepConverter,
     NonConverter,
+    LatencyFullConverter,
 )
-from data.spike_converters.ForwardStepConverter import ForwardStepConverter
 from data.spike_converters.LatencyFullConverter import LatencyFullSpikeConverter
-from data.spike_converters.NonConverter import NonConverter
 from data.utils import reconstruct_patches
 from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
