@@ -1,3 +1,6 @@
+"""
+This script is used to extract the best trials from an optuna study and save them to a JSON file.
+"""
 import json
 import os
 

@@ -1,3 +1,8 @@
+"""
+This module provides a class to manage experiments with the PyTorch Lightning framework.
+It is in charge of loading the configuration, setting up the data, model, and trainer,
+and fitting the model.
+"""
 import glob
 import json
 import os
@@ -12,6 +17,8 @@ from data.spike_converters import (
     LatencySpikeConverter,
     RateSpikeConverter,
     DeltaSpikeConverter,
+    ForwardStepConverter,
+    NonConverter,
 )
 from data.spike_converters.ForwardStepConverter import ForwardStepConverter
 from data.spike_converters.LatencyFullConverter import LatencyFullSpikeConverter
@@ -26,6 +33,10 @@ from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
 from models.fc_latency_rockpool import LitFcLatencyRockpool
 from models.fc_rate import LitFcRate
+from models.fcp_delta import LitFcPDelta
+from models.fcp_forwardstep import LitFcPForwardStep
+from models.fcp_latency import LitFcPLatency
+from models.fcp_rate import LitFcPRate
 
 
 def data_source_from_config(config: dict) -> RawDataLoader:
@@ -99,6 +110,34 @@ def model_from_config(config: dict) -> pl.LightningModule:
         model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FC_ANN":
         model = LitFcANN(num_inputs, num_hidden, num_outputs, num_layers)
+    elif model_type == "FCP_LATENCY":
+        model = LitFcPLatency(num_inputs, num_hidden, num_outputs, beta, num_layers)
+    elif model_type == "FCP_RATE":
+        model = LitFcPRate(num_inputs, num_hidden, num_outputs, beta, num_layers)
+    elif model_type == "FCP_DELTA":
+        reconstruct_loss = config.get("reconstruct_loss")
+        model = LitFcPDelta(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            reconstruct_loss,
+            True,
+            num_layers,
+        )
+    elif model_type == "FCP_DELTA_ON":
+        reconstruct_loss = config.get("reconstruct_loss")
+        model = LitFcPDelta(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            reconstruct_loss,
+            False,
+            num_layers,
+        )
+    elif model_type == "FCP_FORWARD_STEP":
+        model = LitFcPForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FC_LATENCY_ROCKPOOL":
         model = LitFcLatencyRockpool(num_inputs, num_hidden, num_outputs, num_layers)
     else:
@@ -109,15 +148,14 @@ def model_from_config(config: dict) -> pl.LightningModule:
 def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
     num_gpus = torch.cuda.device_count()
     epochs = config.get("epochs")
-    patience = config.get("patience", 10)
-    early_stopping_callback = pl.callbacks.EarlyStopping(
-        monitor="val_loss", mode="min", patience=patience, min_delta=1e-4
-    )
+    # patience = config.get("patience", 10)
+    # early_stopping_callback = pl.callbacks.EarlyStopping(
+    #     monitor="val_loss", mode="min", patience=patience, min_delta=1e-4
+    # )
     if num_gpus > 0:
         trainer = pl.trainer.Trainer(
             max_epochs=epochs,
             benchmark=True,
-            callbacks=[early_stopping_callback],
             default_root_dir=root_dir,
             devices=num_gpus,
             num_nodes=config.get("num_nodes", 1),
@@ -126,7 +164,6 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
         trainer = pl.trainer.Trainer(
             max_epochs=epochs,
             benchmark=True,
-            callbacks=[early_stopping_callback],
             default_root_dir=root_dir,
             num_nodes=config.get("num_nodes", 1),
             accelerator="cpu",
@@ -244,8 +281,7 @@ class Experiment:
                 self.model.set_converter(self.encoder)
             if err_msg != "":
                 raise ValueError(err_msg)
-            else:
-                self.ready = True
+            self.ready = True
 
     def train(self):
         if not self.ready:
@@ -283,10 +319,16 @@ class Experiment:
                     self.data_source.original_size,
                     self.data_source.stride,
                 )
+                original_data = reconstruct_patches(
+                    self.data_source.fetch_test_x(),
+                    self.data_source.original_size,
+                    self.data_source.stride,
+                )
                 final_evaluation(
                     self.model,
                     self.dataset,
                     self.encoder,
+                    original_data,
                     mask_orig,
                     self.trainer.log_dir,
                 )

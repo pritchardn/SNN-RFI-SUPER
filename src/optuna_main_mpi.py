@@ -1,3 +1,6 @@
+"""
+This script is used to run the optuna optimization using MPI. Suitable for HPC environments.
+"""
 import json
 import os
 

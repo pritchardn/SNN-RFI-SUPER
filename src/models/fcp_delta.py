@@ -1,15 +1,15 @@
 """
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
-module for a fully connected delta-coding model.
+module for a fully connected delta-coding model. Operating in patched inference mode.
 """
 import torch
 from torch import nn
 
 from data.utils import decode_delta_inference
-from interfaces.models.model import LitModel
+from interfaces.models.model import LitPatchedModel
 
 
-class LitFcDelta(LitModel):
+class LitFcPDelta(LitPatchedModel):
     def __init__(
         self,
         num_inputs: int,

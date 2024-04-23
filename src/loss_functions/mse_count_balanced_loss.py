@@ -1,7 +1,10 @@
+"""
+This module contains an implementation for an adjusts loss function present in snnTorch.
+"""
 import torch
 from snntorch import spikegen
 from snntorch.functional import LossFunctions
-from torch import nn as nn
+from torch import nn
 
 
 class mse_count_loss_balanced(LossFunctions):

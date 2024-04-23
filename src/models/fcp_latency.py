@@ -1,15 +1,15 @@
 """
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
-module for a fully connected latency-coding model.
+module for a fully connected latency-coding model. Operating in patched inference mode.
 """
 import numpy as np
 import snntorch.functional as SF
 
-from interfaces.models.model import LitModel
+from interfaces.models.model import LitPatchedModel
 from plotting import plot_example_inference, plot_example_mask
 
 
-class LitFcLatency(LitModel):
+class LitFcPLatency(LitPatchedModel):
     def __init__(
         self,
         num_inputs: int,

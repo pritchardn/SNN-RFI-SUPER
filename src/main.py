@@ -1,3 +1,6 @@
+"""
+Main script to run the experiment
+"""
 import os
 
 from config import get_default_params

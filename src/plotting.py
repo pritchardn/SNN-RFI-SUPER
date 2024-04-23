@@ -1,3 +1,6 @@
+"""
+This module contains functions for plotting the results of the inference process.
+"""
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,13 +22,29 @@ def plot_example_mask(mask: np.ndarray, name: str, log_dir: str):
     plt.close(fig)
 
 
-def plot_final_examples(
-    y_true: np.ndarray, y_pred: np.ndarray, name: str, log_dir: str
+def plot_image_patch(
+    image: np.ndarray, filename_prefix: str, output_dir: str, cbar=False
 ):
-    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-    axs[0].imshow(y_true)
-    axs[0].set_title("Mask")
-    axs[1].imshow(y_pred)
-    axs[1].set_title("Decoded Output")
-    plt.savefig(os.path.join(log_dir, f"final_{name}.png"))
-    plt.close(fig)
+    plt.figure(figsize=(5, 5))
+    plt.imshow(image, vmin=0, vmax=1, aspect="equal", interpolation="nearest")
+    plt.ylabel("Frequency Bins")
+    plt.xlabel("Time [s]")
+    if cbar:
+        plt.colorbar(location="right", shrink=0.8)
+    plt.gca().invert_yaxis()
+    plt.savefig(
+        os.path.join(output_dir, f"{filename_prefix}_image.png"),
+        bbox_inches="tight",
+    )
+    plt.close("all")
+
+
+def plot_final_examples(
+    x_orig: np.ndarray, y_true: np.ndarray, y_pred: np.ndarray, name: str, log_dir: str
+):
+    # plot original
+    plot_image_patch(x_orig, f"{name}_image", log_dir, cbar=True)
+    # plot decoded mask
+    plot_image_patch(y_pred, f"{name}_inference", log_dir)
+    # plot real mask
+    plot_image_patch(y_true, f"{name}_mask", log_dir)

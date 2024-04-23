@@ -1,14 +1,14 @@
 """
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
-module for a fully connected rate-coding model.
+module for a fully connected rate-coding model. Operating in patched inference mode.
 """
 import torch
 
-from interfaces.models.model import LitModel
+from interfaces.models.model import LitPatchedModel
 from loss_functions.mse_count_balanced_loss import mse_count_loss_balanced
 
 
-class LitFcRate(LitModel):
+class LitFcPRate(LitPatchedModel):
     def __init__(
         self,
         num_inputs: int,

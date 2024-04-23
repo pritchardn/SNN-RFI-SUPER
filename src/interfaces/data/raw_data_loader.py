@@ -1,3 +1,6 @@
+"""
+Interface for loading raw data.
+"""
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -9,8 +12,7 @@ from data.utils import extract_patches, filter_noiseless_patches
 def calc_limit_int(limit: float, data_len: int) -> int:
     if limit is None:
         return data_len
-    else:
-        return int(data_len * limit)
+    return int(data_len * limit)
 
 
 class RawDataLoader(ABC):
@@ -104,6 +106,5 @@ class RawDataLoader(ABC):
     def release_memory(self):
         del self.train_x
         del self.train_y
-        del self.test_x
         del self.val_x
         del self.val_y

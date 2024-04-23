@@ -1,4 +1,6 @@
-import json
+"""
+Evaluation functions for the model
+"""
 import os
 
 import numpy as np
@@ -23,6 +25,7 @@ def final_evaluation(
     model: pl.LightningModule,
     data_module: ConfiguredDataModule,
     converter: SpikeConverter,
+    data_orig,
     mask_orig,
     outdir: str,
 ):
@@ -33,6 +36,8 @@ def final_evaluation(
         spike_hat, mem_hat = model(x)
         full_spike_hat.append(spike_hat)
     full_spike_hat = torch.cat(full_spike_hat, dim=1)
+    # save full_spike_hat into .npy file
+    np.save(os.path.join(outdir, "full_spike_hat.npy"), full_spike_hat.detach().cpu().numpy())
     # Decode outputs into masks
     output = converter.decode_inference(full_spike_hat.detach().cpu().numpy())
     # Stitch masks together
@@ -41,8 +46,11 @@ def final_evaluation(
     )
     # Plot a sample
     for i in range(min(10, mask_orig.shape[0])):
+        mask_example = mask_orig[i]
+        mask_example[mask_example > 0.0] = 1.0
         plot_final_examples(
-            np.moveaxis(mask_orig[i], 0, -1),
+            np.moveaxis(data_orig[i], 0, -1),
+            np.moveaxis(mask_example, 0, -1),
             np.moveaxis(recon_output[i], 0, -1),
             f"final_{i}",
             outdir,

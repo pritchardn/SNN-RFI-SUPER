@@ -1,3 +1,6 @@
+"""
+This module contains the default configuration parameters for the different models.
+"""
 import copy
 import os
 
@@ -255,6 +258,72 @@ def get_default_params(
             params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["model"]["type"] = "FC_LATENCY_ROCKPOOL"
             params["encoder"]["method"] = "LATENCY_FULL"
+            return params
+        elif model_type == "FCP_LATENCY":
+            params = DEFAULT_HERA_LATENCY
+            stride = params["data_source"]["stride"]
+            params["model"]["type"] = model_type
+            params["model"]["num_inputs"] = stride * stride
+            params["model"]["num_outputs"] = stride * stride
+            params["model"]["num_hidden"] = model_size
+            return params
+        elif model_type == "FCP_RATE":
+            params = DEFAULT_HERA_RATE
+            stride = params["data_source"]["stride"]
+            params["model"]["type"] = model_type
+            params["model"]["num_inputs"] = stride * stride
+            params["model"]["num_outputs"] = stride * stride
+            params["model"]["num_hidden"] = model_size
+            return params
+        elif model_type == "FCP_DELTA":
+            params = DEFAULT_HERA_DELTA
+            stride = params["data_source"]["stride"]
+            params["model"]["type"] = model_type
+            params["model"]["num_inputs"] = stride * stride
+            params["model"]["num_outputs"] = stride * stride * 2
+            params["model"]["num_hidden"] = model_size
+            return params
+        elif model_type == "FCP_DELTA_ON":
+            params = DEFAULT_HERA_DELTA_ON
+            stride = params["data_source"]["stride"]
+            params["model"]["type"] = model_type
+            params["model"]["num_inputs"] = stride * stride * 2
+            params["model"]["num_outputs"] = stride * stride * 2
+            params["model"]["num_hidden"] = model_size
+            return params
+        elif model_type == "FCP_FORWARD_STEP":
+            if exposure_mode == "direct":
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+                params["model"]["type"] = model_type
+                stride = params["data_source"]["stride"]
+                params["model"]["num_inputs"] = stride * stride * 2
+                params["model"]["num_outputs"] = stride * stride
+                params["model"]["num_hidden"] = model_size
+                params["encoder"]["exposure_mode"] = "direct"
+                params["encoder"]["exposure"] = 50
+                params["trainer"]["epochs"] = 43
+                params["model"]["beta"] = 0.920343975816805
+                params["dataset"]["batch_size"] = 79
+                return params
+            elif exposure_mode == "latency":
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+                params["model"]["type"] = model_type
+                stride = params["data_source"]["stride"]
+                params["model"]["num_inputs"] = stride * stride * 2
+                params["model"]["num_outputs"] = stride * stride
+                params["model"]["num_hidden"] = model_size
+                params["encoder"]["exposure_mode"] = "latency"
+                params["encoder"]["exposure"] = 22
+                params["trainer"]["epochs"] = 83
+                params["model"]["beta"] = 0.920967991589638
+                params["dataset"]["batch_size"] = 54
+                return params
+            params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+            stride = params["data_source"]["stride"]
+            params["model"]["num_inputs"] = stride * stride * 2
+            params["model"]["num_outputs"] = stride * stride
+            params["model"]["num_hidden"] = model_size
+            params["model"]["type"] = model_type
             return params
         else:
             raise ValueError(f"Unknown model type {model_type}")
