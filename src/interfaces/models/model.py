@@ -1,6 +1,8 @@
 """
 Base class for pytorch lightning models.
 """
+import abc
+
 import lightning.pytorch as pl
 import torch
 from torch import nn
@@ -13,14 +15,15 @@ from interfaces.data.spiking_data_module import SpikeConverter
 from plotting import plot_example_inference
 
 
-class LitModel(pl.LightningModule):
+class BaseLitModel(pl.LightningModule):
+
     def __init__(
-        self,
-        num_inputs: int,
-        num_hidden: int,
-        num_outputs: int,
-        beta: float,
-        num_layers: int,
+            self,
+            num_inputs: int,
+            num_hidden: int,
+            num_outputs: int,
+            beta: float,
+            num_layers: int,
     ):
         super().__init__()
         self.converter = None
@@ -60,34 +63,9 @@ class LitModel(pl.LightningModule):
     def _init_membranes(self):
         return [lif.init_leaky() for lif in self.snn_layers]
 
-    def _infer_slice(self, x, membranes):
-        spike = None
-        for n in range(self.num_layers):
-            curr = self.ann_layers[n](x)
-            spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
-            x = spike
-        return spike, membranes[-1]
-
+    @abc.abstractmethod
     def forward(self, x):
-        full_spike = []
-        full_mem = []
-        # x -> [N x exp x C x freq x time]
-        membranes = self._init_membranes()
-        for t in range(x.shape[-1]):
-            spike_out = []
-            mem_out = []
-            for step in range(x.shape[1]):  # [N x C x freq]
-                data = x[:, step, 0, :, t]
-                spike, mem = self._infer_slice(data, membranes)
-                spike_out.append(spike)
-                mem_out.append(mem)
-            full_spike.append(torch.stack(spike_out, dim=1))
-            full_mem.append(torch.stack(mem_out, dim=1))
-        full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
-        full_mem = torch.stack(full_mem, dim=0)
-        full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
-        full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
-        return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
+        pass
 
     def calc_loss(self, y_hat, y):
         loss = self.loss(y_hat, y)
@@ -135,3 +113,90 @@ class LitModel(pl.LightningModule):
             "lr_scheduler": scheduler,
             "monitor": "val_loss",
         }
+
+
+class LitModel(BaseLitModel):
+
+    def __init__(
+            self,
+            num_inputs: int,
+            num_hidden: int,
+            num_outputs: int,
+            beta: float,
+            num_layers: int,
+    ):
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
+
+    def _infer_slice(self, x, membranes):
+        spike = None
+        for n in range(self.num_layers):
+            curr = self.ann_layers[n](x)
+            spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
+            x = spike
+        return spike, membranes[-1]
+
+    def forward(self, x):
+        full_spike = []
+        full_mem = []
+        # x -> [N x exp x C x freq x time]
+        membranes = self._init_membranes()
+        for t in range(x.shape[-1]):
+            spike_out = []
+            mem_out = []
+            for step in range(x.shape[1]):  # [N x C x freq]
+                data = x[:, step, 0, :, t]
+                spike, mem = self._infer_slice(data, membranes)
+                spike_out.append(spike)
+                mem_out.append(mem)
+            full_spike.append(torch.stack(spike_out, dim=1))
+            full_mem.append(torch.stack(mem_out, dim=1))
+        full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
+        full_mem = torch.stack(full_mem, dim=0)
+        full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
+        full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
+        print(full_spike.shape)
+        return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
+
+
+class LitPatchedModel(BaseLitModel):
+
+    def __init__(
+            self,
+            num_inputs: int,
+            num_hidden: int,
+            num_outputs: int,
+            beta: float,
+            num_layers: int,
+    ):
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
+
+    def _infer_patch(self, x, membranes):
+        spike = None
+        for n in range(self.num_layers):
+            curr = self.ann_layers[n](x)
+            spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
+            x = spike
+        return spike, membranes[-1]
+
+    def forward(self, x):
+        full_spike = []
+        full_mem = []
+        # x -> [N x exp x C x freq x time]
+        membranes = self._init_membranes()
+        spike_out = []
+        mem_out = []
+        for step in range(x.shape[1]):  # [N x C x freq]
+            data = x[:, step, 0, :, :]
+            data = data.view(*(data.shape[:-2]), -1)
+            spike, mem = self._infer_patch(data, membranes)
+            spike = spike.view(*(spike.shape[:-1]), -1, x.shape[-1])
+            mem = mem.view(*(mem.shape[:-1]), -1, x.shape[-1])
+            spike_out.append(spike)
+            mem_out.append(mem)
+        full_spike.append(torch.stack(spike_out, dim=1))
+        full_mem.append(torch.stack(mem_out, dim=1))
+        full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
+        full_mem = torch.stack(full_mem, dim=0)
+        full_spike = full_spike.squeeze(0).unsqueeze(2)
+        full_mem = full_mem.squeeze(0).unsqueeze(2)
+        return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)

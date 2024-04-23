@@ -254,6 +254,14 @@ def get_default_params(
             return DEFAULT_HERA_FORWARD
         elif model_type == "FC_ANN":
             return DEFAULT_HERA_ANN
+        elif model_type == "FCP_LATENCY":
+            params = DEFAULT_HERA_LATENCY
+            stride = params["data_source"]["stride"]
+            params["model"]["type"] = model_type
+            params["model"]["num_inputs"] = stride * stride
+            params["model"]["num_outputs"] = stride * stride
+            params["model"]["num_hidden"] = model_size
+            return params
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
