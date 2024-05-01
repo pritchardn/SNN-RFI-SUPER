@@ -242,6 +242,12 @@ class Experiment:
         with open(os.path.join(out_dir, "config.json"), "w") as ofile:
             json.dump(self.configuration, ofile, indent=4)
 
+    def save_model(self):
+        out_dir = self.trainer.log_dir
+        os.makedirs(out_dir, exist_ok=True)
+        sample, _ = next(iter(self.dataset.train_dataloader()))
+        torch.onnx.export(self.model, sample, os.path.join(out_dir, "model.onnx"))
+
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:
             self.configuration = json.load(ifile)
