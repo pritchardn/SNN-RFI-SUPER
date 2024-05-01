@@ -29,8 +29,10 @@ class LitFcANN(pl.LightningModule):
         for i in range(self.num_layers):
             if i == 0:
                 layers.append(nn.Linear(self.num_inputs, self.num_hidden))
+                layers.append(nn.ReLU())
             elif i == self.num_layers - 1:
                 layers.append(nn.Linear(self.num_hidden, self.num_outputs))
+                layers.append(nn.ReLU())
             else:
                 layers.append(nn.Linear(self.num_hidden, self.num_hidden))
         return layers

@@ -3,15 +3,16 @@ DataModule class for PyTorch Lightning
 """
 import lightning.pytorch as pl
 from torch.utils.data import DataLoader, Dataset
+import multiprocessing
 
 
 class ConfiguredDataModule(pl.LightningDataModule):
     def __init__(
-        self,
-        train_dataset: Dataset,
-        test_dataset: Dataset,
-        val_dataset: Dataset,
-        batch_size: int,
+            self,
+            train_dataset: Dataset,
+            test_dataset: Dataset,
+            val_dataset: Dataset,
+            batch_size: int,
     ):
         super().__init__()
         self.train = train_dataset
@@ -21,20 +22,24 @@ class ConfiguredDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         return DataLoader(
-            self.train, batch_size=self.batch_size, shuffle=True, num_workers=8
+            self.train, batch_size=self.batch_size, shuffle=True,
+            num_workers=multiprocessing.cpu_count(), persistent_workers=True
         )
 
     def val_dataloader(self):
         return DataLoader(
-            self.val, batch_size=self.batch_size, shuffle=False, num_workers=8
+            self.val, batch_size=self.batch_size, shuffle=False,
+            num_workers=multiprocessing.cpu_count(), persistent_workers=True
         )
 
     def test_dataloader(self):
         return DataLoader(
-            self.test, batch_size=self.batch_size, shuffle=False, num_workers=8
+            self.test, batch_size=self.batch_size, shuffle=False,
+            num_workers=multiprocessing.cpu_count(), persistent_workers=True
         )
 
     def predict_dataloader(self):
         return DataLoader(
-            self.test, batch_size=self.batch_size, shuffle=False, num_workers=8
+            self.test, batch_size=self.batch_size, shuffle=False,
+            num_workers=multiprocessing.cpu_count()
         )

@@ -29,6 +29,7 @@ from models.fc_delta import LitFcDelta
 from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
 from models.fc_rate import LitFcRate
+from models.fcp_ann import LitFcPANN
 from models.fcp_delta import LitFcPDelta
 from models.fcp_forwardstep import LitFcPForwardStep
 from models.fcp_latency import LitFcPLatency
@@ -59,7 +60,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -106,6 +107,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
         model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FC_ANN":
         model = LitFcANN(num_inputs, num_hidden, num_outputs, num_layers)
+    elif model_type == "FCP_ANN":
+        model = LitFcPANN(num_inputs, num_hidden, num_outputs, num_layers)
     elif model_type == "FCP_LATENCY":
         model = LitFcPLatency(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FCP_RATE":
@@ -194,6 +197,8 @@ def encoder_from_config(config: dict) -> SpikeConverter:
         )
     elif config.get("method") == "ANN":
         encoder = NonConverter()
+    elif config.get("method") == "ANN_PATCHED":
+        encoder = NonConverter(patched=True)
     return encoder
 
 
@@ -246,7 +251,12 @@ class Experiment:
         out_dir = self.trainer.log_dir
         os.makedirs(out_dir, exist_ok=True)
         sample, _ = next(iter(self.dataset.train_dataloader()))
-        torch.onnx.export(self.model, sample, os.path.join(out_dir, "model.onnx"))
+        torch.onnx.export(self.model, sample, os.path.join(out_dir, "model.onnx"),
+                          input_names=["inputs"],
+                          output_names=["outputs"],
+                          dynamic_axes={'inputs': {0: 'batch_size'},
+                                        'outputs': {0: 'batch_size'}}
+                          )
 
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:
