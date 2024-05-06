@@ -193,7 +193,7 @@ DEFAULT_HERA_ANN = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 18,
+        "batch_size": 44,
     },
     "model": {
         "type": "FC_ANN",
@@ -203,7 +203,7 @@ DEFAULT_HERA_ANN = {
         "num_layers": 2,
     },
     "trainer": {
-        "epochs": 68,
+        "epochs": 29,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
