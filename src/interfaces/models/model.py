@@ -15,13 +15,13 @@ from plotting import plot_example_inference
 
 class LitModel(pl.LightningModule):
     def __init__(
-            self,
-            num_inputs: int,
-            num_hidden: int,
-            num_outputs: int,
-            beta: float,
-            num_layers: int,
-            recurrent: bool,
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+        recurrent: bool,
     ):
         super().__init__()
         self.converter = None
@@ -53,8 +53,13 @@ class LitModel(pl.LightningModule):
                 num_features = self.num_hidden
                 if i == self.num_layers - 1:
                     num_features = self.num_outputs
-                layers.append(snn.RLeaky(beta=self.beta, learn_threshold=True,
-                                         linear_features=num_features))
+                layers.append(
+                    snn.RLeaky(
+                        beta=self.beta,
+                        learn_threshold=True,
+                        linear_features=num_features,
+                    )
+                )
             else:
                 layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
         return layers

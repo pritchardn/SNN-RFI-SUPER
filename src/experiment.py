@@ -55,7 +55,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -73,13 +73,21 @@ def model_from_config(config: dict) -> pl.LightningModule:
     num_outputs = config.get("num_outputs")
     num_layers = config.get("num_layers", 2)
     if model_type == "FC_LATENCY":
-        model = LitFcLatency(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False)
+        model = LitFcLatency(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
+        )
     elif model_type == "RNN_LATENCY":
-        model = LitFcLatency(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True)
+        model = LitFcLatency(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
+        )
     elif model_type == "FC_RATE":
-        model = LitFcRate(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False)
+        model = LitFcRate(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
+        )
     elif model_type == "RNN_RATE":
-        model = LitFcRate(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True)
+        model = LitFcRate(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
+        )
     elif model_type == "FC_DELTA":
         reconstruct_loss = config.get("reconstruct_loss")
         model = LitFcDelta(
@@ -90,7 +98,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
             reconstruct_loss,
             True,
             num_layers,
-            recurrent=False
+            recurrent=False,
         )
     elif model_type == "RNN_DELTA":
         reconstruct_loss = config.get("reconstruct_loss")
@@ -102,7 +110,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
             reconstruct_loss,
             True,
             num_layers,
-            recurrent=True
+            recurrent=True,
         )
     elif model_type == "FC_DELTA_ON":
         reconstruct_loss = config.get("reconstruct_loss")
@@ -114,7 +122,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
             reconstruct_loss,
             False,
             num_layers,
-            recurrent=False
+            recurrent=False,
         )
     elif model_type == "RNN_DELTA_ON":
         reconstruct_loss = config.get("reconstruct_loss")
@@ -126,14 +134,16 @@ def model_from_config(config: dict) -> pl.LightningModule:
             reconstruct_loss,
             False,
             num_layers,
-            recurrent=False
+            recurrent=False,
         )
     elif model_type == "FC_FORWARD_STEP":
-        model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers,
-                                 recurrent=False)
+        model = LitFcForwardStep(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
+        )
     elif model_type == "RNN_FORWARD_STEP":
-        model = LitFcForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers,
-                                 recurrent=True)
+        model = LitFcForwardStep(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
+        )
     elif model_type == "FC_ANN":
         model = LitFcANN(num_inputs, num_hidden, num_outputs, num_layers)
     else:
