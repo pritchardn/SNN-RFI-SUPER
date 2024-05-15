@@ -246,6 +246,12 @@ class Experiment:
         with open(config_path, "r") as ifile:
             self.configuration = json.load(ifile)
 
+    def save_model(self):
+        out_dir = self.trainer.log_dir
+        os.makedirs(out_dir, exist_ok=True)
+        input_sample, _ = next(iter(self.dataset.test_dataloader()))
+        self.model.to_onnx(os.path.join(out_dir, "model.onnx"), input_sample, export_params=True)
+
     def prepare(self):
         err_msg = ""
         if not self.ready:

@@ -33,6 +33,7 @@ def main():
     print("Preparation complete")
     experiment.train()
     print("Training complete")
+    experiment.save_model()
     experiment.evaluate(plot)
     print("Evaluation complete")
 
