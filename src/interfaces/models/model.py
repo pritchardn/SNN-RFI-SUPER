@@ -140,8 +140,9 @@ class LitModel(BaseLitModel):
             num_outputs: int,
             beta: float,
             num_layers: int,
+            recurrent: bool = False,
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent)
 
     def _infer_slice(self, x, membranes):
         spike = None
@@ -192,8 +193,9 @@ class LitPatchedModel(BaseLitModel):
             num_outputs: int,
             beta: float,
             num_layers: int,
+            recurrent: bool = False
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent)
 
     def _infer_patch(self, x, membranes):
         spike = None
