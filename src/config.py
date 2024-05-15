@@ -35,6 +35,8 @@ DEFAULT_HERA_LATENCY = {
     },
 }
 
+DEFAULT_HERA_LATENCY_RNN = copy.deepcopy(DEFAULT_HERA_LATENCY)
+DEFAULT_HERA_LATENCY_RNN["model"]["type"] = "RNN_LATENCY"
 DEFAULT_LOFAR_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_LOFAR_LATENCY["data_source"]["dataset"] = "LOFAR"
 DEFAULT_LOFAR_LATENCY["dataset"]["batch_size"] = 47
@@ -74,7 +76,8 @@ DEFAULT_HERA_RATE = {
         "normalize": True,
     },
 }
-
+DEFAULT_HERA_RATE_RNN = copy.deepcopy(DEFAULT_HERA_LATENCY)
+DEFAULT_HERA_RATE_RNN["model"]["type"] = "RNN_RATE"
 DEFAULT_LOFAR_RATE = copy.deepcopy(DEFAULT_HERA_RATE)
 DEFAULT_LOFAR_RATE["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_RATE = copy.deepcopy(DEFAULT_HERA_RATE)
@@ -108,6 +111,8 @@ DEFAULT_HERA_DELTA = {
     "encoder": {"method": "DELTA", "threshold": 0.1, "off_spikes": True},
 }
 
+DEFAULT_HERA_DELTA_RNN = copy.deepcopy(DEFAULT_HERA_DELTA)
+DEFAULT_HERA_DELTA_RNN["model"]["type"] = "RNN_DELTA"
 DEFAULT_LOFAR_DELTA = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_LOFAR_DELTA["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_DELTA = copy.deepcopy(DEFAULT_HERA_DELTA)
@@ -141,6 +146,8 @@ DEFAULT_HERA_DELTA_ON = {
     "encoder": {"method": "DELTA", "threshold": 0.1, "off_spikes": False},
 }
 
+DEFAULT_HERA_DELTA_ON_RNN = copy.deepcopy(DEFAULT_HERA_DELTA_ON)
+DEFAULT_HERA_DELTA_ON_RNN["model"]["type"] = "RNN_DELTA_ON"
 DEFAULT_LOFAR_DELTA_ON = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_LOFAR_DELTA_ON["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_DELTA_ON = copy.deepcopy(DEFAULT_HERA_DELTA)
@@ -179,6 +186,8 @@ DEFAULT_HERA_FORWARD = {
     },
 }
 
+DEFAULT_HERA_FORWARD_RNN = copy.deepcopy(DEFAULT_HERA_FORWARD)
+DEFAULT_HERA_FORWARD_RNN["model"]["type"] = "RNN_FORWARD_STEP"
 DEFAULT_LOFAR_FORWARD = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_LOFAR_FORWARD["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_FORWARD = copy.deepcopy(DEFAULT_HERA_LATENCY)
@@ -216,7 +225,7 @@ def get_default_params(
         dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
 ):
     if dataset == "HERA":
-        if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
+        if model_type == "FC_LATENCY":
             if model_size == 128:
                 params = DEFAULT_HERA_LATENCY
             elif model_size == 256:
@@ -228,13 +237,21 @@ def get_default_params(
                 params["encoder"]["exposure"] = 20
             else:
                 raise ValueError(f"Unknown model size {model_size}")
-        elif model_type == "FC_RATE" or model_type == "RNN_RATE":
+        elif model_type == "RNN_LATENCY":
+            params = DEFAULT_HERA_LATENCY_RNN
+        elif model_type == "FC_RATE":
             params = DEFAULT_HERA_RATE
-        elif model_type == "FC_DELTA" or model_type == "RNN_DELTA":
+        elif model_type == "RNN_RATE":
+            params = DEFAULT_HERA_RATE_RNN
+        elif model_type == "FC_DELTA":
             params = DEFAULT_HERA_DELTA
-        elif model_type == "FC_DELTA_ON" or model_type == "RNN_DELTA_ON":
+        elif model_type == "RNN_DELTA":
+            params = DEFAULT_HERA_DELTA_RNN
+        elif model_type == "FC_DELTA_ON":
             params = DEFAULT_HERA_DELTA_ON
-        elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
+        elif model_type == "RNN_DELTA_ON":
+            params = DEFAULT_HERA_DELTA_ON_RNN
+        elif model_type == "FC_FORWARD_STEP":
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "direct"
@@ -250,6 +267,15 @@ def get_default_params(
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
             return DEFAULT_HERA_FORWARD
+        elif model_type == "RNN_FORWARD_STEP":
+            if exposure_mode == "direct":
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD_RNN)
+                params["encoder"]["exposure_mode"] = "direct"
+            elif exposure_mode == "latency":
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD_RNN)
+                params["encoder"]["exposure_mode"] = "latency"
+            else:
+                params = DEFAULT_HERA_FORWARD_RNN
         elif model_type == "FC_ANN":
             params = DEFAULT_HERA_ANN
         else:
