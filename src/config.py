@@ -76,7 +76,7 @@ DEFAULT_HERA_RATE = {
         "normalize": True,
     },
 }
-DEFAULT_HERA_RATE_RNN = copy.deepcopy(DEFAULT_HERA_LATENCY)
+DEFAULT_HERA_RATE_RNN = copy.deepcopy(DEFAULT_HERA_RATE)
 DEFAULT_HERA_RATE_RNN["model"]["type"] = "RNN_RATE"
 DEFAULT_LOFAR_RATE = copy.deepcopy(DEFAULT_HERA_RATE)
 DEFAULT_LOFAR_RATE["data_source"]["dataset"] = "LOFAR"
@@ -222,7 +222,7 @@ DEFAULT_HERA_ANN = {
 
 
 def get_default_params(
-        dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
+    dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
 ):
     if dataset == "HERA":
         if model_type == "FC_LATENCY":
