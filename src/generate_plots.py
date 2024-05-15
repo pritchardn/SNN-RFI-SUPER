@@ -1,10 +1,12 @@
 """
 This script generates plots for the HERA dataset.
 """
+import matplotlib.colors
+import matplotlib.pyplot as plt
+import numpy as np
+
 from config import get_default_params
 from experiment import data_source_from_config, encoder_from_config
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 def load_dataset_examples(config: dict, limit: int):
@@ -20,27 +22,68 @@ def load_dataset_examples(config: dict, limit: int):
 
 
 def plot_example_original(x, y, i, title: str):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(10, 5))
+    plt.rcParams.update(plt.rcParamsDefault)
+    plt.rc("axes", labelsize=16)
+    plt.rc("xtick", labelsize=16)
+    plt.rc("ytick", labelsize=16)
     plt.tight_layout()
+    ax = fig.add_subplot(111, frameon=False)
+    plt.tick_params(labelcolor="none", top=False, bottom=False, left=False, right=False)
     gs = fig.add_gridspec(1, 2)
     ax1 = fig.add_subplot(gs[0, 0])
     ax2 = fig.add_subplot(gs[0, 1])
-    ax1.imshow(np.moveaxis(x, 0, -1))
-    ax2.imshow(np.moveaxis(y, 0, -1))
-    ax2.set_title("RFI Mask")
-    plt.title(f"Example {i}")
+    image1 = ax1.imshow(np.moveaxis(x, 0, -1))
+    image2 = ax2.imshow(np.moveaxis(y, 0, -1))
+    plt.colorbar(image1, location="right", shrink=0.9)
+    plt.colorbar(image2, location="right", shrink=0.9, ticks=[0, 1])
+    fig.text(0.5, 0.1, "Time [s]", ha="center", va="center", fontsize=16)
+    ax.set_ylabel("Frequency bin")
+    for ax in [ax1, ax2]:
+        ax.invert_yaxis()
+    # plt.subplots_adjust(bottom=0.2, top=0.8, left=0.1, right=0.9)
+    plt.subplots_adjust(bottom=0.2, top=0.8, wspace=0.3)
     plt.savefig(f"original_{title}_example_{i}.png", bbox_inches="tight")
     plt.close()
 
 
-def plot_example_raster(spike_x, frequency_width, stride, exposure, i, title: str):
-    plt.tight_layout()
+def plot_example_raster(
+    spike_x, frequency_width, stride, exposure, i, title: str, mode=1
+):
+    # plt.tight_layout()
+    plt.rcParams.update(plt.rcParamsDefault)
+    plt.rc("axes", labelsize=10 * mode)
+    plt.rc("xtick", labelsize=8 * mode)
+    plt.rc("ytick", labelsize=8 * mode)
+    plt.figure(figsize=(10, 5))
     example = spike_x
     example = example.squeeze(1)  # Remove channel dimension
     out = np.zeros((frequency_width, stride * exposure))
     for t in range(example.shape[-1]):  # t
         out[:, t * exposure : (t + 1) * exposure] = np.moveaxis(example[:, :, t], 0, -1)
-    plt.imshow(out)
+    if min(spike_x.flatten()) < 0:
+        ticks = [-1, 0, 1]
+        cmap = plt.get_cmap("viridis", 3)
+        # cmaplist = [cmap(i) for i in range(cmap.N)]
+        cmaplist = [cmap(1), cmap(0), cmap(2)]
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            "Custom cmap", cmaplist, cmap.N
+        )
+    else:
+        ticks = [0, 1]
+        cmap = plt.get_cmap("viridis", 3)
+        cmaplist = [cmap(i) for i in range(cmap.N)]
+        # cmaplist[0] = (1.0, 1.0, 1.0, 1.0)
+        cmaplist = [cmap(0), cmap(2)]
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            "Custom cmap", cmaplist, cmap.N - 1
+        )
+    plt.imshow(out, cmap=cmap)
+    plt.gca().invert_yaxis()
+    plt.ylabel("Frequency bin")
+    plt.xlabel("Time [s]")
+
+    plt.colorbar(location="right", ticks=ticks, shrink=0.5 * mode)
     plt.savefig(f"raster_{title}_example_{i}.png", bbox_inches="tight")
     plt.close()
 
@@ -59,11 +102,15 @@ def plot_example(x, y, spike_x, frequency_width, stride, exposure, i, title: str
         out[:, t * exposure : (t + 1) * exposure] = np.moveaxis(example[:, :, t], 0, -1)
     ax1.imshow(out)
     ax1.set_title("Spike Train")
-    ax2.imshow(np.moveaxis(x, 0, -1))
+    ax1.set_xlabel("Time [s]")
+    pic = ax2.imshow(np.moveaxis(x, 0, -1))
+    fig.colorbar(pic, ax=ax2, location="right")
     ax2.set_title("Original Spectrogram")
     ax3.imshow(np.moveaxis(y, 0, -1))
     ax3.set_title("RFI Mask")
     plt.title(f"Example {i}")
+    for ax in [ax1, ax2, ax3]:
+        ax.invert_yaxis()
     plt.savefig(f"plot_{title}_example_{i}.png", bbox_inches="tight")
     plt.close()
 
@@ -104,13 +151,13 @@ def main_single(model, exposure_mode, stride, exposure, limit: int = 10):
 
 def main_all(stride, exposure, limit: int = 10):
     test_x, test_y = None, None
-    for model, exposure_mode in [
-        ("FC_LATENCY", None),
-        ("FC_RATE", None),
-        ("FC_DELTA", None),
-        ("FC_FORWARD_STEP", "first"),
-        ("FC_FORWARD_STEP", "direct"),
-        ("FC_FORWARD_STEP", "latency"),
+    for model, exposure_mode, plot_mode in [
+        ("FC_LATENCY", None, 1),
+        ("FC_RATE", None, 1),
+        ("FC_DELTA", None, 2),
+        ("FC_FORWARD_STEP", "first", 2),
+        ("FC_FORWARD_STEP", "direct", 2),
+        ("FC_FORWARD_STEP", "latency", 2),
     ]:
         print(model)
         config, frequency_width, used_exposure = setup_config(
@@ -133,7 +180,13 @@ def main_all(stride, exposure, limit: int = 10):
                 title,
             )
             plot_example_raster(
-                spike_x[i], frequency_width, stride, used_exposure, i, title
+                spike_x[i],
+                frequency_width,
+                stride,
+                used_exposure,
+                i,
+                title,
+                mode=plot_mode,
             )
             plot_example_original(test_x[i], test_y[i], i, title)
 

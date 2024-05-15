@@ -29,6 +29,11 @@ from models.fc_delta import LitFcDelta
 from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
 from models.fc_rate import LitFcRate
+from models.fcp_ann import LitFcPANN
+from models.fcp_delta import LitFcPDelta
+from models.fcp_forwardstep import LitFcPForwardStep
+from models.fcp_latency import LitFcPLatency
+from models.fcp_rate import LitFcPRate
 
 
 def data_source_from_config(config: dict) -> RawDataLoader:
@@ -55,7 +60,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -146,6 +151,36 @@ def model_from_config(config: dict) -> pl.LightningModule:
         )
     elif model_type == "FC_ANN":
         model = LitFcANN(num_inputs, num_hidden, num_outputs, num_layers)
+    elif model_type == "FCP_ANN":
+        model = LitFcPANN(num_inputs, num_hidden, num_outputs, num_layers)
+    elif model_type == "FCP_LATENCY":
+        model = LitFcPLatency(num_inputs, num_hidden, num_outputs, beta, num_layers)
+    elif model_type == "FCP_RATE":
+        model = LitFcPRate(num_inputs, num_hidden, num_outputs, beta, num_layers)
+    elif model_type == "FCP_DELTA":
+        reconstruct_loss = config.get("reconstruct_loss")
+        model = LitFcPDelta(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            reconstruct_loss,
+            True,
+            num_layers,
+        )
+    elif model_type == "FCP_DELTA_ON":
+        reconstruct_loss = config.get("reconstruct_loss")
+        model = LitFcPDelta(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            reconstruct_loss,
+            False,
+            num_layers,
+        )
+    elif model_type == "FCP_FORWARD_STEP":
+        model = LitFcPForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model
@@ -206,6 +241,8 @@ def encoder_from_config(config: dict) -> SpikeConverter:
         )
     elif config.get("method") == "ANN":
         encoder = NonConverter()
+    elif config.get("method") == "ANN_PATCHED":
+        encoder = NonConverter(patched=True)
     return encoder
 
 
@@ -254,9 +291,26 @@ class Experiment:
         with open(os.path.join(out_dir, "config.json"), "w") as ofile:
             json.dump(self.configuration, ofile, indent=4)
 
+    def save_model(self):
+        out_dir = self.trainer.log_dir
+        os.makedirs(out_dir, exist_ok=True)
+        sample, _ = next(iter(self.dataset.train_dataloader()))
+        torch.onnx.export(self.model, sample, os.path.join(out_dir, "model.onnx"),
+                          input_names=["inputs"],
+                          output_names=["outputs"],
+                          dynamic_axes={'inputs': {0: 'batch_size'},
+                                        'outputs': {0: 'batch_size'}}
+                          )
+
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:
             self.configuration = json.load(ifile)
+
+    def save_model(self):
+        out_dir = self.trainer.log_dir
+        os.makedirs(out_dir, exist_ok=True)
+        input_sample, _ = next(iter(self.dataset.test_dataloader()))
+        self.model.to_onnx(os.path.join(out_dir, "model.onnx"), input_sample, export_params=True)
 
     def prepare(self):
         err_msg = ""
@@ -320,10 +374,16 @@ class Experiment:
                     self.data_source.original_size,
                     self.data_source.stride,
                 )
+                original_data = reconstruct_patches(
+                    self.data_source.fetch_test_x(),
+                    self.data_source.original_size,
+                    self.data_source.stride,
+                )
                 final_evaluation(
                     self.model,
                     self.dataset,
                     self.encoder,
+                    original_data,
                     mask_orig,
                     self.trainer.log_dir,
                 )
