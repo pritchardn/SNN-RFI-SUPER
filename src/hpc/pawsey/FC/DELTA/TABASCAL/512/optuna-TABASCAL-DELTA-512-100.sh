@@ -27,7 +27,7 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${OPTUNA_URL} # Need to change on super-computer before submitting
-export STUDY_NAME="SNN-SUPER-${DATASET}-${ENCODER_METHOD}-100-${NUM_HIDDEN}"
+export STUDY_NAME="SNN-SUPER-${DATASET}-${ENCODER_METHOD}-${MODEL_TYPE}-100-${NUM_HIDDEN}"
 export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}"
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
