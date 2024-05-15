@@ -36,6 +36,7 @@ def main():
     experiment.save_model()
     experiment.evaluate(plot)
     print("Evaluation complete")
+    experiment.save_model()
 
 
 if __name__ == "__main__":

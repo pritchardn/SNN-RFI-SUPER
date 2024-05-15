@@ -71,4 +71,5 @@ def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):
     )
     auprc = auc(recall, precision)
     f1 = 2 * (precision * recall) / (precision + recall)
+    f1 = np.nan_to_num(f1, nan=0.0)
     return accuracy, mse, auroc, auprc, np.max(f1)

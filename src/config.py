@@ -193,7 +193,7 @@ DEFAULT_HERA_ANN = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 18,
+        "batch_size": 44,
     },
     "model": {
         "type": "FC_ANN",
@@ -203,7 +203,7 @@ DEFAULT_HERA_ANN = {
         "num_layers": 2,
     },
     "trainer": {
-        "epochs": 68,
+        "epochs": 29,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
@@ -254,6 +254,16 @@ def get_default_params(
             return DEFAULT_HERA_FORWARD
         elif model_type == "FC_ANN":
             return DEFAULT_HERA_ANN
+        elif model_type == "FCP_ANN":
+            params = copy.deepcopy(DEFAULT_HERA_ANN)
+            params["model"]["num_hidden"] = model_size
+            params["model"]["type"] = model_type
+            stride = params["data_source"]["stride"]
+            params["model"]["num_inputs"] = stride * stride
+            params["model"]["num_outputs"] = stride * stride
+            params["model"]["num_hidden"] = model_size
+            params["encoder"]["method"] = "ANN_PATCHED"
+            return params
         elif model_type == "FCP_LATENCY":
             params = DEFAULT_HERA_LATENCY
             stride = params["data_source"]["stride"]
@@ -269,6 +279,8 @@ def get_default_params(
             params["model"]["num_inputs"] = stride * stride
             params["model"]["num_outputs"] = stride * stride
             params["model"]["num_hidden"] = model_size
+            params["encoder"]["exposure"] = 64
+            params["trainer"]["epochs"] = 100
             return params
         elif model_type == "FCP_DELTA":
             params = DEFAULT_HERA_DELTA
