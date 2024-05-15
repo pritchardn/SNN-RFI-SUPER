@@ -9,7 +9,13 @@ models = {
         ("FC_RATE", "RATE"),
         ("FC_DELTA", "DELTA"),
         ("FC_FORWARD_STEP", "FORWARDSTEP"),
-    ]
+    ],
+    "RNN": [
+        ("RNN_LATENCY", "LATENCY"),
+        ("RNN_RATE", "RATE"),
+        ("RNN_DELTA", "DELTA"),
+        ("RNN_FORWARD_STEP", "FORWARDSTEP"),
+    ],
 }
 datasets = ["HERA", "LOFAR", "TABASCAL"]
 forwardstep_exposures = ["direct", "first", "latency"]
