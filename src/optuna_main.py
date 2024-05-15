@@ -23,7 +23,7 @@ def objective(trial):
 
     config["dataset"]["batch_size"] = trial.suggest_int("batch_size", 16, 128)
     config["model"]["num_hidden"] = int(os.getenv("NUM_HIDDEN", 128))
-    config["model"]["num_layers"] = int(os.getenv("NUM_LAYERS", 2))
+    config["model"]["num_layers"] = trial.suggest_int("num_layers", 2, 6)
     config["model"]["beta"] = trial.suggest_float("beta", 0.5, 0.99)
 
     config["trainer"]["epochs"] = trial.suggest_int("epochs", 5, 100)
