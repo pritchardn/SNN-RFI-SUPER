@@ -266,7 +266,7 @@ def get_default_params(
                 params["trainer"]["epochs"] = 83
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
-            return DEFAULT_HERA_FORWARD
+            params = DEFAULT_HERA_FORWARD
         elif model_type == "RNN_FORWARD_STEP":
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD_RNN)
@@ -287,7 +287,6 @@ def get_default_params(
             params["model"]["num_outputs"] = stride * stride
             params["model"]["num_hidden"] = model_size
             params["encoder"]["method"] = "ANN_PATCHED"
-            return params
         elif model_type == "FCP_LATENCY":
             params = DEFAULT_HERA_LATENCY
             stride = params["data_source"]["stride"]
@@ -295,7 +294,6 @@ def get_default_params(
             params["model"]["num_inputs"] = stride * stride
             params["model"]["num_outputs"] = stride * stride
             params["model"]["num_hidden"] = model_size
-            return params
         elif model_type == "FCP_RATE":
             params = DEFAULT_HERA_RATE
             stride = params["data_source"]["stride"]
@@ -305,7 +303,6 @@ def get_default_params(
             params["model"]["num_hidden"] = model_size
             params["encoder"]["exposure"] = 64
             params["trainer"]["epochs"] = 100
-            return params
         elif model_type == "FCP_DELTA":
             params = DEFAULT_HERA_DELTA
             stride = params["data_source"]["stride"]
@@ -313,7 +310,6 @@ def get_default_params(
             params["model"]["num_inputs"] = stride * stride
             params["model"]["num_outputs"] = stride * stride * 2
             params["model"]["num_hidden"] = model_size
-            return params
         elif model_type == "FCP_DELTA_ON":
             params = DEFAULT_HERA_DELTA_ON
             stride = params["data_source"]["stride"]
@@ -321,7 +317,6 @@ def get_default_params(
             params["model"]["num_inputs"] = stride * stride * 2
             params["model"]["num_outputs"] = stride * stride * 2
             params["model"]["num_hidden"] = model_size
-            return params
         elif model_type == "FCP_FORWARD_STEP":
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
@@ -335,7 +330,6 @@ def get_default_params(
                 params["trainer"]["epochs"] = 43
                 params["model"]["beta"] = 0.920343975816805
                 params["dataset"]["batch_size"] = 79
-                return params
             elif exposure_mode == "latency":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["model"]["type"] = model_type
@@ -348,14 +342,12 @@ def get_default_params(
                 params["trainer"]["epochs"] = 83
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
-                return params
             params = copy.deepcopy(DEFAULT_HERA_FORWARD)
             stride = params["data_source"]["stride"]
             params["model"]["num_inputs"] = stride * stride * 2
             params["model"]["num_outputs"] = stride * stride
             params["model"]["num_hidden"] = model_size
             params["model"]["type"] = model_type
-            return params
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
