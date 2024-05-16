@@ -33,10 +33,9 @@ class BaseLitModel(pl.LightningModule):
         self.beta = beta
         self.num_layers = num_layers
 
-        self.ann_layers = self._init_ann_layers()
-        self.snn_layers = self._init_snn_layers()
+        self.layers = self._init_layers()
 
-    def _init_ann_layers(self):
+    def _init_layers(self):
         layers = nn.ModuleList()
         for i in range(self.num_layers):
             if i == 0:
@@ -45,11 +44,6 @@ class BaseLitModel(pl.LightningModule):
                 layers.append(nn.Linear(self.num_hidden, self.num_outputs))
             else:
                 layers.append(nn.Linear(self.num_hidden, self.num_hidden))
-        return layers
-
-    def _init_snn_layers(self):
-        layers = nn.ModuleList()
-        for i in range(self.num_layers):
             layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
         return layers
 
@@ -61,7 +55,7 @@ class BaseLitModel(pl.LightningModule):
         self.log("accuracy", score)
 
     def _init_membranes(self):
-        return [lif.init_leaky() for lif in self.snn_layers]
+        return [lif.init_leaky() for lif in self.layers[1::2]]
 
     @abc.abstractmethod
     def forward(self, x):
@@ -130,8 +124,8 @@ class LitModel(BaseLitModel):
     def _infer_slice(self, x, membranes):
         spike = None
         for n in range(self.num_layers):
-            curr = self.ann_layers[n](x)
-            spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
+            curr = self.layers[n * 2](x)
+            spike, membranes[n] = self.layers[(n*2)+1](curr, membranes[n])
             x = spike
         return spike, membranes[-1]
 
@@ -154,7 +148,6 @@ class LitModel(BaseLitModel):
         full_mem = torch.stack(full_mem, dim=0)
         full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
         full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
-        print(full_spike.shape)
         return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
 
 
