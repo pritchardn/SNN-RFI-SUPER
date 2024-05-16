@@ -268,6 +268,10 @@ def get_default_params(
             params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["model"]["type"] = "FC_LATENCY_ROCKPOOL"
             params["encoder"]["method"] = "LATENCY_FULL"
+            params["data_source"]["stride"] = 16
+            params["data_source"]["patch_size"] = 16
+            params["model"]["num_inputs"] = 16
+            params["model"]["num_outputs"] = 16
             return params
         elif model_type == "FCP_LATENCY_ROCKPOOL":
             params = copy.deepcopy(DEFAULT_HERA_LATENCY)
