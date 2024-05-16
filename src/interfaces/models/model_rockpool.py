@@ -25,15 +25,25 @@ class BaseModelRockpool(pl.LightningModule):
         self.num_outputs = num_outputs
         self.num_layers = num_layers
         self._init_layers()
+        self.loss = torch.nn.MSELoss()
 
     def _init_layers(self):
         layers = []
         for i in range(self.num_layers):
             if i == 0:
                 layers.append(LinearTorch((self.num_inputs, self.num_hidden), has_bias=False))
-            elif i == self.num_layers - 1:
                 layers.append(LIFTorch(  # TODO: Refinement of parameters
-                    (self.num_hidden, self.num_outputs),
+                    self.num_hidden,
+                    tau_mem=0.002,
+                    tau_syn=0.002,
+                    threshold=1.0,
+                    learning_window=0.2,
+                    dt=0.001,
+                ))
+            elif i == self.num_layers - 1:
+                layers.append(LinearTorch((self.num_hidden, self.num_outputs), has_bias=False))
+                layers.append(LIFTorch(  # TODO: Refinement of parameters
+                    self.num_outputs,
                     tau_mem=0.002,
                     tau_syn=0.002,
                     threshold=1.0,
@@ -41,8 +51,9 @@ class BaseModelRockpool(pl.LightningModule):
                     dt=0.001,
                 ))
             else:
+                layers.append(LinearTorch((self.num_hidden, self.num_hidden), has_bias=False))
                 layers.append(LIFTorch(  # TODO: Refinement of parameters
-                    (self.num_hidden, self.num_hidden),
+                    self.num_hidden,
                     tau_mem=0.002,
                     tau_syn=0.002,
                     threshold=1.0,
@@ -51,6 +62,7 @@ class BaseModelRockpool(pl.LightningModule):
                 ))
         self.model = Sequential(*layers)
         self.model = self.model.to("cuda")
+        print(self.model)
 
     def set_converter(self, converter: SpikeConverter):
         self.converter = converter
@@ -115,24 +127,17 @@ class LitModelRockpool(BaseModelRockpool):
         super().__init__(num_inputs, num_hidden, num_outputs, num_layers)
 
     def forward(self, x):
-        full_spike = []
         full_mem = []
-        self.model.reset_state()
-        for t in range(x.shape[-1]):
-            spike_out = []
-            mem_out = []
-            for step in range(x.shape[1]):  # [N x C x freq]
-                data = x[:, step, 0, :, t]
-                spike, mem, recording = self.model(data)
-                spike_out.append(spike.squeeze())
-                # mem_out.append(mem)
-            full_spike.append(torch.stack(spike_out, dim=1))
-            # full_mem.append(torch.stack(mem_out, dim=1))
-        full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
-        # full_mem = torch.stack(full_mem, dim=0)
-        full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
-        # full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
-        return full_spike, full_mem
+        original_shape = x.shape
+        data = torch.moveaxis(x, -1, 2)
+        data = data.reshape(original_shape[0], -1, original_shape[-2])
+        self.model = self.model.reset_state()
+        spike, mem, recording = self.model(data)
+        spike = spike.reshape(original_shape[0], original_shape[1], original_shape[-2], original_shape[-1])
+        spike = spike.unsqueeze(2)
+        spike = spike.moveaxis(-2, -1)
+        spike = torch.nan_to_num(spike, nan=0.0, posinf=0.0, neginf=0.0)
+        return spike, full_mem
 
 
 class LitModelPatchedRockpool(BaseModelRockpool):
