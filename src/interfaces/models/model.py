@@ -7,6 +7,7 @@ import lightning.pytorch as pl
 import torch
 from torch import nn
 import snntorch as snn
+import snntorch.functional as functional
 from sklearn.metrics import balanced_accuracy_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -34,6 +35,7 @@ class BaseLitModel(pl.LightningModule):
         self.beta = beta
         self.num_layers = num_layers
         self.recurrent = recurrent
+        self.regularization = None
 
         self.ann_layers = self._init_ann_layers()
         self.snn_layers = self._init_snn_layers()
@@ -85,6 +87,9 @@ class BaseLitModel(pl.LightningModule):
 
     def calc_loss(self, y_hat, y):
         loss = self.loss(y_hat, y)
+        if self.regularization:
+            for reg_method in self.regularization:
+                loss += reg_method(y_hat)
         return loss
 
     def training_step(self, batch, batch_idx):
