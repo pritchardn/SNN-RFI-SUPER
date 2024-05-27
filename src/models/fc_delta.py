@@ -2,6 +2,7 @@
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
 module for a fully connected delta-coding model.
 """
+
 import torch
 from torch import nn
 
@@ -20,9 +21,18 @@ class LitFcDelta(LitModel):
         off_spikes: bool,
         num_layers: int,
         recurrent: bool = False,
+        dropout: bool = False,
+        dropout_rate: float = 0.5,
     ):
         super().__init__(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            recurrent,
+            dropout,
+            dropout_rate,
         )
         if off_spikes:
             if num_outputs != num_inputs * 2:

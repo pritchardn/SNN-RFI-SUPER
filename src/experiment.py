@@ -3,6 +3,7 @@ This module provides a class to manage experiments with the PyTorch Lightning fr
 It is in charge of loading the configuration, setting up the data, model, and trainer,
 and fitting the model.
 """
+
 import glob
 import json
 import os
@@ -60,7 +61,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -81,20 +82,47 @@ def model_from_config(config: dict) -> pl.LightningModule:
     dropout_rate = config.get("dropout_rate", 0.5)
     if model_type == "FC_LATENCY":
         model = LitFcLatency(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False, dropout=dropout,
-            dropout_rate=dropout_rate
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            recurrent=False,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "RNN_LATENCY":
         model = LitFcLatency(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            recurrent=True,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "FC_RATE":
         model = LitFcRate(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            recurrent=False,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "RNN_RATE":
         model = LitFcRate(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            recurrent=True,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "FC_DELTA":
         reconstruct_loss = config.get("reconstruct_loss")
@@ -107,6 +135,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
             True,
             num_layers,
             recurrent=False,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "RNN_DELTA":
         reconstruct_loss = config.get("reconstruct_loss")
@@ -119,6 +149,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
             True,
             num_layers,
             recurrent=True,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "FC_DELTA_ON":
         reconstruct_loss = config.get("reconstruct_loss")
@@ -131,6 +163,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
             False,
             num_layers,
             recurrent=False,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "RNN_DELTA_ON":
         reconstruct_loss = config.get("reconstruct_loss")
@@ -143,23 +177,55 @@ def model_from_config(config: dict) -> pl.LightningModule:
             False,
             num_layers,
             recurrent=False,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "FC_FORWARD_STEP":
         model = LitFcForwardStep(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            recurrent=False,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "RNN_FORWARD_STEP":
         model = LitFcForwardStep(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            recurrent=True,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "FC_ANN":
         model = LitFcANN(num_inputs, num_hidden, num_outputs, num_layers)
     elif model_type == "FCP_ANN":
         model = LitFcPANN(num_inputs, num_hidden, num_outputs, num_layers)
     elif model_type == "FCP_LATENCY":
-        model = LitFcPLatency(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        model = LitFcPLatency(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
+        )
     elif model_type == "FCP_RATE":
-        model = LitFcPRate(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        model = LitFcPRate(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
+        )
     elif model_type == "FCP_DELTA":
         reconstruct_loss = config.get("reconstruct_loss")
         model = LitFcPDelta(
@@ -170,6 +236,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
             reconstruct_loss,
             True,
             num_layers,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "FCP_DELTA_ON":
         reconstruct_loss = config.get("reconstruct_loss")
@@ -181,9 +249,19 @@ def model_from_config(config: dict) -> pl.LightningModule:
             reconstruct_loss,
             False,
             num_layers,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
         )
     elif model_type == "FCP_FORWARD_STEP":
-        model = LitFcPForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        model = LitFcPForwardStep(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            beta,
+            num_layers,
+            dropout=dropout,
+            dropout_rate=dropout_rate,
+        )
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model
@@ -298,12 +376,14 @@ class Experiment:
         out_dir = self.trainer.log_dir
         os.makedirs(out_dir, exist_ok=True)
         sample, _ = next(iter(self.dataset.train_dataloader()))
-        torch.onnx.export(self.model, sample, os.path.join(out_dir, "model.onnx"),
-                          input_names=["inputs"],
-                          output_names=["outputs"],
-                          dynamic_axes={'inputs': {0: 'batch_size'},
-                                        'outputs': {0: 'batch_size'}}
-                          )
+        torch.onnx.export(
+            self.model,
+            sample,
+            os.path.join(out_dir, "model.onnx"),
+            input_names=["inputs"],
+            output_names=["outputs"],
+            dynamic_axes={"inputs": {0: "batch_size"}, "outputs": {0: "batch_size"}},
+        )
 
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:
@@ -313,7 +393,9 @@ class Experiment:
         out_dir = self.trainer.log_dir
         os.makedirs(out_dir, exist_ok=True)
         input_sample, _ = next(iter(self.dataset.test_dataloader()))
-        self.model.to_onnx(os.path.join(out_dir, "model.onnx"), input_sample, export_params=True)
+        self.model.to_onnx(
+            os.path.join(out_dir, "model.onnx"), input_sample, export_params=True
+        )
 
     def prepare(self):
         err_msg = ""

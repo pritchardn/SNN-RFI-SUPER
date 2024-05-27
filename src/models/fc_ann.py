@@ -1,6 +1,7 @@
 """
 Fully connected artificial neural network model for spectrograms.
 """
+
 import lightning.pytorch as pl
 import torch
 from torch import nn
