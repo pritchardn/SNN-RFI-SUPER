@@ -26,6 +26,8 @@ class BaseLitModel(pl.LightningModule):
             beta: float,
             num_layers: int,
             recurrent: bool,
+            dropout: bool,
+            dropout_rate: float
     ):
         super().__init__()
         self.converter = None
@@ -36,8 +38,11 @@ class BaseLitModel(pl.LightningModule):
         self.num_layers = num_layers
         self.recurrent = recurrent
         self.regularization = None
+        self.dropout = dropout
+        self.dropout_rate = dropout_rate
 
         self.ann_layers = self._init_ann_layers()
+        self.dropout_layers = self._init_dropout_layers() if self.dropout else None
         self.snn_layers = self._init_snn_layers()
 
     def _init_ann_layers(self):
@@ -49,6 +54,12 @@ class BaseLitModel(pl.LightningModule):
                 layers.append(nn.Linear(self.num_hidden, self.num_outputs))
             else:
                 layers.append(nn.Linear(self.num_hidden, self.num_hidden))
+        return layers
+
+    def _init_dropout_layers(self):
+        layers = nn.ModuleList()
+        for i in range(self.num_layers):
+            layers.append(nn.Dropout(p=self.dropout_rate))
         return layers
 
     def _init_snn_layers(self):
@@ -146,13 +157,18 @@ class LitModel(BaseLitModel):
             beta: float,
             num_layers: int,
             recurrent: bool = False,
+            dropout: bool = False,
+            dropout_rate: float = 0.5
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent)
+        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent, dropout,
+                         dropout_rate)
 
     def _infer_slice(self, x, membranes):
         spike = None
         for n in range(self.num_layers):
             curr = self.ann_layers[n](x)
+            if self.dropout:
+                curr = self.dropout_layers[n](curr)
             spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
             x = spike
         return spike, membranes[-1]
@@ -160,6 +176,8 @@ class LitModel(BaseLitModel):
     def _infer_slice_recurrent(self, x, states):
         for n in range(self.num_layers):
             curr = self.ann_layers[n](x)
+            if self.dropout:
+                curr = self.dropout_layers[n](curr)
             states[n] = self.snn_layers[n](curr, states[n][0], states[n][1])
             x = states[n][0]
         return x, states[-1][1]

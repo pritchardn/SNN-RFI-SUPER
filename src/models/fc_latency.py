@@ -18,9 +18,11 @@ class LitFcLatency(LitModel):
         beta: float,
         num_layers: int,
         recurrent: bool = False,
+        dropout: bool = False,
+        dropout_rate: float = 0.5
     ):
         super().__init__(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent, dropout, dropout_rate
         )
         self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()

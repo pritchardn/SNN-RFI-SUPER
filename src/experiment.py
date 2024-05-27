@@ -77,9 +77,12 @@ def model_from_config(config: dict) -> pl.LightningModule:
     num_hidden = config.get("num_hidden")
     num_outputs = config.get("num_outputs")
     num_layers = config.get("num_layers", 2)
+    dropout = config.get("dropout", False)
+    dropout_rate = config.get("dropout_rate", 0.5)
     if model_type == "FC_LATENCY":
         model = LitFcLatency(
-            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False, dropout=dropout,
+            dropout_rate=dropout_rate
         )
     elif model_type == "RNN_LATENCY":
         model = LitFcLatency(

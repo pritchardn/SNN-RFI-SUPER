@@ -22,6 +22,8 @@ DEFAULT_HERA_LATENCY = {
         "num_outputs": 32,
         "num_layers": 2,
         "beta": 0.7270826938643781,
+        "dropout": False,
+        "dropout_rate": 0.5,
     },
     "trainer": {
         "epochs": 44,
