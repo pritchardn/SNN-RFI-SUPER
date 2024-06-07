@@ -22,6 +22,7 @@ class DeltaExposureSpikeConverter(SpikeConverter):
             torch.from_numpy(np.moveaxis(x_data, -1, 0)),
             threshold=self.threshold,
             off_spike=True,
+            padding=True,
         ).numpy()
         encoded = np.moveaxis(encoded, 0, -1)
         encoded = np.expand_dims(encoded, axis=1)  # [N, exp, C, freq, time]
