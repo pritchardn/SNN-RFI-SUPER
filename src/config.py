@@ -163,7 +163,7 @@ DEFAULT_HERA_DELTA_EXPOSURE = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 48,
+        "batch_size": 36,
     },
     "model": {
         "type": "FC_DELTA_EXPOSURE",
@@ -177,13 +177,14 @@ DEFAULT_HERA_DELTA_EXPOSURE = {
         "epochs": 50,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
-    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.1, "exposure": 6},
+    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.0125, "exposure": 4},
 }
 
 DEFAULT_HERA_DELTA_EXPOSURE_RNN = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_HERA_DELTA_EXPOSURE_RNN["model"]["type"] = "RNN_DELTA"
 DEFAULT_LOFAR_DELTA_EXPOSURE = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_LOFAR_DELTA_EXPOSURE["data_source"]["dataset"] = "LOFAR"
+DEFAULT_LOFAR_DELTA_EXPOSURE["encoder"]["threshold"] = 0.5
 DEFAULT_TABASCAL_DELTA_EXPOSURE = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_TABASCAL_DELTA_EXPOSURE["data_source"]["dataset"] = "TABASCAL"
 
