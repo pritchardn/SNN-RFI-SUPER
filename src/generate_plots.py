@@ -13,12 +13,12 @@ def load_dataset_examples(config: dict, limit: int):
     data_source = data_source_from_config(config["data_source"])
     data_source.load_data()
     # Get N examples from the dataset
-    test_x = data_source.fetch_test_x()
-    test_y = data_source.fetch_test_y()
+    val_x = data_source.fetch_val_x()
+    val_y = data_source.fetch_val_y()
     # Get subset
-    test_x = test_x[:limit]
-    test_y = test_y[:limit]
-    return test_x, test_y
+    val_x = val_x[:limit]
+    val_y = val_y[:limit]
+    return val_x, val_y
 
 
 def plot_example_original(x, y, i, title: str):
@@ -116,7 +116,7 @@ def plot_example(x, y, spike_x, frequency_width, stride, exposure, i, title: str
 
 
 def setup_config(model, exposure, exposure_mode, stride):
-    config = get_default_params("HERA", model, 128, exposure_mode)
+    config = get_default_params("LOFAR", model, 128, exposure_mode)
     frequency_width = stride
     if model == "FC_FORWARD_STEP":
         frequency_width *= 2
@@ -131,15 +131,15 @@ def main_single(model, exposure_mode, stride, exposure, limit: int = 10):
     config, frequency_width, exposure = setup_config(
         model, exposure, exposure_mode, stride
     )
-    test_x, test_y = load_dataset_examples(config, limit)
+    val_x, val_y = load_dataset_examples(config, limit)
     # Create converter
     encoder = encoder_from_config(config["encoder"])
-    spike_x = encoder.encode_x(test_x)
+    spike_x = encoder.encode_x(val_x)
     # Plot examples
     for i in range(limit):
         plot_example(
-            test_x[i],
-            test_y[i],
+            val_x[i],
+            val_y[i],
             spike_x[i],
             frequency_width,
             stride,
@@ -150,28 +150,28 @@ def main_single(model, exposure_mode, stride, exposure, limit: int = 10):
 
 
 def main_all(stride, exposure, limit: int = 10):
-    test_x, test_y = None, None
+    val_x, val_y = None, None
     for model, exposure_mode, plot_mode in [
         ("FC_LATENCY", None, 1),
-        ("FC_RATE", None, 1),
-        ("FC_DELTA", None, 2),
-        ("FC_FORWARD_STEP", "first", 2),
-        ("FC_FORWARD_STEP", "direct", 2),
-        ("FC_FORWARD_STEP", "latency", 2),
+        # ("FC_RATE", None, 1),
+        # ("FC_DELTA", None, 2),
+        # ("FC_FORWARD_STEP", "first", 2),
+        # ("FC_FORWARD_STEP", "direct", 2),
+        # ("FC_FORWARD_STEP", "latency", 2),
     ]:
         print(model)
         config, frequency_width, used_exposure = setup_config(
             model, exposure, exposure_mode, stride
         )
-        if test_x is None or test_y is None:
-            test_x, test_y = load_dataset_examples(config, limit)
+        if val_x is None or val_y is None:
+            val_x, val_y = load_dataset_examples(config, limit)
         encoder = encoder_from_config(config["encoder"])
-        spike_x = encoder.encode_x(test_x)
+        spike_x = encoder.encode_x(val_x)
         for i in range(limit):
             title = f"{model}" + (f"_{exposure_mode}" if exposure_mode else "")
             plot_example(
-                test_x[i],
-                test_y[i],
+                val_x[i],
+                val_y[i],
                 spike_x[i],
                 frequency_width,
                 stride,
@@ -188,13 +188,13 @@ def main_all(stride, exposure, limit: int = 10):
                 title,
                 mode=plot_mode,
             )
-            plot_example_original(test_x[i], test_y[i], i, title)
+            plot_example_original(val_x[i], val_y[i], i, title)
 
 
 if __name__ == "__main__":
-    model = "FC_FORWARD_STEP"
+    model = "FC_LATENCY"
     exposure_mode = "first"
     stride = 32
-    exposure = 4
+    exposure = 6
     # main_single(model, exposure_mode, stride, exposure, limit=10)
     main_all(stride, exposure, limit=10)
