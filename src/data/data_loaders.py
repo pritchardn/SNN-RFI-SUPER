@@ -11,9 +11,11 @@ import numpy as np
 
 from interfaces.data.raw_data_loader import RawDataLoader
 
+import matplotlib.pyplot as plt
+
 
 def _normalize(
-    image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
+        image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
 ) -> np.ndarray:
     _max = np.mean(image_data[np.invert(masks)]) + max_threshold * np.std(
         image_data[np.invert(masks)]
@@ -22,6 +24,9 @@ def _normalize(
         np.mean(image_data[np.invert(masks)])
         - min_threshold * np.std(image_data[np.invert(masks)])
     )
+
+    _med = np.median(image_data, axis=(1, 2))
+    image_data -= _med[:, None, None]
     image_data = np.clip(image_data, _min, _max)
     image_data = np.log(image_data)
     # Rescale
@@ -73,6 +78,19 @@ class HeraDataLoader(RawDataLoader):
         self.filter_noiseless_train_patches()
 
 
+def plot_examples(data, mask, title, outdir, n=10):
+    for i in range(n):
+        fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+        axs[0].imshow(np.moveaxis(data[i], 0, -1), cmap="viridis")
+        axs[0].set_title("Data")
+        axs[1].imshow(np.moveaxis(mask[i], 0, -1), cmap="viridis")
+        axs[1].set_title("Mask")
+        plt.suptitle(title)
+        # plt.show()
+        plt.savefig(os.path.join(outdir, f"{title}_{i}.png"))
+        plt.close()
+
+
 class LofarDataLoader(RawDataLoader):
     def _prepare_data(self):
         self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
@@ -97,6 +115,7 @@ class LofarDataLoader(RawDataLoader):
             self.test_y = np.moveaxis(test_y, 1, 2)
         self.original_size = self.train_x.shape[1]
         self._prepare_data()
+        plot_examples(self.train_x, self.train_y, "LOFAR", "./")
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
         self.filter_noiseless_val_patches()
