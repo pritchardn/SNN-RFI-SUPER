@@ -1,6 +1,7 @@
 """
 This module contains the default configuration parameters for the different models.
 """
+
 import copy
 import os
 
@@ -153,6 +154,39 @@ DEFAULT_LOFAR_DELTA_ON["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_DELTA_ON = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_TABASCAL_DELTA_ON["data_source"]["dataset"] = "TABASCAL"
 
+DEFAULT_HERA_DELTA_EXPOSURE = {
+    "data_source": {
+        "data_path": "./data",
+        "limit": 1.0,
+        "patch_size": 32,
+        "stride": 32,
+        "dataset": "HERA",
+    },
+    "dataset": {
+        "batch_size": 48,
+    },
+    "model": {
+        "type": "FC_DELTA_EXPOSURE",
+        "num_inputs": 32,
+        "num_hidden": 128,
+        "num_outputs": 32,
+        "num_layers": 2,
+        "beta": 0.5,
+    },
+    "trainer": {
+        "epochs": 50,
+        "num_nodes": int(os.getenv("NNODES", 1)),
+    },
+    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.1, "exposure": 6},
+}
+
+DEFAULT_HERA_DELTA_EXPOSURE_RNN = copy.deepcopy(DEFAULT_HERA_DELTA)
+DEFAULT_HERA_DELTA_EXPOSURE_RNN["model"]["type"] = "RNN_DELTA"
+DEFAULT_LOFAR_DELTA_EXPOSURE = copy.deepcopy(DEFAULT_HERA_DELTA)
+DEFAULT_LOFAR_DELTA_EXPOSURE["data_source"]["dataset"] = "LOFAR"
+DEFAULT_TABASCAL_DELTA_EXPOSURE = copy.deepcopy(DEFAULT_HERA_DELTA)
+DEFAULT_TABASCAL_DELTA_EXPOSURE["data_source"]["dataset"] = "TABASCAL"
+
 DEFAULT_HERA_FORWARD = {
     "data_source": {
         "data_path": "./data",
@@ -251,6 +285,10 @@ def get_default_params(
             params = DEFAULT_HERA_DELTA_ON
         elif model_type == "RNN_DELTA_ON":
             params = DEFAULT_HERA_DELTA_ON_RNN
+        elif model_type == "FC_DELTA_EXPOSURE":
+            params = DEFAULT_HERA_DELTA_EXPOSURE
+        elif model_type == "RNN_DELTA_EXPOSURE":
+            params = DEFAULT_HERA_DELTA_EXPOSURE_RNN
         elif model_type == "FC_FORWARD_STEP":
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
@@ -359,6 +397,8 @@ def get_default_params(
             params = DEFAULT_LOFAR_DELTA
         elif model_type == "FC_DELTA_ON" or model_type == "RNN_DELTA_ON":
             params = DEFAULT_LOFAR_DELTA_ON
+        elif model_type == "FC_DELTA_EXPOSURE" or model_type == "RNN_DELTA_EXPOSURE":
+            params = DEFAULT_LOFAR_DELTA_EXPOSURE
         elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
             params = DEFAULT_LOFAR_FORWARD
         elif model_type == "FC_ANN":
@@ -374,6 +414,8 @@ def get_default_params(
             params = DEFAULT_TABASCAL_DELTA
         elif model_type == "FC_DELTA_ON" or model_type == "RNN_DELTA_ON":
             params = DEFAULT_TABASCAL_DELTA_ON
+        elif model_type == "FC_DELTA_EXPOSURE" or model_type == "RNN_DELTA_EXPOSURE":
+            params = DEFAULT_TABASCAL_DELTA_EXPOSURE
         elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
             params = DEFAULT_TABASCAL_FORWARD
         elif model_type == "FC_ANN":

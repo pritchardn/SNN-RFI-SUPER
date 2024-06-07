@@ -3,6 +3,7 @@ This module provides a class to manage experiments with the PyTorch Lightning fr
 It is in charge of loading the configuration, setting up the data, model, and trainer,
 and fitting the model.
 """
+
 import glob
 import json
 import os
@@ -20,12 +21,14 @@ from data.spike_converters import (
     ForwardStepConverter,
     NonConverter,
 )
+from data.spike_converters.delta_exposure_converter import DeltaExposureSpikeConverter
 from data.utils import reconstruct_patches
 from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
 from interfaces.data.spiking_data_module import SpikeConverter
 from models.fc_ann import LitFcANN
 from models.fc_delta import LitFcDelta
+from models.fc_delta_exposure import LitFcDeltaExposure
 from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
 from models.fc_rate import LitFcRate
@@ -60,7 +63,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -140,6 +143,14 @@ def model_from_config(config: dict) -> pl.LightningModule:
             False,
             num_layers,
             recurrent=False,
+        )
+    elif model_type == "FC_DELTA_EXPOSURE":
+        model = LitFcDeltaExposure(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
+        )
+    elif model_type == "RNN_DELTA_EXPOSURE":
+        model = LitFcDeltaExposure(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
         )
     elif model_type == "FC_FORWARD_STEP":
         model = LitFcForwardStep(
@@ -226,6 +237,10 @@ def encoder_from_config(config: dict) -> SpikeConverter:
         threshold = config.get("threshold")
         off_spikes = config.get("off_spikes")
         encoder = DeltaSpikeConverter(threshold=threshold, off_spikes=off_spikes)
+    elif config.get("method") == "DELTA_EXPOSURE":
+        threshold = config.get("threshold")
+        exposure = config.get("exposure")
+        encoder = DeltaExposureSpikeConverter(threshold=threshold, exposure=exposure)
     elif config.get("method") == "FORWARDSTEP":
         threshold = config.get("threshold")
         exposure = config.get("exposure")
@@ -295,12 +310,14 @@ class Experiment:
         out_dir = self.trainer.log_dir
         os.makedirs(out_dir, exist_ok=True)
         sample, _ = next(iter(self.dataset.train_dataloader()))
-        torch.onnx.export(self.model, sample, os.path.join(out_dir, "model.onnx"),
-                          input_names=["inputs"],
-                          output_names=["outputs"],
-                          dynamic_axes={'inputs': {0: 'batch_size'},
-                                        'outputs': {0: 'batch_size'}}
-                          )
+        torch.onnx.export(
+            self.model,
+            sample,
+            os.path.join(out_dir, "model.onnx"),
+            input_names=["inputs"],
+            output_names=["outputs"],
+            dynamic_axes={"inputs": {0: "batch_size"}, "outputs": {0: "batch_size"}},
+        )
 
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:
@@ -310,7 +327,9 @@ class Experiment:
         out_dir = self.trainer.log_dir
         os.makedirs(out_dir, exist_ok=True)
         input_sample, _ = next(iter(self.dataset.test_dataloader()))
-        self.model.to_onnx(os.path.join(out_dir, "model.onnx"), input_sample, export_params=True)
+        self.model.to_onnx(
+            os.path.join(out_dir, "model.onnx"), input_sample, export_params=True
+        )
 
     def prepare(self):
         err_msg = ""
