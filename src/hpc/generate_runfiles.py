@@ -9,6 +9,7 @@ models = {
         ("FC_RATE", "RATE"),
         ("FC_DELTA", "DELTA"),
         ("FC_FORWARD_STEP", "FORWARDSTEP"),
+        ("FC_DELTA_EXPOSURE", "DELTA_EXPOSURE")
     ],
     "RNN": [
         ("RNN_LATENCY", "LATENCY"),
