@@ -22,6 +22,7 @@ from data.spike_converters import (
     NonConverter,
 )
 from data.spike_converters.delta_exposure_converter import DeltaExposureSpikeConverter
+from data.spike_converters.delta_exposure_full_converter import DeltaExposureFullSpikeConverter
 from data.utils import reconstruct_patches
 from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
@@ -29,6 +30,7 @@ from interfaces.data.spiking_data_module import SpikeConverter
 from models.fc_ann import LitFcANN
 from models.fc_delta import LitFcDelta
 from models.fc_delta_exposure import LitFcDeltaExposure
+from models.fc_delta_exposure_full import LitFcDeltaExposureFull
 from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
 from models.fc_rate import LitFcRate
@@ -152,6 +154,14 @@ def model_from_config(config: dict) -> pl.LightningModule:
         model = LitFcDeltaExposure(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
         )
+    elif model_type == "FC_DELTA_EXPOSURE_FULL":
+        model = LitFcDeltaExposureFull(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
+        )
+    elif model_type == "RNN_DELTA_EXPOSURE_FULL":
+        model = LitFcDeltaExposureFull(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=True
+        )
     elif model_type == "FC_FORWARD_STEP":
         model = LitFcForwardStep(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
@@ -241,6 +251,10 @@ def encoder_from_config(config: dict) -> SpikeConverter:
         threshold = config.get("threshold")
         exposure = config.get("exposure")
         encoder = DeltaExposureSpikeConverter(threshold=threshold, exposure=exposure)
+    elif config.get("method") == "DELTA_EXPOSURE_FULL":
+        threshold = config.get("threshold")
+        exposure = config.get("exposure")
+        encoder = DeltaExposureFullSpikeConverter(threshold=threshold, exposure=exposure)
     elif config.get("method") == "FORWARDSTEP":
         threshold = config.get("threshold")
         exposure = config.get("exposure")
