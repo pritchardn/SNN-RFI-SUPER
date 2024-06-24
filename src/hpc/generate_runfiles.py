@@ -1,6 +1,7 @@
 """
 This script generates runfiles for supercomputer use.
 """
+
 import os
 
 models = {
@@ -9,7 +10,7 @@ models = {
         ("FC_RATE", "RATE"),
         ("FC_DELTA", "DELTA"),
         ("FC_FORWARD_STEP", "FORWARDSTEP"),
-        ("FC_DELTA_EXPOSURE", "DELTA_EXPOSURE")
+        ("FC_DELTA_EXPOSURE", "DELTA_EXPOSURE"),
     ],
     "RNN": [
         ("RNN_LATENCY", "LATENCY"),
@@ -23,18 +24,18 @@ forwardstep_exposures = ["direct", "first", "latency"]
 
 
 def prepare_singlerun(
-        model,
-        encoding,
-        dataset,
-        size,
-        forward_step_exposure="None",
-        num_nodes=1,
+    model,
+    encoding,
+    dataset,
+    size,
+    forward_step_exposure="None",
+    num_nodes=1,
 ):
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
     runfiletext = (
-            f"""#!/bin/bash
+        f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}-{size}
 #SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
@@ -62,8 +63,8 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{NUM_HIDDEN}}/${{LIMIT}}"""
-            + forward_step_directory
-            + """
+        + forward_step_directory
+        + """
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1
@@ -78,23 +79,23 @@ srun -N $SLURM_JOB_NUM_NODES -n $SLURM_NTASKS -c $OMP_NUM_THREADS -m block:block
 
 
 def prepare_optuna(
-        model,
-        encoding,
-        dataset,
-        size,
-        limit,
-        forward_step_exposure="None",
-        num_nodes=1,
+    model,
+    encoding,
+    dataset,
+    size,
+    limit,
+    forward_step_exposure="None",
+    num_nodes=1,
 ):
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
     study_name = (
-            f"""export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
-            + ('''-${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '''"''')
+        f"""export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
+        + ('''-${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '''"''')
     )
     runfiletext = (
-            f"""#!/bin/bash
+        f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}-{size}
 #SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
@@ -123,11 +124,11 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${{OPTUNA_URL}} # Need to change on super-computer before submitting\n"""
-            + study_name
-            + """
+        + study_name
+        + """
 export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_HIDDEN}/${LIMIT}"""
-            + forward_step_directory
-            + """
+        + forward_step_directory
+        + """
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1

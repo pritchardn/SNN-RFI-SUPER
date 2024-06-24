@@ -1,6 +1,7 @@
 """
 A non-converting encoder and decoder for ANN inference, which does not work with spikes.
 """
+
 import numpy as np
 
 from interfaces.data.spiking_data_module import SpikeConverter
@@ -28,7 +29,7 @@ class NonConverter(SpikeConverter):
         return y_data.astype("float32")
 
     def plot_sample(
-            self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
+        self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
     ):
         pass
 

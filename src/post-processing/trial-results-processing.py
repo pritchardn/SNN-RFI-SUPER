@@ -2,6 +2,7 @@
 This script processes the results of the trials and calculates the summary
 statistics for the metrics.
 """
+
 import csv
 import json
 import os

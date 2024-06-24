@@ -1,6 +1,7 @@
 """
 This script evaluates a trained model using a checkpoint.
 """
+
 import json
 import os
 

@@ -1,6 +1,7 @@
 """
 This module contains an implementation for an adjusts loss function present in snnTorch.
 """
+
 import torch
 from snntorch import spikegen
 from snntorch.functional import LossFunctions

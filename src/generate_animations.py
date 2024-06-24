@@ -10,7 +10,13 @@ interval = 250
 
 def animate_patch(patch, i):
     fig, ax = plt.subplots()
-    anim = splt.animator(torch.from_numpy(np.moveaxis(patch, 1, -1)), fig, ax, interval=interval, cmap=cmap_name)
+    anim = splt.animator(
+        torch.from_numpy(np.moveaxis(patch, 1, -1)),
+        fig,
+        ax,
+        interval=interval,
+        cmap=cmap_name,
+    )
     anim.save(f"patch_{i}.gif")
 
 
@@ -23,12 +29,22 @@ def animate_printer(spectrogram, i, num_patches):
     decoded_inference[decoded_inference > 1] = 1
     for j in range(num_patches):
         mini_frame = np.zeros(spectrogram.shape)
-        mini_frame[:, :, :, j * patch_size : (j + 1) * patch_size] = spectrogram[:, :, :, j * patch_size : (j + 1) * patch_size]
-        mini_frame[:, :, :, :j * patch_size] = decoded_inference[:, :, :j * patch_size]
-        out[j * exposure: (j + 1) * exposure, ...] = mini_frame
+        mini_frame[:, :, :, j * patch_size : (j + 1) * patch_size] = spectrogram[
+            :, :, :, j * patch_size : (j + 1) * patch_size
+        ]
+        mini_frame[:, :, :, : j * patch_size] = decoded_inference[
+            :, :, : j * patch_size
+        ]
+        out[j * exposure : (j + 1) * exposure, ...] = mini_frame
     fig, ax = plt.subplots()
     animate_data = np.moveaxis(out, 1, -1)
-    anim = splt.animator(torch.from_numpy(np.moveaxis(out, 1, -1)), fig, ax, interval=interval, cmap=cmap_name)
+    anim = splt.animator(
+        torch.from_numpy(np.moveaxis(out, 1, -1)),
+        fig,
+        ax,
+        interval=interval,
+        cmap=cmap_name,
+    )
     anim.save(f"sequence_{i}.gif")
 
 
@@ -46,7 +62,7 @@ def reconstruct_patches_time(data: np.array, orig_size: int, patch_size: int):
     n_patches = orig_size // patch_size
     recon = np.empty(
         [
-            data.shape[1] // n_patches ** 2,
+            data.shape[1] // n_patches**2,
             patch_size * n_patches,
             patch_size * n_patches,
             data.shape[2],

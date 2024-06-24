@@ -2,6 +2,7 @@
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
 module for a fully connected step-forward model. Operating in patched inference mode.
 """
+
 import snntorch.functional as SF
 
 from interfaces.models.model import LitPatchedModel

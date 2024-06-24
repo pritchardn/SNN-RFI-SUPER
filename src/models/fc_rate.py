@@ -2,6 +2,7 @@
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
 module for a fully connected rate-coding model.
 """
+
 import torch
 
 from interfaces.models.model import LitModel

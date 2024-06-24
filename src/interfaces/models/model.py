@@ -1,6 +1,7 @@
 """
 Base class for pytorch lightning models. Handles both fully connected Lif and Recurrent Models.
 """
+
 import abc
 
 import lightning.pytorch as pl
@@ -19,13 +20,13 @@ from plotting import plot_example_inference
 class BaseLitModel(pl.LightningModule):
 
     def __init__(
-            self,
-            num_inputs: int,
-            num_hidden: int,
-            num_outputs: int,
-            beta: float,
-            num_layers: int,
-            recurrent: bool,
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+        recurrent: bool,
     ):
         super().__init__()
         self.converter = None
@@ -139,15 +140,17 @@ class BaseLitModel(pl.LightningModule):
 class LitModel(BaseLitModel):
 
     def __init__(
-            self,
-            num_inputs: int,
-            num_hidden: int,
-            num_outputs: int,
-            beta: float,
-            num_layers: int,
-            recurrent: bool = False,
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+        recurrent: bool = False,
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent)
+        super().__init__(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
+        )
 
     def _infer_slice(self, x, membranes):
         spike = None
@@ -187,15 +190,17 @@ class LitModel(BaseLitModel):
 class LitPatchedModel(BaseLitModel):
 
     def __init__(
-            self,
-            num_inputs: int,
-            num_hidden: int,
-            num_outputs: int,
-            beta: float,
-            num_layers: int,
-            recurrent: bool = False
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+        recurrent: bool = False,
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent)
+        super().__init__(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
+        )
 
     def _infer_patch(self, x, membranes):
         spike = None

@@ -1,6 +1,7 @@
 """
 Utility functions for data processing.
 """
+
 from typing import Union
 
 import numpy as np
@@ -30,7 +31,7 @@ def reconstruct_patches(images: np.array, original_size: int, kernel_size: int):
     n_patches = original_size // kernel_size
     recon = np.empty(
         [
-            images.shape[0] // n_patches ** 2,
+            images.shape[0] // n_patches**2,
             kernel_size * n_patches,
             kernel_size * n_patches,
             images.shape[1],

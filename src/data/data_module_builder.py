@@ -1,6 +1,7 @@
 """
 This module is responsible for building a configured data module.
 """
+
 import torch
 from torch.utils.data import TensorDataset
 from data.data_module import ConfiguredDataModule

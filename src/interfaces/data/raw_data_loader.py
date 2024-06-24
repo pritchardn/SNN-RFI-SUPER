@@ -1,6 +1,7 @@
 """
 Interface for loading raw data.
 """
+
 from abc import ABC, abstractmethod
 
 import numpy as np

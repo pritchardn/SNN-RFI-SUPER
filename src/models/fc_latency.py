@@ -2,6 +2,7 @@
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
 module for a fully connected latency-coding model.
 """
+
 import numpy as np
 import snntorch.functional as SF
 

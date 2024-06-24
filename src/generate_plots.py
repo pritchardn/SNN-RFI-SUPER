@@ -1,6 +1,7 @@
 """
 This script generates plots for the HERA dataset.
 """
+
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
