@@ -5,16 +5,38 @@ Contains implemented data loaders for various radio astronomy datasets.
 import os
 import pickle
 from typing import Union
-import h5py
-import sklearn.model_selection
 
+import h5py
 import numpy as np
+import sklearn.model_selection
+from tqdm import tqdm
 
 from interfaces.data.raw_data_loader import RawDataLoader
 
 
+def _delta_normalize(image_data: np.ndarray, kernel_size=3) -> np.ndarray:
+    print("Performing Delta-Normalization")
+    print(f"Original mean: {np.mean(image_data)}")
+    for i, frame in tqdm(enumerate(image_data)):
+        output_frame = np.zeros_like(frame)
+        for tstep in range(1, frame.shape[0]):  # Ignore first timestep
+            for frequency in range(frame.shape[1]):
+                neighbouring_activity = 0.0
+                min_freq = max(0, frequency - kernel_size // 2)
+                max_freq = min(frame.shape[1] - 1, frequency + kernel_size // 2)
+                count_elem = 0
+                for j in range(min_freq, max_freq + 1):
+                    neighbouring_activity += frame[tstep - 1, j]
+                    count_elem += 1
+                output_frame[tstep, frequency] = max(0, frame[
+                    tstep, frequency] - neighbouring_activity / count_elem)
+        image_data[i] = output_frame
+    print(f"New mean : {np.mean(image_data)}")
+    return image_data
+
+
 def _normalize(
-    image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
+        image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
 ) -> np.ndarray:
     _max = np.mean(image_data[np.invert(masks)]) + max_threshold * np.std(
         image_data[np.invert(masks)]
@@ -39,6 +61,8 @@ class HeraDataLoader(RawDataLoader):
         self.train_x = self.train_x.astype("float32")
         self.test_x = _normalize(self.test_x, self.test_y, 1, 4)
         self.train_x = _normalize(self.train_x, self.train_y, 1, 4)
+        self.test_x = _delta_normalize(self.test_x)
+        self.train_x = _delta_normalize(self.train_x)
         self.convert_pytorch()
         self.val_x = self.test_x.copy()
         self.val_y = self.test_y.copy()
