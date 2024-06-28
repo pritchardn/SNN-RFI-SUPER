@@ -1,6 +1,7 @@
 """
 Optuna main script for hyperparameter optimization.
 """
+
 import json
 import os
 
@@ -23,10 +24,10 @@ def objective(trial):
 
     config["dataset"]["batch_size"] = int(os.getenv("BATCH_SIZE", 36))
     config["model"]["num_hidden"] = int(os.getenv("NUM_HIDDEN", 128))
-    config["model"]["num_layers"] = int(os.getenv("NUM_LAYERS"), 2)
+    config["model"]["num_layers"] = int(os.getenv("NUM_LAYERS", 2))
     config["model"]["beta"] = trial.suggest_float("beta", 0.0, 1.0)
 
-    config["trainer"]["epochs"] = int(os.getenv("EPOCHS"), 50)
+    config["trainer"]["epochs"] = int(os.getenv("EPOCHS", 50))
 
     config["encoder"]["method"] = os.getenv("ENCODER_METHOD", "LATENCY")
     config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 64)
