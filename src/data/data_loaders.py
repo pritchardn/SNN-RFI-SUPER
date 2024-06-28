@@ -111,7 +111,7 @@ class HeraDeltaNormLoader(RawDataLoader):
         self.val_x = val_x
         self.val_y = val_y
         self.limit_datasets()
-        self.original_size = self.train_x.shape[1]
+        self.original_size = self.train_x.shape[-1]
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
         self.filter_noiseless_val_patches()
@@ -160,9 +160,10 @@ class LofarDeltaNormLoader(RawDataLoader):
         self.val_x = val_x
         self.val_y = val_y
         self.limit_datasets()
-        self.original_size = self.train_x.shape[1]
+        self.original_size = self.train_x.shape[-1]
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
+        self.filter_noiseless_train_patches()
 
 
 class TabascalDataLoader(RawDataLoader):
