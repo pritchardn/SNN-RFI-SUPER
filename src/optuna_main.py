@@ -21,6 +21,7 @@ def objective(trial):
     config["data_source"]["limit"] = float(os.getenv("LIMIT", 0.1))
     config["data_source"]["patch_size"] = int(os.getenv("PATCH_SIZE", 32))
     config["data_source"]["stride"] = int(os.getenv("STRIDE", 32))
+    config["data_source"]["delta_normalization"] = bool(os.getenv("DELTA_NORMALIZATION", False))
 
     config["dataset"]["batch_size"] = int(os.getenv("BATCH_SIZE", 36))
     config["model"]["num_hidden"] = int(os.getenv("NUM_HIDDEN", 128))
