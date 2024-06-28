@@ -11,7 +11,8 @@ import os
 import lightning.pytorch as pl
 import torch
 
-from data.data_loaders import HeraDataLoader, LofarDataLoader, TabascalDataLoader
+from data.data_loaders import HeraDataLoader, LofarDataLoader, TabascalDataLoader, \
+    HeraDeltaNormLoader, LofarDeltaNormLoader
 from data.data_module import ConfiguredDataModule
 from data.data_module_builder import DataModuleBuilder
 from data.spike_converters import (
@@ -45,14 +46,25 @@ def data_source_from_config(config: dict) -> RawDataLoader:
     stride = config.get("stride")
     limit = config.get("limit")
     dataset = config.get("dataset")
+    delta_normalization = config.get("delta_normalization")
     if dataset == "HERA":
-        data_source = HeraDataLoader(
-            data_path, patch_size=patch_size, stride=stride, limit=limit
-        )
+        if delta_normalization:
+            data_source = HeraDeltaNormLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
+        else:
+            data_source = HeraDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
     elif dataset == "LOFAR":
-        data_source = LofarDataLoader(
-            data_path, patch_size=patch_size, stride=stride, limit=limit
-        )
+        if delta_normalization:
+            data_source = LofarDeltaNormLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
+        else:
+            data_source = LofarDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
     elif dataset == "TABASCAL":
         data_source = TabascalDataLoader(
             data_path, patch_size=patch_size, stride=stride, limit=limit
@@ -63,7 +75,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()

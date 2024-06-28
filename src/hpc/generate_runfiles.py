@@ -21,6 +21,7 @@ models = {
 }
 datasets = ["HERA", "LOFAR", "TABASCAL"]
 forwardstep_exposures = ["direct", "first", "latency"]
+delta_normalization = [True, False]
 
 
 def prepare_singlerun(
@@ -29,6 +30,7 @@ def prepare_singlerun(
     dataset,
     size,
     forward_step_exposure="None",
+    delta_norm=False,
     num_nodes=1,
 ):
     forward_step_directory = (
@@ -55,6 +57,7 @@ export ENCODER_METHOD="{encoding}"
 export NUM_HIDDEN="{size}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
 export NNODES="{num_nodes}"
+export DELTA_NORMALIZATION="{delta_norm}"
 
 module load python/3.10.10
 
@@ -85,6 +88,7 @@ def prepare_optuna(
     size,
     limit,
     forward_step_exposure="None",
+    delta_norm=False,
     num_nodes=1,
 ):
     forward_step_directory = (
@@ -115,6 +119,7 @@ export ENCODER_METHOD="{encoding}"
 export NUM_HIDDEN="{size}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
 export NNODES="{num_nodes}"
+export DELTA_NORMALIZATION="{delta_norm}"
 
 
 module load python/3.10.10
@@ -147,7 +152,7 @@ def write_bashfile(out_dir, name, runfiletext):
         f.write(runfiletext)
 
 
-def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
+def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes, delta_norm):
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
@@ -159,6 +164,7 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                     dataset,
                     size,
                     forward_step_exposure,
+                    delta_norm,
                     num_nodes=num_nodes,
                 ),
             )
@@ -171,6 +177,7 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                 encoding,
                 dataset,
                 size,
+                delta_norm,
                 num_nodes=num_nodes,
             ),
         )
@@ -187,6 +194,7 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                     size,
                     limit,
                     forward_step_exposure,
+                    delta_norm,
                     num_nodes=num_nodes,
                 ),
             )
@@ -200,6 +208,7 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                 dataset,
                 size,
                 limit,
+                delta_norm,
                 num_nodes=num_nodes,
             ),
         )
@@ -216,6 +225,7 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                     size,
                     limit,
                     forward_step_exposure,
+                    delta_norm,
                     num_nodes=num_nodes,
                 ),
             )
@@ -229,6 +239,7 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes):
                 dataset,
                 size,
                 limit,
+                delta_norm,
                 num_nodes=num_nodes,
             ),
         )
@@ -239,22 +250,25 @@ def main(out_dir, num_nodes):
         for model, encoding in minor_models:
             for dataset in datasets:
                 for size in [128, 256, 512]:
-                    out_dir_temp = os.path.join(
-                        out_dir,
-                        major_model,
-                        encoding,
-                        dataset,
-                        str(size),
-                    )
-                    os.makedirs(out_dir_temp, exist_ok=True)
-                    write_runfiles(
-                        out_dir_temp,
-                        model,
-                        encoding,
-                        dataset,
-                        size,
-                        num_nodes,
-                    )
+                    for delta_norm in delta_normalization:
+                        out_dir_temp = os.path.join(
+                            out_dir,
+                            major_model,
+                            encoding,
+                            dataset,
+                            "DELTA_NORM" if delta_norm else "ORIGINAL",
+                            str(size),
+                        )
+                        os.makedirs(out_dir_temp, exist_ok=True)
+                        write_runfiles(
+                            out_dir_temp,
+                            model,
+                            encoding,
+                            dataset,
+                            size,
+                            num_nodes,
+                            delta_norm,
+                        )
 
 
 if __name__ == "__main__":

@@ -30,6 +30,7 @@ class LatencySpikeConverter(SpikeConverter):
                 frame, num_steps=self.exposure, tau=self.tau, normalize=True
             )
             frame = np.moveaxis(frame.numpy(), -1, 1)
+            frame[self.exposure - 1, ...] = 0
             output[i] = frame
         return output.astype("float32")
 
@@ -40,7 +41,7 @@ class LatencySpikeConverter(SpikeConverter):
         return output_timings
 
     def plot_sample(
-        self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
+            self, x_data: np.ndarray, y_data: np.ndarray, output_dir: str, num: int
     ):
         pass
 

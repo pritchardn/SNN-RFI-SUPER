@@ -257,7 +257,7 @@ DEFAULT_HERA_ANN = {
 
 
 def get_default_params(
-    dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None
+    dataset: str, model_type: str, model_size: int = 128, exposure_mode: str = None, delta_normalization: bool = False
 ):
     if dataset == "HERA":
         if model_type == "FC_LATENCY":
@@ -305,7 +305,8 @@ def get_default_params(
                 params["trainer"]["epochs"] = 83
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
-            params = DEFAULT_HERA_FORWARD
+            else:
+                params = DEFAULT_HERA_FORWARD
         elif model_type == "RNN_FORWARD_STEP":
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD_RNN)
@@ -381,7 +382,8 @@ def get_default_params(
                 params["trainer"]["epochs"] = 83
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
-            params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD)
             stride = params["data_source"]["stride"]
             params["model"]["num_inputs"] = stride * stride * 2
             params["model"]["num_outputs"] = stride * stride
@@ -426,4 +428,5 @@ def get_default_params(
     else:
         raise ValueError(f"Unknown dataset {dataset}")
     params["model"]["type"] = model_type
+    params["data_source"]["delta_normalization"] = delta_normalization
     return params
