@@ -104,7 +104,6 @@ class HeraDeltaNormLoader(RawDataLoader):
     def load_data(self):
         file_path = os.path.join(self.data_dir, "HERA-04-03-2022_all_delta_norm.pkl")
         train_x, train_y, test_x, test_y, val_x, val_y = np.load(file_path, allow_pickle=True)
-        self.original_size = self.train_x.shape[1]
         self.train_x = train_x
         self.train_y = train_y
         self.test_x = test_x
@@ -112,6 +111,7 @@ class HeraDeltaNormLoader(RawDataLoader):
         self.val_x = val_x
         self.val_y = val_y
         self.limit_datasets()
+        self.original_size = self.train_x.shape[1]
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
         self.filter_noiseless_val_patches()
@@ -153,7 +153,6 @@ class LofarDeltaNormLoader(RawDataLoader):
     def load_data(self):
         file_path = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset_delta_norm.pkl")
         train_x, train_y, test_x, test_y, val_x, val_y = np.load(file_path, allow_pickle=True)
-        self.original_size = self.train_x.shape[1]
         self.train_x = train_x
         self.train_y = train_y
         self.test_x = test_x
@@ -161,6 +160,7 @@ class LofarDeltaNormLoader(RawDataLoader):
         self.val_x = val_x
         self.val_y = val_y
         self.limit_datasets()
+        self.original_size = self.train_x.shape[1]
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
 
