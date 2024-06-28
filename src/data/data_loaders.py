@@ -257,7 +257,8 @@ def create_delta_normalized_lofar():
     val_x = test_x.copy()
     val_y = test_y.copy()
     file_path = os.path.join("data", "LOFAR_Full_RFI_dataset_delta_norm.pkl")
-    np.save(file_path, [train_x, train_y, test_x, test_y, val_x, val_y])
+    with open(file_path, "wb") as ofile:
+        pickle.dump([train_x, train_y, test_x, test_y, val_x, val_y], ofile)
 
 
 def main():
