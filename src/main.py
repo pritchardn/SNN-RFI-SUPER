@@ -15,7 +15,8 @@ def main():
     num_layers = int(os.getenv("NUM_LAYERS", 2))
     exposure_mode = os.getenv("EXPOSURE_MODE", None)
     plot = bool(os.getenv("PLOT", False))
-    config = get_default_params(dataset, model_type, num_hidden, exposure_mode)
+    delta_normalization = bool(os.getenv("DELTA_NORMALIZATION", False))
+    config = get_default_params(dataset, model_type, num_hidden, exposure_mode, delta_normalization)
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
     )
