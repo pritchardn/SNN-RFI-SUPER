@@ -305,7 +305,8 @@ def get_default_params(
                 params["trainer"]["epochs"] = 83
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
-            params = DEFAULT_HERA_FORWARD
+            else:
+                params = DEFAULT_HERA_FORWARD
         elif model_type == "RNN_FORWARD_STEP":
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD_RNN)
@@ -381,7 +382,8 @@ def get_default_params(
                 params["trainer"]["epochs"] = 83
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
-            params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD)
             stride = params["data_source"]["stride"]
             params["model"]["num_inputs"] = stride * stride * 2
             params["model"]["num_outputs"] = stride * stride
