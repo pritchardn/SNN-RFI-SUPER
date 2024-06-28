@@ -28,6 +28,9 @@ def main():
     config["encoder"]["exposure"] = int(
         os.getenv("EXPOSURE", config["encoder"].get("exposure", 1))
     )
+    config["trainer"]["epochs"] = int(
+        os.getenv("EPOCHS", config["trainer"]["epochs"])
+    )
     root_dir = os.getenv("OUTPUT_DIR", "./")
     experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)
