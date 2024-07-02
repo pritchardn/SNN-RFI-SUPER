@@ -86,8 +86,7 @@ def reconstruct_patches_time(data: np.array, orig_size: int, patch_size: int):
     return recon.transpose(4, 0, 3, 2, 1)
 
 
-def main():
-    file_dir = "lightning_logs/version_90/full_spike_hat.npy"
+def main(file_dir: str):
     data = np.load(file_dir)
     original_size = 512
     patch_size = 32
@@ -101,4 +100,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main("lightning_logs/version_90/full_spike_hat.npy")
