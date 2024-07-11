@@ -360,7 +360,8 @@ class Experiment:
             if not self.trainer:
                 err_msg += "Trainer not set.\n"
             else:
-                self.save_config()
+                if self.trainer.global_rank == 0:
+                    self.save_config()
             if not self.encoder:
                 err_msg += "Encoder not set.\n"
             else:
