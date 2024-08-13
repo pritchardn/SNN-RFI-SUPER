@@ -33,14 +33,13 @@ def animate_printer(spectrogram, i, num_patches, output_dir, encoding_mode):
         decoded_inference[decoded_inference > 1] = 1
     for j in range(num_patches):
         mini_frame = np.zeros(spectrogram.shape)
-        mini_frame[:, :, :, j * patch_size: (j + 1) * patch_size] = spectrogram[
-                                                                    :, :, :, j * patch_size: (
-                                                                                                         j + 1) * patch_size
-                                                                    ]
+        mini_frame[:, :, :, j * patch_size : (j + 1) * patch_size] = spectrogram[
+            :, :, :, j * patch_size : (j + 1) * patch_size
+        ]
         mini_frame[:, :, :, : j * patch_size] = decoded_inference[
-                                                :, :, : j * patch_size
-                                                ]
-        out[j * exposure: (j + 1) * exposure, ...] = mini_frame
+            :, :, : j * patch_size
+        ]
+        out[j * exposure : (j + 1) * exposure, ...] = mini_frame
     fig, ax = plt.subplots()
     animate_data = np.moveaxis(out, 1, -1)
     anim = splt.animator(
@@ -53,7 +52,9 @@ def animate_printer(spectrogram, i, num_patches, output_dir, encoding_mode):
     anim.save(os.path.join(output_dir, f"sequence_{i}.gif"))
 
 
-def reconstruct_patches_time(data: np.array, orig_size: int, patch_size: int, encoding_mode: str):
+def reconstruct_patches_time(
+    data: np.array, orig_size: int, patch_size: int, encoding_mode: str
+):
     """
     Works like reconstruct_patches but includes the time-axis present in spiking data.
     Input: [t, N, C, F, T]
@@ -79,8 +80,12 @@ def reconstruct_patches_time(data: np.array, orig_size: int, patch_size: int, en
         batch.append(
             np.reshape(
                 np.stack(transposed[start:i, ...], axis=0),
-                (n_patches * patch_size, patch_size * (2 if encoding_mode == "DELTA" else 1),
-                 data.shape[2], data.shape[0]),
+                (
+                    n_patches * patch_size,
+                    patch_size * (2 if encoding_mode == "DELTA" else 1),
+                    data.shape[2],
+                    data.shape[0],
+                ),
             )
         )
         start = i
@@ -102,19 +107,29 @@ def main(input_dir: str):
     original_size = 512
     patch_size = 32
     num_patches = original_size // patch_size
-    reconstructed_patches = reconstruct_patches_time(data, original_size, patch_size, encoding_mode)
+    reconstructed_patches = reconstruct_patches_time(
+        data, original_size, patch_size, encoding_mode
+    )
     assert reconstructed_patches.shape == (
-    data.shape[0], 140, 1, 512 * (2 if encoding_mode == "DELTA" else 1), 512)
+        data.shape[0],
+        140,
+        1,
+        512 * (2 if encoding_mode == "DELTA" else 1),
+        512,
+    )
     if encoding_mode == "DELTA":
         reconstructed_patches = np.flip(reconstructed_patches, axis=3)
 
     for i in tqdm(range(max(10, reconstructed_patches.shape[1]))):
         animate_patch(reconstructed_patches[:, i, ...], i, input_dir)
-        animate_printer(reconstructed_patches[:, i, ...], i, num_patches, input_dir, encoding_mode)
+        animate_printer(
+            reconstructed_patches[:, i, ...], i, num_patches, input_dir, encoding_mode
+        )
 
 
 if __name__ == "__main__":
-    for filename in [# "lightning_logs_icons_plotting/version_0/",
-                     # "lightning_logs_icons_plotting/version_1/",
-                     "lightning_logs_icons_plotting/version_2/"]:
+    for filename in [  # "lightning_logs_icons_plotting/version_0/",
+        # "lightning_logs_icons_plotting/version_1/",
+        "lightning_logs_icons_plotting/version_2/"
+    ]:
         main(filename)

@@ -30,8 +30,9 @@ def _delta_normalize(image_data: np.ndarray, kernel_size=3) -> np.ndarray:
                 for j in range(min_freq, max_freq + 1):
                     neighbouring_activity += frame[tstep - step_back, j]
                     count_elem += 1
-                output_frame[tstep, frequency] = max(0.0, frame[
-                    tstep, frequency] - neighbouring_activity / count_elem)
+                output_frame[tstep, frequency] = max(
+                    0.0, frame[tstep, frequency] - neighbouring_activity / count_elem
+                )
         image_data[i] = output_frame
     print(f"New mean : {np.mean(image_data)}")
     image_data = np.moveaxis(image_data, 1, 2)
@@ -39,7 +40,7 @@ def _delta_normalize(image_data: np.ndarray, kernel_size=3) -> np.ndarray:
 
 
 def _normalize(
-        image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
+    image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
 ) -> np.ndarray:
     _max = np.mean(image_data[np.invert(masks)]) + max_threshold * np.std(
         image_data[np.invert(masks)]
@@ -100,10 +101,11 @@ class HeraDataLoader(RawDataLoader):
 
 
 class HeraDeltaNormLoader(RawDataLoader):
-
     def load_data(self):
         file_path = os.path.join(self.data_dir, "HERA-04-03-2022_all_delta_norm.pkl")
-        train_x, train_y, test_x, test_y, val_x, val_y = np.load(file_path, allow_pickle=True)
+        train_x, train_y, test_x, test_y, val_x, val_y = np.load(
+            file_path, allow_pickle=True
+        )
         self.train_x = train_x
         self.train_y = train_y
         self.test_x = test_x
@@ -149,10 +151,11 @@ class LofarDataLoader(RawDataLoader):
 
 
 class LofarDeltaNormLoader(RawDataLoader):
-
     def load_data(self):
         file_path = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset_delta_norm.pkl")
-        train_x, train_y, test_x, test_y, val_x, val_y = np.load(file_path, allow_pickle=True)
+        train_x, train_y, test_x, test_y, val_x, val_y = np.load(
+            file_path, allow_pickle=True
+        )
         self.train_x = train_x
         self.train_y = train_y
         self.test_x = test_x

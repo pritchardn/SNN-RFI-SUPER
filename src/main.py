@@ -16,7 +16,9 @@ def main():
     exposure_mode = os.getenv("EXPOSURE_MODE", None)
     plot = bool(os.getenv("PLOT", False))
     delta_normalization = bool(os.getenv("DELTA_NORMALIZATION", False))
-    config = get_default_params(dataset, model_type, num_hidden, exposure_mode, delta_normalization)
+    config = get_default_params(
+        dataset, model_type, num_hidden, exposure_mode, delta_normalization
+    )
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
     )
@@ -28,9 +30,7 @@ def main():
     config["encoder"]["exposure"] = int(
         os.getenv("EXPOSURE", config["encoder"].get("exposure", 1))
     )
-    config["trainer"]["epochs"] = int(
-        os.getenv("EPOCHS", config["trainer"]["epochs"])
-    )
+    config["trainer"]["epochs"] = int(os.getenv("EPOCHS", config["trainer"]["epochs"]))
     root_dir = os.getenv("OUTPUT_DIR", "./")
     experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)

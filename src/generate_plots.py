@@ -49,7 +49,7 @@ def plot_example_original(x, y, i, title: str):
 
 
 def plot_example_raster(
-        spike_x, frequency_width, stride, exposure, i, title: str, mode=1
+    spike_x, frequency_width, stride, exposure, i, title: str, mode=1
 ):
     # plt.tight_layout()
     plt.rcParams.update(plt.rcParamsDefault)
@@ -61,7 +61,7 @@ def plot_example_raster(
     example = example.squeeze(1)  # Remove channel dimension
     out = np.zeros((frequency_width, stride * exposure))
     for t in range(example.shape[-1]):  # t
-        out[:, t * exposure: (t + 1) * exposure] = np.moveaxis(example[:, :, t], 0, -1)
+        out[:, t * exposure : (t + 1) * exposure] = np.moveaxis(example[:, :, t], 0, -1)
     if min(spike_x.flatten()) < 0:
         ticks = [-1, 0, 1]
         cmap = plt.get_cmap("viridis", 3)
@@ -100,7 +100,7 @@ def plot_example(x, y, spike_x, frequency_width, stride, exposure, i, title: str
     example = example.squeeze(1)  # Remove channel dimension
     out = np.zeros((frequency_width, stride * exposure))
     for t in range(example.shape[-1]):  # t
-        out[:, t * exposure: (t + 1) * exposure] = np.moveaxis(example[:, :, t], 0, -1)
+        out[:, t * exposure : (t + 1) * exposure] = np.moveaxis(example[:, :, t], 0, -1)
     ax1.imshow(out)
     ax1.set_title("Spike Train")
     ax1.set_xlabel("Time [s]")

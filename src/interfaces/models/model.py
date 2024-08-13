@@ -18,7 +18,6 @@ from plotting import plot_example_inference
 
 
 class BaseLitModel(pl.LightningModule):
-
     def __init__(
         self,
         num_inputs: int,
@@ -138,7 +137,6 @@ class BaseLitModel(pl.LightningModule):
 
 
 class LitModel(BaseLitModel):
-
     def __init__(
         self,
         num_inputs: int,
@@ -188,7 +186,6 @@ class LitModel(BaseLitModel):
 
 
 class LitPatchedModel(BaseLitModel):
-
     def __init__(
         self,
         num_inputs: int,

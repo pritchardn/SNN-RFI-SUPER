@@ -11,7 +11,6 @@ from interfaces.data.spiking_data_module import SpikeConverter
 
 
 class DeltaExposureSpikeConverter(SpikeConverter):
-
     def __init__(self, threshold: float, exposure: int):
         self.threshold = threshold
         self.exposure = exposure
