@@ -15,7 +15,7 @@ def main():
     num_layers = int(os.getenv("NUM_LAYERS", 2))
     exposure_mode = os.getenv("EXPOSURE_MODE", None)
     plot = bool(os.getenv("PLOT", False))
-    delta_normalization = bool(os.getenv("DELTA_NORMALIZATION", False))
+    delta_normalization = os.getenv("DELTA_NORMALIZATION", False) == "True"
     config = get_default_params(
         dataset, model_type, num_hidden, exposure_mode, delta_normalization
     )
