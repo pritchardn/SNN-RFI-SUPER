@@ -8,3 +8,4 @@ torch==2.1.2+cu118
 tqdm==4.66.1
 mpi4py
 onnx
+tensorboard

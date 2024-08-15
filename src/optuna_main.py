@@ -1,6 +1,7 @@
 """
 Optuna main script for hyperparameter optimization.
 """
+
 import json
 import os
 
@@ -20,13 +21,16 @@ def objective(trial):
     config["data_source"]["limit"] = float(os.getenv("LIMIT", 0.1))
     config["data_source"]["patch_size"] = int(os.getenv("PATCH_SIZE", 32))
     config["data_source"]["stride"] = int(os.getenv("STRIDE", 32))
+    config["data_source"]["delta_normalization"] = os.getenv("DELTA_NORMALIZATION", False) == "True"
 
-    config["dataset"]["batch_size"] = trial.suggest_int("batch_size", 16, 128)
-    config["model"]["num_hidden"] = int(os.getenv("NUM_HIDDEN", 128))
-    config["model"]["num_layers"] = int(os.getenv("NUM_LAYERS", 2))
-    config["model"]["beta"] = trial.suggest_float("beta", 0.5, 0.99)
+    config["dataset"]["batch_size"] = int(os.getenv("BATCH_SIZE", 36))
+    config["model"]["num_hidden"] = trial.suggest_categorical(
+        "num_hidden", [128, 256, 512]
+    )
+    config["model"]["num_layers"] = trial.suggest_int("num_layers", 2, 6)
+    config["model"]["beta"] = trial.suggest_float("beta", 0.0, 1.0)
 
-    config["trainer"]["epochs"] = trial.suggest_int("epochs", 5, 100)
+    config["trainer"]["epochs"] = int(os.getenv("EPOCHS", 100))
 
     config["encoder"]["method"] = os.getenv("ENCODER_METHOD", "LATENCY")
     config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 64)

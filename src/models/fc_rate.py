@@ -2,6 +2,7 @@
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
 module for a fully connected rate-coding model.
 """
+
 import torch
 
 from interfaces.models.model import LitModel
@@ -16,8 +17,11 @@ class LitFcRate(LitModel):
         num_outputs: int,
         beta: float,
         num_layers: int,
+        recurrent: bool = False,
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        super().__init__(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
+        )
         self.loss = mse_count_loss_balanced(correct_rate=0.8, incorrect_rate=0.2)
         self.float()
         self.save_hyperparameters()

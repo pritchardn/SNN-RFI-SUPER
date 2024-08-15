@@ -1,6 +1,7 @@
 """
 This script generates plots for the HERA dataset.
 """
+
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -189,12 +190,13 @@ def main_all(stride, exposure, limit: int = 10):
                 mode=plot_mode,
             )
             plot_example_original(test_x[i], test_y[i], i, title)
+        exit(0)
 
 
 if __name__ == "__main__":
     model = "FC_FORWARD_STEP"
     exposure_mode = "first"
     stride = 32
-    exposure = 4
+    exposure = 12
     # main_single(model, exposure_mode, stride, exposure, limit=10)
     main_all(stride, exposure, limit=10)

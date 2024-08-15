@@ -1,6 +1,7 @@
 """
 Evaluation functions for the model
 """
+
 import os
 
 import numpy as np
@@ -37,7 +38,10 @@ def final_evaluation(
         full_spike_hat.append(spike_hat)
     full_spike_hat = torch.cat(full_spike_hat, dim=1)
     # save full_spike_hat into .npy file
-    np.save(os.path.join(outdir, "full_spike_hat.npy"), full_spike_hat.detach().cpu().numpy())
+    np.save(
+        os.path.join(outdir, "full_spike_hat.npy"),
+        full_spike_hat.detach().cpu().numpy(),
+    )
     # Decode outputs into masks
     output = converter.decode_inference(full_spike_hat.detach().cpu().numpy())
     # Stitch masks together
@@ -72,4 +76,5 @@ def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):
     auprc = auc(recall, precision)
     f1 = 2 * (precision * recall) / (precision + recall)
     f1 = np.nan_to_num(f1, nan=0.0)
+    auroc = np.nan_to_num(auroc, nan=0.0)
     return accuracy, mse, auroc, auprc, np.max(f1)

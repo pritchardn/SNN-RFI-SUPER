@@ -1,6 +1,7 @@
 """
 Latency spike encoder and decoder.
 """
+
 import numpy as np
 import torch
 from snntorch import spikegen
@@ -22,13 +23,14 @@ class LatencySpikeConverter(SpikeConverter):
             x_data.shape[2],
             x_data.shape[3],
         )
-        output = np.zeros(out_shape)
+        output = np.zeros(out_shape, dtype=x_data.dtype)
         for i, frame in enumerate(x_data):
             frame = torch.from_numpy(np.moveaxis(frame, 0, -1))
             frame = spikegen.latency(
                 frame, num_steps=self.exposure, tau=self.tau, normalize=True
             )
             frame = np.moveaxis(frame.numpy(), -1, 1)
+            frame[self.exposure - 1, ...] = 0
             output[i] = frame
         return output.astype("float32")
 

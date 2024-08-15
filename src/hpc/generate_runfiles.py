@@ -1,6 +1,7 @@
 """
 This script generates runfiles for supercomputer use.
 """
+
 import os
 
 models = {
@@ -9,30 +10,37 @@ models = {
         ("FC_RATE", "RATE"),
         ("FC_DELTA", "DELTA"),
         ("FC_FORWARD_STEP", "FORWARDSTEP"),
-    ]
+        ("FC_DELTA_EXPOSURE", "DELTA_EXPOSURE"),
+    ],
+    "RNN": [
+        ("RNN_LATENCY", "LATENCY"),
+        ("RNN_RATE", "RATE"),
+        ("RNN_DELTA", "DELTA"),
+        ("RNN_FORWARD_STEP", "FORWARDSTEP"),
+    ],
 }
 datasets = ["HERA", "LOFAR", "TABASCAL"]
 forwardstep_exposures = ["direct", "first", "latency"]
+delta_normalization = [True, False]
 
 
 def prepare_singlerun(
     model,
     encoding,
     dataset,
-    size,
     forward_step_exposure="None",
+    delta_norm=False,
     num_nodes=1,
-    num_layers=2,
 ):
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
     runfiletext = (
         f"""#!/bin/bash
-#SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}-{size}
+#SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
 #SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
-#SBATCH --mem=115G
+#SBATCH --mem=230G
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
@@ -45,10 +53,9 @@ export DATASET="{dataset}"
 export LIMIT="1.0"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
-export NUM_HIDDEN="{size}"
-export NUM_LAYERS="{num_layers}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
 export NNODES="{num_nodes}"
+export DELTA_NORMALIZATION="{delta_norm}"
 
 module load python/3.10.10
 
@@ -56,7 +63,7 @@ cd /software/projects/pawsey0411/npritchard/setonix/2023.08/python/SNN-SUPER/src
 source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/bin/activate
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{NUM_LAYERS}}/${{NUM_HIDDEN}}/${{LIMIT}}"""
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{DELTA_NORMALIZATION}}/${{NUM_HIDDEN}}/${{LIMIT}}"""
         + forward_step_directory
         + """
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
@@ -76,25 +83,24 @@ def prepare_optuna(
     model,
     encoding,
     dataset,
-    size,
     limit,
     forward_step_exposure="None",
+    delta_norm=False,
     num_nodes=1,
-    num_layers=2,
 ):
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
     study_name = (
-        f"""export STUDY_NAME="SNN-SUPER-${{DATASET}}-${{ENCODER_METHOD}}-{num_layers}-{limit}-${{NUM_HIDDEN}}"""
+        f"""export STUDY_NAME="SNN-SUPER-B-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
         + ('''-${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '''"''')
     )
     runfiletext = (
         f"""#!/bin/bash
-#SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}-{size}
+#SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
 #SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
-#SBATCH --mem=115G
+#SBATCH --mem=230G
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
@@ -107,10 +113,9 @@ export DATASET="{dataset}"
 export LIMIT="{limit / 100.0}"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
-export NUM_HIDDEN="{size}"
-export NUM_LAYERS="{num_layers}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
 export NNODES="{num_nodes}"
+export DELTA_NORMALIZATION="{delta_norm}"
 
 
 module load python/3.10.10
@@ -122,7 +127,7 @@ export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${{OPTUNA_URL}} # Need to change on super-computer before submitting\n"""
         + study_name
         + """
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${NUM_LAYERS}/${NUM_HIDDEN}/${LIMIT}"""
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${DELTA_NORMALIZATION}/${NUM_HIDDEN}/${LIMIT}"""
         + forward_step_directory
         + """
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
@@ -143,33 +148,31 @@ def write_bashfile(out_dir, name, runfiletext):
         f.write(runfiletext)
 
 
-def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes, num_layers):
+def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
                 out_dir,
-                f"{dataset}-{encoding}-{size}-{forward_step_exposure}",
+                f"{dataset}-{encoding}-{forward_step_exposure}",
                 prepare_singlerun(
                     model,
                     encoding,
                     dataset,
-                    size,
                     forward_step_exposure,
+                    delta_norm,
                     num_nodes=num_nodes,
-                    num_layers=num_layers,
                 ),
             )
     else:
         write_bashfile(
             out_dir,
-            f"{dataset}-{encoding}-{size}",
+            f"{dataset}-{encoding}",
             prepare_singlerun(
                 model,
                 encoding,
                 dataset,
-                size,
+                delta_norm,
                 num_nodes=num_nodes,
-                num_layers=num_layers,
             ),
         )
     limit = 10
@@ -177,30 +180,28 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes, num_layer
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
                 out_dir,
-                f"optuna-{dataset}-{encoding}-{size}-{limit}-{forward_step_exposure}",
+                f"optuna-{dataset}-{encoding}-{limit}-{forward_step_exposure}",
                 prepare_optuna(
                     model,
                     encoding,
                     dataset,
-                    size,
                     limit,
                     forward_step_exposure,
+                    delta_norm,
                     num_nodes=num_nodes,
-                    num_layers=num_layers,
                 ),
             )
     else:
         write_bashfile(
             out_dir,
-            f"optuna-{dataset}-{encoding}-{size}-{limit}",
+            f"optuna-{dataset}-{encoding}-{limit}",
             prepare_optuna(
                 model,
                 encoding,
                 dataset,
-                size,
                 limit,
+                delta_norm,
                 num_nodes=num_nodes,
-                num_layers=num_layers,
             ),
         )
     limit = 100
@@ -208,30 +209,28 @@ def write_runfiles(out_dir, model, encoding, dataset, size, num_nodes, num_layer
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
                 out_dir,
-                f"optuna-{dataset}-{encoding}-{size}-{limit}-{forward_step_exposure}",
+                f"optuna-{dataset}-{encoding}-{limit}-{forward_step_exposure}",
                 prepare_optuna(
                     model,
                     encoding,
                     dataset,
-                    size,
                     limit,
                     forward_step_exposure,
+                    delta_norm,
                     num_nodes=num_nodes,
-                    num_layers=num_layers,
                 ),
             )
     else:
         write_bashfile(
             out_dir,
-            f"optuna-{dataset}-{encoding}-{size}-{limit}",
+            f"optuna-{dataset}-{encoding}-{limit}",
             prepare_optuna(
                 model,
                 encoding,
                 dataset,
-                size,
                 limit,
+                delta_norm,
                 num_nodes=num_nodes,
-                num_layers=num_layers,
             ),
         )
 
@@ -240,26 +239,23 @@ def main(out_dir, num_nodes):
     for major_model, minor_models in models.items():
         for model, encoding in minor_models:
             for dataset in datasets:
-                for size in [128, 256, 512]:
-                    for layers in [2, 6]:
-                        out_dir_temp = os.path.join(
-                            out_dir,
-                            major_model,
-                            encoding,
-                            dataset,
-                            str(layers),
-                            str(size),
-                        )
-                        os.makedirs(out_dir_temp, exist_ok=True)
-                        write_runfiles(
-                            out_dir_temp,
-                            model,
-                            encoding,
-                            dataset,
-                            size,
-                            num_nodes,
-                            layers,
-                        )
+                for delta_norm in delta_normalization:
+                    out_dir_temp = os.path.join(
+                        out_dir,
+                        major_model,
+                        encoding,
+                        dataset,
+                        "DELTA_NORM" if delta_norm else "ORIGINAL",
+                    )
+                    os.makedirs(out_dir_temp, exist_ok=True)
+                    write_runfiles(
+                        out_dir_temp,
+                        model,
+                        encoding,
+                        dataset,
+                        num_nodes,
+                        delta_norm,
+                    )
 
 
 if __name__ == "__main__":

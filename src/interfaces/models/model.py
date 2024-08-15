@@ -1,12 +1,14 @@
 """
-Base class for pytorch lightning models.
+Base class for pytorch lightning models. Handles both fully connected Lif and Recurrent Models.
 """
+
 import abc
 
 import lightning.pytorch as pl
 import torch
 from torch import nn
 import snntorch as snn
+import snntorch.functional as functional
 from sklearn.metrics import balanced_accuracy_score
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
@@ -16,14 +18,14 @@ from plotting import plot_example_inference
 
 
 class BaseLitModel(pl.LightningModule):
-
     def __init__(
-            self,
-            num_inputs: int,
-            num_hidden: int,
-            num_outputs: int,
-            beta: float,
-            num_layers: int,
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+        recurrent: bool,
     ):
         super().__init__()
         self.converter = None
@@ -32,6 +34,8 @@ class BaseLitModel(pl.LightningModule):
         self.num_outputs = num_outputs
         self.beta = beta
         self.num_layers = num_layers
+        self.recurrent = recurrent
+        self.regularization = None
 
         self.layers = self._init_layers()
 
@@ -44,7 +48,24 @@ class BaseLitModel(pl.LightningModule):
                 layers.append(nn.Linear(self.num_hidden, self.num_outputs))
             else:
                 layers.append(nn.Linear(self.num_hidden, self.num_hidden))
-            layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
+        return layers
+
+    def _init_snn_layers(self):
+        layers = nn.ModuleList()
+        for i in range(self.num_layers):
+            if self.recurrent:
+                num_features = self.num_hidden
+                if i == self.num_layers - 1:
+                    num_features = self.num_outputs
+                layers.append(
+                    snn.RLeaky(
+                        beta=self.beta,
+                        learn_threshold=True,
+                        linear_features=num_features,
+                    )
+                )
+            else:
+                layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
         return layers
 
     def set_converter(self, converter: SpikeConverter):
@@ -55,7 +76,9 @@ class BaseLitModel(pl.LightningModule):
         self.log("accuracy", score)
 
     def _init_membranes(self):
-        return [lif.init_leaky() for lif in self.layers[1::2]]
+        if self.recurrent:
+            return [lif.init_rleaky() for lif in self.snn_layers]
+        return [lif.init_leaky() for lif in self.snn_layers]
 
     @abc.abstractmethod
     def forward(self, x):
@@ -63,6 +86,9 @@ class BaseLitModel(pl.LightningModule):
 
     def calc_loss(self, y_hat, y):
         loss = self.loss(y_hat, y)
+        if self.regularization:
+            for reg_method in self.regularization:
+                loss += reg_method(y_hat)
         return loss
 
     def training_step(self, batch, batch_idx):
@@ -110,16 +136,18 @@ class BaseLitModel(pl.LightningModule):
 
 
 class LitModel(BaseLitModel):
-
     def __init__(
-            self,
-            num_inputs: int,
-            num_hidden: int,
-            num_outputs: int,
-            beta: float,
-            num_layers: int,
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+        recurrent: bool = False,
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        super().__init__(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
+        )
 
     def _infer_slice(self, x, membranes):
         spike = None
@@ -129,21 +157,26 @@ class LitModel(BaseLitModel):
             x = spike
         return spike, membranes[-1]
 
+    def _infer_slice_recurrent(self, x, states):
+        for n in range(self.num_layers):
+            curr = self.ann_layers[n](x)
+            states[n] = self.snn_layers[n](curr, states[n][0], states[n][1])
+            x = states[n][0]
+        return x, states[-1][1]
+
     def forward(self, x):
         full_spike = []
         full_mem = []
         # x -> [N x exp x C x freq x time]
         membranes = self._init_membranes()
         for t in range(x.shape[-1]):
-            spike_out = []
-            mem_out = []
-            for step in range(x.shape[1]):  # [N x C x freq]
-                data = x[:, step, 0, :, t]
+            data = x[:, :, 0, :, t]
+            if self.recurrent:
+                spike, mem = self._infer_slice_recurrent(data, membranes)
+            else:
                 spike, mem = self._infer_slice(data, membranes)
-                spike_out.append(spike)
-                mem_out.append(mem)
-            full_spike.append(torch.stack(spike_out, dim=1))
-            full_mem.append(torch.stack(mem_out, dim=1))
+            full_spike.append(spike)
+            full_mem.append(mem)
         full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
         full_mem = torch.stack(full_mem, dim=0)
         full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
@@ -152,16 +185,18 @@ class LitModel(BaseLitModel):
 
 
 class LitPatchedModel(BaseLitModel):
-
     def __init__(
-            self,
-            num_inputs: int,
-            num_hidden: int,
-            num_outputs: int,
-            beta: float,
-            num_layers: int,
+        self,
+        num_inputs: int,
+        num_hidden: int,
+        num_outputs: int,
+        beta: float,
+        num_layers: int,
+        recurrent: bool = False,
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        super().__init__(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
+        )
 
     def _infer_patch(self, x, membranes):
         spike = None

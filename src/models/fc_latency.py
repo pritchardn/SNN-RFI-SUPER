@@ -2,6 +2,7 @@
 This module contains the implementation of the LitFcDelta class, which is a PyTorch Lightning
 module for a fully connected latency-coding model.
 """
+
 import numpy as np
 import snntorch.functional as SF
 
@@ -17,8 +18,11 @@ class LitFcLatency(LitModel):
         num_outputs: int,
         beta: float,
         num_layers: int,
+        recurrent: bool = False,
     ):
-        super().__init__(num_inputs, num_hidden, num_outputs, beta, num_layers)
+        super().__init__(
+            num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
+        )
         self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()
         self.save_hyperparameters()

@@ -1,6 +1,7 @@
 """
 Utility functions for data processing.
 """
+
 from typing import Union
 
 import numpy as np

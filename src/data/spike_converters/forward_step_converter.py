@@ -1,6 +1,7 @@
 """
 Step-Forward spike encoder and decoder.
 """
+
 import numpy as np
 import torch
 
