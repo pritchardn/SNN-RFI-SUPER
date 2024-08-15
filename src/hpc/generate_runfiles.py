@@ -40,7 +40,7 @@ def prepare_singlerun(
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
 #SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
-#SBATCH --mem=115G
+#SBATCH --mem=230G
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
@@ -100,7 +100,7 @@ def prepare_optuna(
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
 #SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
-#SBATCH --mem=255G
+#SBATCH --mem=230G
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
