@@ -2,7 +2,7 @@
 #SBATCH --job-name=SNN-SUPER-RNN_FORWARD_STEP-FORWARDSTEP-TABASCAL
 #SBATCH --nodes=8
 #SBATCH --time=24:00:00
-#SBATCH --mem=255G
+#SBATCH --mem=230G
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out

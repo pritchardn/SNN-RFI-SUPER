@@ -2,7 +2,7 @@
 #SBATCH --job-name=SNN-SUPER-FC_DELTA_EXPOSURE-DELTA_EXPOSURE-HERA
 #SBATCH --nodes=8
 #SBATCH --time=24:00:00
-#SBATCH --mem=255G
+#SBATCH --mem=230G
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out

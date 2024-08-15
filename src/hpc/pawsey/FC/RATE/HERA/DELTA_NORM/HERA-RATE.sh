@@ -2,7 +2,7 @@
 #SBATCH --job-name=SNN-SUPER-FC_RATE-RATE-HERA
 #SBATCH --nodes=8
 #SBATCH --time=24:00:00
-#SBATCH --mem=115G
+#SBATCH --mem=230G
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
