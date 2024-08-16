@@ -26,10 +26,9 @@ from data.spike_converters import (
     DeltaSpikeConverter,
     ForwardStepConverter,
     NonConverter,
-    LatencyFullConverter,
 )
-from data.spike_converters.delta_exposure_converter import DeltaExposureSpikeConverter
 from data.spike_converters.LatencyFullConverter import LatencyFullSpikeConverter
+from data.spike_converters.delta_exposure_converter import DeltaExposureSpikeConverter
 from data.utils import reconstruct_patches
 from evaluation import final_evaluation
 from interfaces.data.raw_data_loader import RawDataLoader
@@ -41,6 +40,7 @@ from models.fc_forwardstep import LitFcForwardStep
 from models.fc_latency import LitFcLatency
 from models.fc_latency_rockpool import LitFcLatencyRockpool
 from models.fc_rate import LitFcRate
+from models.fc_rate_rockpool import LitFcRateRockpool
 from models.fcp_ann import LitFcPANN
 from models.fcp_delta import LitFcPDelta
 from models.fcp_forwardstep import LitFcPForwardStep
@@ -84,7 +84,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
 
 
 def dataset_from_config(
-    config: dict, data_source: RawDataLoader, encoder: SpikeConverter
+        config: dict, data_source: RawDataLoader, encoder: SpikeConverter
 ) -> ConfiguredDataModule:
     batch_size = config.get("batch_size")
     data_builder = DataModuleBuilder()
@@ -215,6 +215,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
         model = LitFcPForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
     elif model_type == "FC_LATENCY_ROCKPOOL":
         model = LitFcLatencyRockpool(num_inputs, num_hidden, num_outputs, num_layers)
+    elif model_type == "FC_RATE_ROCKPOOL":
+        model = LitFcRateRockpool(num_inputs, num_hidden, num_outputs, num_layers)
     elif model_type == "FCP_LATENCY_ROCKPOOL":
         model = LitFcLatencyPatchedRockpool(num_inputs, num_hidden, num_outputs, num_layers)
     else:
@@ -336,30 +338,20 @@ class Experiment:
         with open(os.path.join(out_dir, "config.json"), "w") as ofile:
             json.dump(self.configuration, ofile, indent=4)
 
-    def save_model(self):
-        out_dir = self.trainer.log_dir
-        os.makedirs(out_dir, exist_ok=True)
-        sample, _ = next(iter(self.dataset.train_dataloader()))
-        torch.onnx.export(
-            self.model,
-            sample,
-            os.path.join(out_dir, "model.onnx"),
-            input_names=["inputs"],
-            output_names=["outputs"],
-            dynamic_axes={"inputs": {0: "batch_size"}, "outputs": {0: "batch_size"}},
-        )
-
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:
             self.configuration = json.load(ifile)
 
     def save_model(self):
-        out_dir = self.trainer.log_dir
-        os.makedirs(out_dir, exist_ok=True)
-        input_sample, _ = next(iter(self.dataset.test_dataloader()))
-        self.model.to_onnx(
-            os.path.join(out_dir, "model.onnx"), input_sample, export_params=True
-        )
+        try:
+            out_dir = self.trainer.log_dir
+            os.makedirs(out_dir, exist_ok=True)
+            input_sample, _ = next(iter(self.dataset.test_dataloader()))
+            self.model.to_onnx(
+                os.path.join(out_dir, "model.onnx"), input_sample, export_params=True
+            )
+        except Exception as e:
+            print(f"Error during model saving: {e}")
 
     def prepare(self):
         err_msg = ""

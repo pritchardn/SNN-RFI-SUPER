@@ -50,7 +50,7 @@ DEFAULT_TABASCAL_LATENCY["data_source"]["dataset"] = "TABASCAL"
 DEFAULT_HERA_RATE = {
     "data_source": {
         "data_path": "./data",
-        "limit": 0.1,
+        "limit": 1.0,
         "patch_size": 32,
         "stride": 32,
         "dataset": "HERA",
@@ -339,6 +339,13 @@ def get_default_params(
             params["data_source"]["patch_size"] = 16
             params["model"]["num_inputs"] = 16
             params["model"]["num_outputs"] = 16
+        elif model_type == "FC_RATE_ROCKPOOL":
+            params = copy.deepcopy(DEFAULT_HERA_RATE)
+            params["encoder"]["method"] = "RATE"
+            params["data_source"]["stride"] = 16
+            params["data_source"]["patch_size"] = 16
+            params["model"]["num_inputs"] = 16
+            params["model"]["num_outputs"] = 16
         elif model_type == "FCP_LATENCY_ROCKPOOL":
             params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["model"]["type"] = "FCP_LATENCY_ROCKPOOL"
@@ -426,6 +433,14 @@ def get_default_params(
             params = DEFAULT_LOFAR_FORWARD
         elif model_type == "FC_ANN":
             params = DEFAULT_HERA_ANN
+        elif model_type == "FC_RATE_ROCKPOOL":
+            params = copy.deepcopy(DEFAULT_HERA_RATE)
+            params["data_source"]["dataset"] = "LOFAR"
+            params["encoder"]["method"] = "RATE"
+            params["data_source"]["stride"] = 16
+            params["data_source"]["patch_size"] = 16
+            params["model"]["num_inputs"] = 16
+            params["model"]["num_outputs"] = 16
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "TABASCAL":

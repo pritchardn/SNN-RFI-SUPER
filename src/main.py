@@ -32,6 +32,7 @@ def main():
     )
     config["trainer"]["epochs"] = int(os.getenv("EPOCHS", config["trainer"]["epochs"]))
     root_dir = os.getenv("OUTPUT_DIR", "./")
+    print(config)
     experiment = Experiment(root_dir=root_dir)
     experiment.from_config(config)
     experiment.prepare()
