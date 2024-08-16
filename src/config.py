@@ -341,7 +341,7 @@ def get_default_params(
             params["model"]["num_outputs"] = 16
         elif model_type == "FC_RATE_ROCKPOOL":
             params = copy.deepcopy(DEFAULT_HERA_RATE)
-            params["encoder"]["method"] = "RATE"
+            params["encoder"]["method"] = "RATE_FULL"
             params["data_source"]["stride"] = 16
             params["data_source"]["patch_size"] = 16
             params["model"]["num_inputs"] = 16
@@ -436,7 +436,7 @@ def get_default_params(
         elif model_type == "FC_RATE_ROCKPOOL":
             params = copy.deepcopy(DEFAULT_HERA_RATE)
             params["data_source"]["dataset"] = "LOFAR"
-            params["encoder"]["method"] = "RATE"
+            params["encoder"]["method"] = "RATE_FULL"
             params["data_source"]["stride"] = 16
             params["data_source"]["patch_size"] = 16
             params["model"]["num_inputs"] = 16

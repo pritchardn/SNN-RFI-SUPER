@@ -11,6 +11,9 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from evaluation import calculate_metrics
 from interfaces.data.spiking_data_module import SpikeConverter
 
+TAU_MEM = 0.05
+TAU_SYN = 0.05
+
 
 class BaseModelRockpool(pl.LightningModule):
 
@@ -35,8 +38,8 @@ class BaseModelRockpool(pl.LightningModule):
                 layers.append(LinearTorch((self.num_inputs, self.num_hidden), has_bias=False))
                 layers.append(LIFTorch(  # TODO: Refinement of parameters
                     self.num_hidden,
-                    tau_mem=1.0,
-                    tau_syn=1.0,
+                    tau_mem=TAU_MEM,
+                    tau_syn=TAU_SYN,
                     threshold=1.0,
                     learning_window=0.2,
                     dt=0.001,
@@ -45,8 +48,8 @@ class BaseModelRockpool(pl.LightningModule):
                 layers.append(LinearTorch((self.num_hidden, self.num_outputs), has_bias=False))
                 layers.append(LIFTorch(  # TODO: Refinement of parameters
                     self.num_outputs,
-                    tau_mem=1.0,
-                    tau_syn=1.0,
+                    tau_mem=TAU_MEM,
+                    tau_syn=TAU_SYN,
                     threshold=1.0,
                     learning_window=0.2,
                     dt=0.001,
@@ -55,8 +58,8 @@ class BaseModelRockpool(pl.LightningModule):
                 layers.append(LinearTorch((self.num_hidden, self.num_hidden), has_bias=False))
                 layers.append(LIFTorch(  # TODO: Refinement of parameters
                     self.num_hidden,
-                    tau_mem=1.0,
-                    tau_syn=1.0,
+                    tau_mem=TAU_MEM,
+                    tau_syn=TAU_SYN,
                     threshold=1.0,
                     learning_window=0.2,
                     dt=0.001,
@@ -97,8 +100,7 @@ class BaseModelRockpool(pl.LightningModule):
         x, y = batch
         spike_hat, mem_hat = self(x)
         # Convert output to true output
-        output_pred = self.converter.decode_inference(
-            np.moveaxis(spike_hat.detach().cpu().numpy(), 0, 1))
+        output_pred = self.converter.decode_inference(spike_hat.detach().cpu().numpy())
         accuracy, mse, auroc, auprc, f1 = calculate_metrics(
             y.detach().cpu().numpy(), output_pred
         )
@@ -133,7 +135,6 @@ class LitModelRockpool(BaseModelRockpool):
         original_shape = x.shape
         data = torch.moveaxis(x, -1, 2)
         data = data.reshape(original_shape[0], -1, original_shape[-2])
-        self.model = self.model.reset_state()
         spike, mem, recording = self.model(data)
         spike = spike.reshape(original_shape[0], original_shape[1], original_shape[-2],
                               original_shape[-1])
