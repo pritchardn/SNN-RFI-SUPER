@@ -4,6 +4,8 @@ Optuna main script for hyperparameter optimization.
 
 import json
 import os
+import random
+import time
 
 import optuna
 from optuna.storages import RetryFailedTrialCallback
@@ -50,11 +52,13 @@ def main():
     optuna_db = os.getenv("OPTUNA_DB", None)
     direction = ["maximize", "minimize", "maximize", "maximize", "maximize"]
     if optuna_db:
+        random_sec = random.randint(1, 60)
+        print(f"Sleeping for {random_sec} seconds")
+        time.sleep(random_sec)
         storage = optuna.storages.RDBStorage(
             url=optuna_db,
             heartbeat_interval=60,
             grace_period=120,
-            failed_trial_callback=RetryFailedTrialCallback(max_retry=3),
         )
         study = optuna.create_study(
             study_name=os.getenv("STUDY_NAME"),

@@ -2,7 +2,7 @@
 #SBATCH --job-name=SNN-SUPER-FC_LATENCY-LATENCY-TABASCAL
 #SBATCH --nodes=8
 #SBATCH --time=24:00:00
-#SBATCH --mem=230G
+#SBATCH --mem=115G 
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
