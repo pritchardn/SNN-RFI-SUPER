@@ -15,9 +15,9 @@ export DATASET="HERA"
 export LIMIT="1.0"
 export MODEL_TYPE="FC_DELTA_EXPOSURE"
 export ENCODER_METHOD="DELTA_EXPOSURE"
-export FORWARD_EXPOSURE="True"
+export FORWARD_EXPOSURE="None"
 export NNODES="8"
-export DELTA_NORMALIZATION="False"
+export DELTA_NORMALIZATION="True"
 
 module load python/3.10.10
 
@@ -25,7 +25,7 @@ cd /software/projects/pawsey0411/npritchard/setonix/2023.08/python/SNN-SUPER/src
 source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/bin/activate
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${DELTA_NORMALIZATION}/${NUM_HIDDEN}/${LIMIT}/${FORWARD_EXPOSURE}"
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${DELTA_NORMALIZATION}/${NUM_HIDDEN}/${LIMIT}"
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1

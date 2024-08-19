@@ -159,7 +159,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
                     encoding,
                     dataset,
                     forward_step_exposure,
-                    delta_norm,
+                    delta_norm=delta_norm,
                     num_nodes=num_nodes,
                 ),
             )
@@ -171,7 +171,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
                 model,
                 encoding,
                 dataset,
-                delta_norm,
+                delta_norm=delta_norm,
                 num_nodes=num_nodes,
             ),
         )
@@ -187,7 +187,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
                     dataset,
                     limit,
                     forward_step_exposure,
-                    delta_norm,
+                    delta_norm=delta_norm,
                     num_nodes=num_nodes,
                 ),
             )
@@ -200,7 +200,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
                 encoding,
                 dataset,
                 limit,
-                delta_norm,
+                delta_norm=delta_norm,
                 num_nodes=num_nodes,
             ),
         )
@@ -216,7 +216,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
                     dataset,
                     limit,
                     forward_step_exposure,
-                    delta_norm,
+                    delta_norm=delta_norm,
                     num_nodes=num_nodes,
                 ),
             )
@@ -229,7 +229,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
                 encoding,
                 dataset,
                 limit,
-                delta_norm,
+                delta_norm=delta_norm,
                 num_nodes=num_nodes,
             ),
         )
