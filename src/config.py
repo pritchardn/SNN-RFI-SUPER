@@ -171,13 +171,13 @@ DEFAULT_HERA_DELTA_EXPOSURE = {
         "num_hidden": 128,
         "num_outputs": 32,
         "num_layers": 2,
-        "beta": 0.5429940289809143,
+        "beta": 0.6067448766094145,
     },
     "trainer": {
         "epochs": 50,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
-    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.1, "exposure": 27},
+    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.1, "exposure": 63},
 }
 
 DEFAULT_HERA_DELTA_EXPOSURE_RNN = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
