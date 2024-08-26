@@ -19,18 +19,18 @@ DEFAULT_HERA_LATENCY = {
     "model": {
         "type": "FC_LATENCY",
         "num_inputs": 32,
-        "num_hidden": 128,
+        "num_hidden": 256,
         "num_outputs": 32,
-        "num_layers": 2,
-        "beta": 0.7270826938643781,
+        "num_layers": 5,
+        "beta": 0.782978327932565,
     },
     "trainer": {
-        "epochs": 44,
+        "epochs": 100,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
         "method": "LATENCY",
-        "exposure": 6,
+        "exposure": 3,
         "tau": 1.0,
         "normalize": True,
     },
@@ -168,16 +168,16 @@ DEFAULT_HERA_DELTA_EXPOSURE = {
     "model": {
         "type": "FC_DELTA_EXPOSURE",
         "num_inputs": 32,
-        "num_hidden": 128,
+        "num_hidden": 256,
         "num_outputs": 32,
-        "num_layers": 2,
-        "beta": 0.5429940289809143,
+        "num_layers": 5,
+        "beta": 0.70365295492966,
     },
     "trainer": {
-        "epochs": 50,
+        "epochs": 100,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
-    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.1, "exposure": 27},
+    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.1, "exposure": 35},
 }
 
 DEFAULT_HERA_DELTA_EXPOSURE_RNN = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
