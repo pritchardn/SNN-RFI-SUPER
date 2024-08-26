@@ -205,6 +205,8 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
             ),
         )
     limit = 100
+    if dataset == "LOFAR":
+        limit = 50
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
