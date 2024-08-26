@@ -197,15 +197,15 @@ DEFAULT_HERA_FORWARD = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 79,
+        "batch_size": 36,
     },
     "model": {
         "type": "FC_FORWARD_STEP",
         "num_inputs": 64,
-        "num_hidden": 128,
+        "num_hidden": 512,
         "num_outputs": 32,
-        "num_layers": 2,
-        "beta": 0.948840453252918,
+        "num_layers": 6,
+        "beta": 0.10223713665629142,
     },
     "trainer": {
         "epochs": 100,
@@ -213,11 +213,11 @@ DEFAULT_HERA_FORWARD = {
     },
     "encoder": {
         "method": "FORWARDSTEP",
-        "exposure": 41,
+        "exposure": 9,
         "tau": 1.0,
         "threshold": 0.1,
         "normalize": True,
-        "exposure_mode": "first",
+        "exposure_mode": "direct",
     },
 }
 
@@ -298,10 +298,10 @@ def get_default_params(
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "direct"
-                params["encoder"]["exposure"] = 50
-                params["trainer"]["epochs"] = 43
-                params["model"]["beta"] = 0.920343975816805
-                params["dataset"]["batch_size"] = 79
+                params["encoder"]["exposure"] = 9
+                params["model"]["beta"] = 0.10223713665629142
+                params["model"]["num_hidden"] = 512
+                params["model"]["num_layers"] = 6
             elif exposure_mode == "latency":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "latency"
