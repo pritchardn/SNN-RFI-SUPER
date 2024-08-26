@@ -29,6 +29,7 @@ def final_evaluation(
     data_orig,
     mask_orig,
     outdir: str,
+    model_type: str,
 ):
     os.makedirs(outdir, exist_ok=True)
     # Run through the whole validation set
@@ -36,12 +37,15 @@ def final_evaluation(
     for x, y in tqdm(data_module.test_dataloader()):
         spike_hat, mem_hat = model(x)
         full_spike_hat.append(spike_hat)
-    full_spike_hat = torch.cat(full_spike_hat, dim=1)
-    # save full_spike_hat into .npy file
-    np.save(
-        os.path.join(outdir, "full_spike_hat.npy"),
-        full_spike_hat.detach().cpu().numpy(),
-    )
+    if "ROCKPOOL" in model_type:
+        full_spike_hat = torch.cat(full_spike_hat, dim=0)
+    else:
+        full_spike_hat = torch.cat(full_spike_hat, dim=1)
+        # save full_spike_hat into .npy file
+        np.save(
+            os.path.join(outdir, "full_spike_hat.npy"),
+            full_spike_hat.detach().cpu().numpy(),
+        )
     # Decode outputs into masks
     output = converter.decode_inference(full_spike_hat.detach().cpu().numpy())
     # Stitch masks together

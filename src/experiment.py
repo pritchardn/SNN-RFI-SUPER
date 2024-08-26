@@ -432,6 +432,7 @@ class Experiment:
                     original_data,
                     mask_orig,
                     self.trainer.log_dir,
+                    self.configuration["model"]["type"]
                 )
             except RuntimeError as e:
                 print(f"Error during evaluation: {e}")
