@@ -47,6 +47,12 @@ DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 48
 DEFAULT_TABASCAL_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_TABASCAL_LATENCY["data_source"]["dataset"] = "TABASCAL"
 
+DEFAULT_HERA_LATENCY_DIVNORM = copy.deepcopy(DEFAULT_HERA_LATENCY)
+DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_hidden"] = 256
+DEFAULT_HERA_LATENCY_DIVNORM["model"]["beta"] = 0.239039586173328
+DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_layers"] = 5
+DEFAULT_HERA_LATENCY_DIVNORM["data_source"]["delta_normalization"] = True
+
 DEFAULT_HERA_RATE = {
     "data_source": {
         "data_path": "./data",
@@ -265,17 +271,10 @@ def get_default_params(
 ):
     if dataset == "HERA":
         if model_type == "FC_LATENCY":
-            if model_size == 128:
-                params = DEFAULT_HERA_LATENCY
-            elif model_size == 256:
-                params = copy.deepcopy(DEFAULT_HERA_LATENCY)
-                params["dataset"]["batch_size"] = 74
-                params["model"]["num_hidden"] = 256
-                params["model"]["beta"] = 0.8333011064675617
-                params["trainer"]["epochs"] = 83
-                params["encoder"]["exposure"] = 20
+            if delta_normalization:
+                params = DEFAULT_HERA_LATENCY_DIVNORM
             else:
-                raise ValueError(f"Unknown model size {model_size}")
+                params = DEFAULT_HERA_LATENCY
         elif model_type == "RNN_LATENCY":
             params = DEFAULT_HERA_LATENCY_RNN
         elif model_type == "FC_RATE":
