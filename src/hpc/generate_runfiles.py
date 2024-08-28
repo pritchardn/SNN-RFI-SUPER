@@ -93,7 +93,7 @@ def prepare_optuna(
     )
     study_name = (
         f"""export STUDY_NAME="SNN-SUPER-B-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
-        + ('''-${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '''"''')
+        + ('''-${FORWARD_EXPOSURE}''' if forward_step_exposure != "None" else '''''') + '-${DELTA_NORMALIZATION}"'
     )
     runfiletext = (
         f"""#!/bin/bash
@@ -105,7 +105,7 @@ def prepare_optuna(
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
-#SBATCH --array=0-50%4
+#SBATCH --array=0-49%4
 #SBATCH --partition=work
 #SBATCH --account=pawsey0411
 
@@ -205,6 +205,8 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
             ),
         )
     limit = 100
+    if dataset == "LOFAR":
+        limit = 50
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(

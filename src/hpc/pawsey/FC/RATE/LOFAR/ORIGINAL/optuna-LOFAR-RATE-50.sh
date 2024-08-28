@@ -7,17 +7,17 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
-#SBATCH --array=0-50%4
+#SBATCH --array=0-49%4
 #SBATCH --partition=work
 #SBATCH --account=pawsey0411
 
 export DATASET="LOFAR"
-export LIMIT="1.0"
+export LIMIT="0.5"
 export MODEL_TYPE="FC_RATE"
 export ENCODER_METHOD="RATE"
 export FORWARD_EXPOSURE="None"
 export NNODES="8"
-export DELTA_NORMALIZATION="True"
+export DELTA_NORMALIZATION="False"
 
 
 module load python/3.10.10
@@ -27,7 +27,7 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${OPTUNA_URL} # Need to change on super-computer before submitting
-export STUDY_NAME="SNN-SUPER-B-${DATASET}-${ENCODER_METHOD}-${MODEL_TYPE}-100-${NUM_HIDDEN}"
+export STUDY_NAME="SNN-SUPER-B-${DATASET}-${ENCODER_METHOD}-${MODEL_TYPE}-50-${NUM_HIDDEN}-${DELTA_NORMALIZATION}"
 export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${DELTA_NORMALIZATION}/${NUM_HIDDEN}/${LIMIT}"
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1

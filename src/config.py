@@ -19,18 +19,18 @@ DEFAULT_HERA_LATENCY = {
     "model": {
         "type": "FC_LATENCY",
         "num_inputs": 32,
-        "num_hidden": 128,
+        "num_hidden": 256,
         "num_outputs": 32,
-        "num_layers": 2,
-        "beta": 0.7270826938643781,
+        "num_layers": 5,
+        "beta": 0.782978327932565,
     },
     "trainer": {
-        "epochs": 44,
+        "epochs": 100,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
         "method": "LATENCY",
-        "exposure": 6,
+        "exposure": 3,
         "tau": 1.0,
         "normalize": True,
     },
@@ -46,6 +46,12 @@ DEFAULT_LOFAR_LATENCY["trainer"]["epochs"] = 32
 DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 48
 DEFAULT_TABASCAL_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_TABASCAL_LATENCY["data_source"]["dataset"] = "TABASCAL"
+
+DEFAULT_HERA_LATENCY_DIVNORM = copy.deepcopy(DEFAULT_HERA_LATENCY)
+DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_hidden"] = 256
+DEFAULT_HERA_LATENCY_DIVNORM["model"]["beta"] = 0.239039586173328
+DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_layers"] = 5
+DEFAULT_HERA_LATENCY_DIVNORM["data_source"]["delta_normalization"] = True
 
 DEFAULT_HERA_RATE = {
     "data_source": {
@@ -168,16 +174,16 @@ DEFAULT_HERA_DELTA_EXPOSURE = {
     "model": {
         "type": "FC_DELTA_EXPOSURE",
         "num_inputs": 32,
-        "num_hidden": 128,
+        "num_hidden": 256,
         "num_outputs": 32,
-        "num_layers": 2,
-        "beta": 0.6067448766094145,
+        "num_layers": 5,
+        "beta": 0.70365295492966,
     },
     "trainer": {
-        "epochs": 50,
+        "epochs": 100,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
-    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.1, "exposure": 63},
+    "encoder": {"method": "DELTA_EXPOSURE", "threshold": 0.1, "exposure": 35},
 }
 
 DEFAULT_HERA_DELTA_EXPOSURE_RNN = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
@@ -197,15 +203,15 @@ DEFAULT_HERA_FORWARD = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 79,
+        "batch_size": 36,
     },
     "model": {
         "type": "FC_FORWARD_STEP",
         "num_inputs": 64,
-        "num_hidden": 128,
+        "num_hidden": 512,
         "num_outputs": 32,
-        "num_layers": 2,
-        "beta": 0.948840453252918,
+        "num_layers": 6,
+        "beta": 0.10223713665629142,
     },
     "trainer": {
         "epochs": 100,
@@ -213,11 +219,11 @@ DEFAULT_HERA_FORWARD = {
     },
     "encoder": {
         "method": "FORWARDSTEP",
-        "exposure": 41,
+        "exposure": 9,
         "tau": 1.0,
         "threshold": 0.1,
         "normalize": True,
-        "exposure_mode": "first",
+        "exposure_mode": "direct",
     },
 }
 
@@ -265,17 +271,10 @@ def get_default_params(
 ):
     if dataset == "HERA":
         if model_type == "FC_LATENCY":
-            if model_size == 128:
-                params = DEFAULT_HERA_LATENCY
-            elif model_size == 256:
-                params = copy.deepcopy(DEFAULT_HERA_LATENCY)
-                params["dataset"]["batch_size"] = 74
-                params["model"]["num_hidden"] = 256
-                params["model"]["beta"] = 0.8333011064675617
-                params["trainer"]["epochs"] = 83
-                params["encoder"]["exposure"] = 20
+            if delta_normalization:
+                params = DEFAULT_HERA_LATENCY_DIVNORM
             else:
-                raise ValueError(f"Unknown model size {model_size}")
+                params = DEFAULT_HERA_LATENCY
         elif model_type == "RNN_LATENCY":
             params = DEFAULT_HERA_LATENCY_RNN
         elif model_type == "FC_RATE":
@@ -298,10 +297,10 @@ def get_default_params(
             if exposure_mode == "direct":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "direct"
-                params["encoder"]["exposure"] = 50
-                params["trainer"]["epochs"] = 43
-                params["model"]["beta"] = 0.920343975816805
-                params["dataset"]["batch_size"] = 79
+                params["encoder"]["exposure"] = 9
+                params["model"]["beta"] = 0.10223713665629142
+                params["model"]["num_hidden"] = 512
+                params["model"]["num_layers"] = 6
             elif exposure_mode == "latency":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "latency"
