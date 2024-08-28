@@ -52,6 +52,7 @@ DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_hidden"] = 256
 DEFAULT_HERA_LATENCY_DIVNORM["model"]["beta"] = 0.239039586173328
 DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_layers"] = 5
 DEFAULT_HERA_LATENCY_DIVNORM["data_source"]["delta_normalization"] = True
+DEFAULT_HERA_LATENCY_DIVNORM["encoder"]["exposure"] = 4
 
 DEFAULT_HERA_RATE = {
     "data_source": {
@@ -194,6 +195,13 @@ DEFAULT_LOFAR_DELTA_EXPOSURE["encoder"]["threshold"] = 0.5
 DEFAULT_TABASCAL_DELTA_EXPOSURE = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
 DEFAULT_TABASCAL_DELTA_EXPOSURE["data_source"]["dataset"] = "TABASCAL"
 
+DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["model"]["num_hidden"] = 512
+DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["model"]["beta"] = 0.524985471120514
+DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["model"]["num_layers"] = 4
+DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["data_source"]["delta_normalization"] = True
+DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["encoder"]["exposure"] = 21
+
 DEFAULT_HERA_FORWARD = {
     "data_source": {
         "data_path": "./data",
@@ -233,6 +241,14 @@ DEFAULT_LOFAR_FORWARD = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_LOFAR_FORWARD["data_source"]["dataset"] = "LOFAR"
 DEFAULT_TABASCAL_FORWARD = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_TABASCAL_FORWARD["data_source"]["dataset"] = "TABASCAL"
+
+DEFAULT_HERA_FORWARD_DIVNORM = copy.deepcopy(DEFAULT_HERA_FORWARD)
+DEFAULT_HERA_FORWARD_DIVNORM["model"]["num_hidden"] = 256
+DEFAULT_HERA_FORWARD_DIVNORM["model"]["beta"] = 0.0254787188709035
+DEFAULT_HERA_FORWARD_DIVNORM["model"]["num_layers"] = 5
+DEFAULT_HERA_FORWARD_DIVNORM["data_source"]["delta_normalization"] = True
+DEFAULT_HERA_FORWARD_DIVNORM["encoder"]["exposure"] = 33
+DEFAULT_HERA_FORWARD_DIVNORM["encoder"]["exposure_mode"] = "direct"
 
 DEFAULT_HERA_ANN = {
     "data_source": {
@@ -290,17 +306,23 @@ def get_default_params(
         elif model_type == "RNN_DELTA_ON":
             params = DEFAULT_HERA_DELTA_ON_RNN
         elif model_type == "FC_DELTA_EXPOSURE":
-            params = DEFAULT_HERA_DELTA_EXPOSURE
+            if delta_normalization:
+                params = DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM
+            else:
+                params = DEFAULT_HERA_DELTA_EXPOSURE
         elif model_type == "RNN_DELTA_EXPOSURE":
             params = DEFAULT_HERA_DELTA_EXPOSURE_RNN
         elif model_type == "FC_FORWARD_STEP":
             if exposure_mode == "direct":
-                params = copy.deepcopy(DEFAULT_HERA_FORWARD)
-                params["encoder"]["exposure_mode"] = "direct"
-                params["encoder"]["exposure"] = 9
-                params["model"]["beta"] = 0.10223713665629142
-                params["model"]["num_hidden"] = 512
-                params["model"]["num_layers"] = 6
+                if delta_normalization:
+                    params = copy.deepcopy(DEFAULT_HERA_FORWARD_DIVNORM)
+                else:
+                    params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+                    params["encoder"]["exposure_mode"] = "direct"
+                    params["encoder"]["exposure"] = 9
+                    params["model"]["beta"] = 0.10223713665629142
+                    params["model"]["num_hidden"] = 512
+                    params["model"]["num_layers"] = 6
             elif exposure_mode == "latency":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "latency"
