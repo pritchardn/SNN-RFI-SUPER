@@ -121,11 +121,11 @@ def main_process_supercomputer():
 
 
 def main_process_custom():
-    root_dir = "./ann"
+    root_dir = "./outputs/snn-super/FC_DELTA_EXPOSURE/DELTA_EXPOSURE/HERA/False/1.0/False/"
     log_dir = "lightning_logs/"
     output_dir = "./"
-    main(os.path.join(root_dir, log_dir), output_dir, "ANN")
+    main(os.path.join(root_dir, log_dir), output_dir, "DELTA_EXPOSURE_HERA")
 
 
 if __name__ == "__main__":
-    main_process_supercomputer()
+    main_process_custom()

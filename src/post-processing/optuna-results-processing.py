@@ -32,13 +32,7 @@ def main(filename: str):
 
 if __name__ == "__main__":
     experiment_list = [
-        "SNN-SUPER-HERA-ANN-100-128",
-        "SNN-SUPER-HERA-DELTA-100-128",
-        "SNN-SUPER-HERA-LATENCY-100",
-        "SNN-SUPER-HERA-RATE-100-128",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-direct",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-first",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-latency",
+        "SNN-SUPER-B-HERA-ANN-ANN-100-True"
     ]
     for experiment_name in experiment_list:
         main(experiment_name + "_best_trial.json")

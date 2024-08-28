@@ -51,13 +51,7 @@ def main(optuna_db):
 if __name__ == "__main__":
     OPTUNA_DB = os.getenv("OPTUNA_DB", None)
     experiment_list = [
-        "SNN-SUPER-HERA-ANN-100-128",
-        "SNN-SUPER-HERA-DELTA-100-128",
-        "SNN-SUPER-HERA-LATENCY-100",
-        "SNN-SUPER-HERA-RATE-100-128",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-direct",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-first",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-latency",
+        "SNN-SUPER-B-HERA-ANN-ANN-100-True"
     ]
     for experiment_name in tqdm(experiment_list):
         os.environ["STUDY_NAME"] = experiment_name
