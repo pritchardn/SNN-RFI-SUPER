@@ -277,10 +277,9 @@ DEFAULT_HERA_ANN = {
     },
 }
 
-# TODO: Update with final parameters
 DEFAULT_HERA_ANN_DIVNORM = copy.deepcopy(DEFAULT_HERA_ANN)
-DEFAULT_HERA_ANN_DIVNORM["model"]["num_hidden"] = 256
-DEFAULT_HERA_ANN_DIVNORM["model"]["num_layers"] = 5
+DEFAULT_HERA_ANN_DIVNORM["model"]["num_hidden"] = 512
+DEFAULT_HERA_ANN_DIVNORM["model"]["num_layers"] = 3
 DEFAULT_HERA_ANN_DIVNORM["data_source"]["delta_normalization"] = True
 
 
