@@ -30,13 +30,16 @@ def objective(trial):
         "num_hidden", [128, 256, 512]
     )
     config["model"]["num_layers"] = trial.suggest_int("num_layers", 2, 6)
-    config["model"]["beta"] = trial.suggest_float("beta", 0.0, 1.0)
-
     config["trainer"]["epochs"] = int(os.getenv("EPOCHS", 100))
-
     config["encoder"]["method"] = os.getenv("ENCODER_METHOD", "LATENCY")
-    config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 64)
     config["encoder"]["exposure_mode"] = os.getenv("FORWARD_EXPOSURE", "latency")
+
+    if model_type != "FC_ANN":
+        config["model"]["beta"] = trial.suggest_float("beta", 0.0, 1.0)
+        config["encoder"]["exposure"] = trial.suggest_int("exposure", 1, 64)
+    else:
+        config["model"]["beta"] = 0.0
+        config["encoder"]["exposure"] = 1
 
     print(json.dumps(config, indent=4))
     root_dir = os.getenv("OUTPUT_DIR", "./")
