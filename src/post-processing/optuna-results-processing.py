@@ -31,8 +31,6 @@ def main(filename: str):
 
 
 if __name__ == "__main__":
-    experiment_list = [
-        "SNN-SUPER-B-HERA-ANN-ANN-100-True"
-    ]
+    experiment_list = ["SNN-SUPER-B-HERA-ANN-ANN-100-True"]
     for experiment_name in experiment_list:
         main(experiment_name + "_best_trial.json")

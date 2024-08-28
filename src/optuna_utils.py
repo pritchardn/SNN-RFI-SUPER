@@ -1,6 +1,7 @@
 """
 This script is used to extract the best trials from an optuna study and save them to a JSON file.
 """
+
 import json
 import os
 
@@ -50,9 +51,7 @@ def main(optuna_db):
 
 if __name__ == "__main__":
     OPTUNA_DB = os.getenv("OPTUNA_DB", None)
-    experiment_list = [
-        "SNN-SUPER-B-HERA-ANN-ANN-100-True"
-    ]
+    experiment_list = ["SNN-SUPER-B-HERA-ANN-ANN-100-True"]
     for experiment_name in tqdm(experiment_list):
         os.environ["STUDY_NAME"] = experiment_name
         main(OPTUNA_DB)

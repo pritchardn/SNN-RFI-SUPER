@@ -93,7 +93,8 @@ def prepare_optuna(
     )
     study_name = (
         f"""export STUDY_NAME="SNN-SUPER-B-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
-        + ('''-${FORWARD_EXPOSURE}''' if forward_step_exposure != "None" else '''''') + '-${DELTA_NORMALIZATION}"'
+        + ("""-${FORWARD_EXPOSURE}""" if forward_step_exposure != "None" else """""")
+        + '-${DELTA_NORMALIZATION}"'
     )
     runfiletext = (
         f"""#!/bin/bash

@@ -68,7 +68,7 @@ def reconstruct_patches_time(
     n_patches = orig_size // patch_size
     recon = np.empty(
         [
-            data.shape[1] // n_patches ** 2,
+            data.shape[1] // n_patches**2,
             patch_size * n_patches,
             patch_size * n_patches * (2 if encoding_mode == "DELTA" else 1),
             data.shape[2],
