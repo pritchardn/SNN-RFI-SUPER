@@ -259,7 +259,7 @@ DEFAULT_HERA_ANN = {
         "dataset": "HERA",
     },
     "dataset": {
-        "batch_size": 44,
+        "batch_size": 36,
     },
     "model": {
         "type": "FC_ANN",
@@ -269,13 +269,19 @@ DEFAULT_HERA_ANN = {
         "num_layers": 2,
     },
     "trainer": {
-        "epochs": 29,
+        "epochs": 100,
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
         "method": "ANN",
     },
 }
+
+# TODO: Update with final parameters
+DEFAULT_HERA_ANN_DIVNORM = copy.deepcopy(DEFAULT_HERA_ANN)
+DEFAULT_HERA_ANN_DIVNORM["model"]["num_hidden"] = 256
+DEFAULT_HERA_ANN_DIVNORM["model"]["num_layers"] = 5
+DEFAULT_HERA_ANN_DIVNORM["data_source"]["delta_normalization"] = True
 
 
 def get_default_params(
@@ -342,7 +348,10 @@ def get_default_params(
             else:
                 params = DEFAULT_HERA_FORWARD_RNN
         elif model_type == "FC_ANN":
-            params = DEFAULT_HERA_ANN
+            if delta_normalization:
+                params = DEFAULT_HERA_ANN_DIVNORM
+            else:
+                params = DEFAULT_HERA_ANN
         elif model_type == "FCP_ANN":
             params = copy.deepcopy(DEFAULT_HERA_ANN)
             params["model"]["num_hidden"] = model_size
