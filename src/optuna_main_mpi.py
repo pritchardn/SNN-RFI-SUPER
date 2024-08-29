@@ -74,7 +74,6 @@ def main_mpi():
             url=optuna_db,
             heartbeat_interval=60,
             grace_period=120,
-            failed_trial_callback=RetryFailedTrialCallback(max_retry=3),
         )
         study = optuna.create_study(
             study_name=os.getenv("STUDY_NAME"),
