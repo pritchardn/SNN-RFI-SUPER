@@ -9,3 +9,4 @@ torch==2.1.2
 tqdm==4.66.1
 onnx
 tensorboard
+lightning

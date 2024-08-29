@@ -10,3 +10,4 @@ tqdm==4.66.1
 mpi4py
 onnx
 tensorboard
+lightning
