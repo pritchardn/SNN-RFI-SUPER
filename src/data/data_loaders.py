@@ -131,17 +131,21 @@ class LofarDataLoader(RawDataLoader):
         self.convert_pytorch()
         self.val_x = self.test_x.copy()
         self.val_y = self.test_y.copy()
-        self.limit_datasets()
+        if self.limit != 0.1:
+            self.limit_datasets()
 
     def load_data(self):
-        filepath = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset.pkl")
+        if self.limit == 0.1:
+            filepath = os.path.join(self.data_dir, "LOFAR_0.1_RFI_dataset.pkl")
+        else:
+            filepath = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset.pkl")
         print(f"Loading LOFAR data from {filepath}")
         with open(filepath, "rb") as ifile:
             train_x, train_y, test_x, test_y = pickle.load(ifile)
-            self.train_x = np.moveaxis(train_x, 1, 2)
-            self.train_y = np.moveaxis(train_y, 1, 2)
-            self.test_x = np.moveaxis(test_x, 1, 2)
-            self.test_y = np.moveaxis(test_y, 1, 2)
+        self.train_x = np.moveaxis(train_x, 1, 2)
+        self.train_y = np.moveaxis(train_y, 1, 2)
+        self.test_x = np.moveaxis(test_x, 1, 2)
+        self.test_y = np.moveaxis(test_y, 1, 2)
         self.original_size = self.train_x.shape[1]
         self._prepare_data()
         if self.patch_size:
