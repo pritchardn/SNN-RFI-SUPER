@@ -5,8 +5,7 @@ optuna_dashboard
 pytorch_lightning==2.1.3
 scikit_learn==1.4.0
 snntorch==0.7.0
-torch==2.1.2+cu118
+torch==2.1.2
 tqdm==4.66.1
-mpi4py
 onnx
 tensorboard
