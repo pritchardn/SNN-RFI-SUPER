@@ -1,22 +1,20 @@
 #!/bin/bash
 #SBATCH --job-name=SNN-SUPER-RNN_FORWARD_STEP-FORWARDSTEP-TABASCAL
-#SBATCH --nodes=8
+#SBATCH --nodes=1
 #SBATCH --time=24:00:00
-#SBATCH --mem=115G 
-#SBATCH --cpus-per-task=32
-#SBATCH --ntasks-per-node=1
+#SBATCH --exclusive
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
 #SBATCH --array=0-49%4
-#SBATCH --partition=work
-#SBATCH --account=pawsey0411
+#SBATCH --partition=gpu
+#SBATCH --account=pawsey0411-gpu
 
 export DATASET="TABASCAL"
 export LIMIT="0.1"
 export MODEL_TYPE="RNN_FORWARD_STEP"
 export ENCODER_METHOD="FORWARDSTEP"
 export FORWARD_EXPOSURE="direct"
-export NNODES="8"
+export NNODES=1
 export DELTA_NORMALIZATION="True"
 
 
@@ -32,8 +30,8 @@ export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MOD
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1
+export MPICH_GPU_SUPPORT_ENABLED=1
 export OMP_PLACES=cores     
 export OMP_PROC_BIND=close  
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-srun -N $SLURM_JOB_NUM_NODES -n $SLURM_NTASKS -c $OMP_NUM_THREADS -m block:block:block python3 optuna_main_mpi.py
+srun -N 1 -n 1 -c 64 --gpus-per-task=8 --gpu-bind=closest python3 optuna_main.py
