@@ -282,6 +282,38 @@ DEFAULT_HERA_ANN_DIVNORM["model"]["num_hidden"] = 512
 DEFAULT_HERA_ANN_DIVNORM["model"]["num_layers"] = 3
 DEFAULT_HERA_ANN_DIVNORM["data_source"]["delta_normalization"] = True
 
+DEFAULT_LOFAR_ANN = {
+    "data_source": {
+        "data_path": "./data",
+        "limit": 1.0,
+        "patch_size": 32,
+        "stride": 32,
+        "dataset": "LOFAR",
+    },
+    "dataset": {
+        "batch_size": 36,
+    },
+    "model": {
+        "type": "FC_ANN",
+        "num_inputs": 32,
+        "num_hidden": 128,
+        "num_outputs": 32,
+        "num_layers": 2,
+    },
+    "trainer": {
+        "epochs": 100,
+        "num_nodes": int(os.getenv("NNODES", 1)),
+    },
+    "encoder": {
+        "method": "ANN",
+    },
+}
+
+DEFAULT_LOFAR_ANN_DIVNORM = copy.deepcopy(DEFAULT_LOFAR_ANN)
+DEFAULT_LOFAR_ANN_DIVNORM["model"]["num_hidden"] = 512
+DEFAULT_LOFAR_ANN_DIVNORM["model"]["num_layers"] = 3
+DEFAULT_LOFAR_ANN_DIVNORM["data_source"]["delta_normalization"] = True
+
 
 def get_default_params(
     dataset: str,
@@ -438,7 +470,10 @@ def get_default_params(
         elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
             params = DEFAULT_LOFAR_FORWARD
         elif model_type == "FC_ANN":
-            params = DEFAULT_HERA_ANN
+            if delta_normalization:
+                params = DEFAULT_LOFAR_ANN_DIVNORM
+            else:
+                params = DEFAULT_LOFAR_ANN
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "TABASCAL":
