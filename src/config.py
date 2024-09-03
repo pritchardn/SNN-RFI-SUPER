@@ -19,10 +19,10 @@ DEFAULT_HERA_LATENCY = {
     "model": {
         "type": "FC_LATENCY",
         "num_inputs": 32,
-        "num_hidden": 256,
+        "num_hidden": 128,
         "num_outputs": 32,
-        "num_layers": 5,
-        "beta": 0.782978327932565,
+        "num_layers": 6,
+        "beta": 0.245507490258551,
     },
     "trainer": {
         "epochs": 100,
@@ -30,7 +30,7 @@ DEFAULT_HERA_LATENCY = {
     },
     "encoder": {
         "method": "LATENCY",
-        "exposure": 3,
+        "exposure": 10,
         "tau": 1.0,
         "normalize": True,
     },
