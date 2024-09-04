@@ -239,6 +239,11 @@ DEFAULT_HERA_FORWARD_RNN = copy.deepcopy(DEFAULT_HERA_FORWARD)
 DEFAULT_HERA_FORWARD_RNN["model"]["type"] = "RNN_FORWARD_STEP"
 DEFAULT_LOFAR_FORWARD = copy.deepcopy(DEFAULT_HERA_FORWARD)
 DEFAULT_LOFAR_FORWARD["data_source"]["dataset"] = "LOFAR"
+DEFAULT_LOFAR_FORWARD["model"]["num_hidden"] = 512
+DEFAULT_LOFAR_FORWARD["model"]["beta"] = 0.215156267815746
+DEFAULT_LOFAR_FORWARD["model"]["num_layers"] = 2
+DEFAULT_LOFAR_FORWARD["encoder"]["exposure"] = 14
+DEFAULT_LOFAR_FORWARD["encoder"]["exposure_mode"] = "direct"
 DEFAULT_TABASCAL_FORWARD = copy.deepcopy(DEFAULT_HERA_FORWARD)
 DEFAULT_TABASCAL_FORWARD["data_source"]["dataset"] = "TABASCAL"
 
@@ -249,6 +254,8 @@ DEFAULT_HERA_FORWARD_DIVNORM["model"]["num_layers"] = 5
 DEFAULT_HERA_FORWARD_DIVNORM["data_source"]["delta_normalization"] = True
 DEFAULT_HERA_FORWARD_DIVNORM["encoder"]["exposure"] = 33
 DEFAULT_HERA_FORWARD_DIVNORM["encoder"]["exposure_mode"] = "direct"
+
+DEFAULT_LOFAR_FORWARD_DIVNORM = copy.deepcopy(DEFAULT_LOFAR_FORWARD)
 
 DEFAULT_HERA_ANN = {
     "data_source": {
@@ -468,7 +475,10 @@ def get_default_params(
         elif model_type == "FC_DELTA_EXPOSURE" or model_type == "RNN_DELTA_EXPOSURE":
             params = DEFAULT_LOFAR_DELTA_EXPOSURE
         elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
-            params = DEFAULT_LOFAR_FORWARD
+            if delta_normalization:
+                params = DEFAULT_LOFAR_FORWARD_DIVNORM
+            else:
+                params = DEFAULT_LOFAR_FORWARD
         elif model_type == "FC_ANN":
             if delta_normalization:
                 params = DEFAULT_LOFAR_ANN_DIVNORM
