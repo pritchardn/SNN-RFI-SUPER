@@ -54,6 +54,13 @@ DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_layers"] = 5
 DEFAULT_HERA_LATENCY_DIVNORM["data_source"]["delta_normalization"] = True
 DEFAULT_HERA_LATENCY_DIVNORM["encoder"]["exposure"] = 4
 
+DEFAULT_LOFAR_LATENCY_DIVNORM = copy.deepcopy(DEFAULT_LOFAR_LATENCY)
+DEFAULT_LOFAR_LATENCY_DIVNORM["model"]["num_hidden"] = 512
+DEFAULT_LOFAR_LATENCY_DIVNORM["model"]["beta"] = 0.355236288850364
+DEFAULT_LOFAR_LATENCY_DIVNORM["model"]["num_layers"] = 5
+DEFAULT_LOFAR_LATENCY_DIVNORM["data_source"]["delta_normalization"] = True
+DEFAULT_LOFAR_LATENCY_DIVNORM["encoder"]["exposure"] = 55
+
 DEFAULT_HERA_RATE = {
     "data_source": {
         "data_path": "./data",
@@ -465,7 +472,10 @@ def get_default_params(
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "LOFAR":
         if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
-            params = DEFAULT_LOFAR_LATENCY
+            if delta_normalization:
+                params = DEFAULT_LOFAR_LATENCY_DIVNORM
+            else:
+                params = DEFAULT_LOFAR_LATENCY
         elif model_type == "FC_RATE" or model_type == "RNN_RATE":
             params = DEFAULT_LOFAR_RATE
         elif model_type == "FC_DELTA" or model_type == "RNN_DELTA":
