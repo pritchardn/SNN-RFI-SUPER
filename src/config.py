@@ -43,7 +43,7 @@ DEFAULT_LOFAR_LATENCY["data_source"]["dataset"] = "LOFAR"
 DEFAULT_LOFAR_LATENCY["dataset"]["batch_size"] = 47
 DEFAULT_LOFAR_LATENCY["model"]["beta"] = 0.5579856182276725
 DEFAULT_LOFAR_LATENCY["trainer"]["epochs"] = 32
-DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 48
+DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 64
 DEFAULT_TABASCAL_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_TABASCAL_LATENCY["data_source"]["dataset"] = "TABASCAL"
 
@@ -208,6 +208,14 @@ DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["model"]["beta"] = 0.524985471120514
 DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["model"]["num_layers"] = 4
 DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["data_source"]["delta_normalization"] = True
 DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["encoder"]["exposure"] = 21
+
+DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM = copy.deepcopy(DEFAULT_LOFAR_DELTA_EXPOSURE)
+DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM["model"]["num_hidden"] = 512
+DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM["model"]["num_layers"] = 2
+DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM["model"]["beta"] = 0.378904808552294
+DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM["data_source"]["delta_normalization"] = True
+DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM["encoder"]["exposure"] = 9
+
 
 DEFAULT_HERA_FORWARD = {
     "data_source": {
@@ -483,7 +491,10 @@ def get_default_params(
         elif model_type == "FC_DELTA_ON" or model_type == "RNN_DELTA_ON":
             params = DEFAULT_LOFAR_DELTA_ON
         elif model_type == "FC_DELTA_EXPOSURE" or model_type == "RNN_DELTA_EXPOSURE":
-            params = DEFAULT_LOFAR_DELTA_EXPOSURE
+            if delta_normalization:
+                params = DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM
+            else:
+                params = DEFAULT_LOFAR_DELTA_EXPOSURE
         elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
             if delta_normalization:
                 params = DEFAULT_LOFAR_FORWARD_DIVNORM
