@@ -259,4 +259,4 @@ def main(out_dir, num_nodes):
 
 
 if __name__ == "__main__":
-    main(f".{os.sep}src{os.sep}hpc{os.sep}pawsey", 8)
+    main(f".{os.sep}src{os.sep}hpc{os.sep}pawsey", 1)

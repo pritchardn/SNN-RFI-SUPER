@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=SNN-SUPER-RNN_RATE-RATE-TABASCAL
-#SBATCH --nodes=8
+#SBATCH --nodes=1
 #SBATCH --time=24:00:00
 #SBATCH --exclusive
 #SBATCH --output=super_%A_%a.out
@@ -14,7 +14,7 @@ export LIMIT="1.0"
 export MODEL_TYPE="RNN_RATE"
 export ENCODER_METHOD="RATE"
 export FORWARD_EXPOSURE="None"
-export NNODES="8"
+export NNODES="1"
 export DELTA_NORMALIZATION="True"
 
 module load python/3.10.10

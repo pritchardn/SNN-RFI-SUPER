@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=SNN-SUPER-FC_LATENCY-LATENCY-TABASCAL
-#SBATCH --nodes=8
+#SBATCH --nodes=1
 #SBATCH --time=24:00:00
 #SBATCH --exclusive
 #SBATCH --output=super_%A_%a.out
@@ -14,7 +14,7 @@ export LIMIT="1.0"
 export MODEL_TYPE="FC_LATENCY"
 export ENCODER_METHOD="LATENCY"
 export FORWARD_EXPOSURE="None"
-export NNODES="8"
+export NNODES="1"
 export DELTA_NORMALIZATION="False"
 
 module load python/3.10.10
