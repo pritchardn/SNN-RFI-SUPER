@@ -31,6 +31,23 @@ def main(filename: str):
 
 
 if __name__ == "__main__":
-    experiment_list = ["SNN-SUPER-B-HERA-ANN-ANN-100-True"]
+    experiment_list = [
+        "SNN-SUPER-B-HERA-LATENCY-FC_LATENCY-100--False",
+        "SNN-SUPER-B-HERA-LATENCY-FC_LATENCY-100--True",
+        "SNN-SUPER-B-HERA-DELTA_EXPOSURE-FC_DELTA_EXPOSURE-100--False",
+        "SNN-SUPER-B-HERA-DELTA_EXPOSURE-FC_DELTA_EXPOSURE-100--True-True",
+        "SNN-SUPER-B-HERA-FORWARDSTEP-FC_FORWARD_STEP-100--direct-False",
+        "SNN-SUPER-B-HERA-FORWARDSTEP-FC_FORWARD_STEP-100--direct-True",
+        "SNN-SUPER-B-HERA-ANN-ANN-100-False",
+        "SNN-SUPER-B-HERA-ANN-ANN-100-True",
+        "SNN-SUPER-B-LOFAR-LATENCY-FC_LATENCY-50--False",
+        "SNN-SUPER-B-LOFAR-LATENCY-FC_LATENCY-50--True",
+        "SNN-SUPER-B-LOFAR-DELTA_EXPOSURE-FC_DELTA_EXPOSURE-50--False",
+        "SNN-SUPER-B-LOFAR-DELTA_EXPOSURE-FC_DELTA_EXPOSURE-50--True",
+        "SNN-SUPER-B-LOFAR-FORWARDSTEP-FC_FORWARD_STEP-50--direct-False",
+        "SNN-SUPER-B-LOFAR-FORWARDSTEP-FC_FORWARD_STEP-50--direct-True",
+        "SNN-SUPER-B-LOFAR-ANN-FC_ANN-50--False",
+        "SNN-SUPER-B-LOFAR-ANN-FC_ANN-50--True",
+    ]
     for experiment_name in experiment_list:
         main(experiment_name + "_best_trial.json")
