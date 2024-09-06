@@ -38,12 +38,10 @@ def main():
     print("Preparation complete")
     experiment.train()
     print("Training complete")
-    experiment.save_model()
     experiment.evaluate(plot)
     print("Evaluation complete")
     experiment.save_model()
 
 
 if __name__ == "__main__":
-    for _ in range(5):
-        main()
+    main()
