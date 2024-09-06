@@ -40,10 +40,10 @@ DEFAULT_HERA_LATENCY_RNN = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_HERA_LATENCY_RNN["model"]["type"] = "RNN_LATENCY"
 DEFAULT_LOFAR_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_LOFAR_LATENCY["data_source"]["dataset"] = "LOFAR"
-DEFAULT_LOFAR_LATENCY["dataset"]["batch_size"] = 47
-DEFAULT_LOFAR_LATENCY["model"]["beta"] = 0.5579856182276725
-DEFAULT_LOFAR_LATENCY["trainer"]["epochs"] = 32
-DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 64
+DEFAULT_LOFAR_LATENCY["model"]["beta"] = 0.170258427768513
+DEFAULT_LOFAR_LATENCY["model"]["num_hidden"] = 128
+DEFAULT_LOFAR_LATENCY["model"]["num_layers"] = 2
+DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 48
 DEFAULT_TABASCAL_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_TABASCAL_LATENCY["data_source"]["dataset"] = "TABASCAL"
 
@@ -199,6 +199,10 @@ DEFAULT_HERA_DELTA_EXPOSURE_RNN["model"]["type"] = "RNN_DELTA"
 DEFAULT_LOFAR_DELTA_EXPOSURE = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
 DEFAULT_LOFAR_DELTA_EXPOSURE["data_source"]["dataset"] = "LOFAR"
 DEFAULT_LOFAR_DELTA_EXPOSURE["encoder"]["threshold"] = 0.5
+DEFAULT_LOFAR_DELTA_EXPOSURE["model"]["num_hidden"] = 256
+DEFAULT_LOFAR_DELTA_EXPOSURE["model"]["num_layers"] = 2
+DEFAULT_LOFAR_DELTA_EXPOSURE["model"]["beta"] = 0.0136105244484559
+DEFAULT_LOFAR_DELTA_EXPOSURE["encoder"]["exposure"] = 59
 DEFAULT_TABASCAL_DELTA_EXPOSURE = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
 DEFAULT_TABASCAL_DELTA_EXPOSURE["data_source"]["dataset"] = "TABASCAL"
 
@@ -271,6 +275,12 @@ DEFAULT_HERA_FORWARD_DIVNORM["encoder"]["exposure"] = 33
 DEFAULT_HERA_FORWARD_DIVNORM["encoder"]["exposure_mode"] = "direct"
 
 DEFAULT_LOFAR_FORWARD_DIVNORM = copy.deepcopy(DEFAULT_LOFAR_FORWARD)
+DEFAULT_LOFAR_FORWARD_DIVNORM["model"]["num_hidden"] = 512
+DEFAULT_LOFAR_FORWARD_DIVNORM["model"]["beta"] = 0.766733506689959
+DEFAULT_LOFAR_FORWARD_DIVNORM["model"]["num_layers"] = 2
+DEFAULT_LOFAR_FORWARD_DIVNORM["data_source"]["delta_normalization"] = True
+DEFAULT_LOFAR_FORWARD_DIVNORM["encoder"]["exposure"] = 2
+DEFAULT_LOFAR_FORWARD_DIVNORM["encoder"]["exposure_mode"] = "direct"
 
 DEFAULT_HERA_ANN = {
     "data_source": {
@@ -318,9 +328,9 @@ DEFAULT_LOFAR_ANN = {
     "model": {
         "type": "FC_ANN",
         "num_inputs": 32,
-        "num_hidden": 128,
+        "num_hidden": 512,
         "num_outputs": 32,
-        "num_layers": 2,
+        "num_layers": 6,
     },
     "trainer": {
         "epochs": 100,
@@ -333,7 +343,7 @@ DEFAULT_LOFAR_ANN = {
 
 DEFAULT_LOFAR_ANN_DIVNORM = copy.deepcopy(DEFAULT_LOFAR_ANN)
 DEFAULT_LOFAR_ANN_DIVNORM["model"]["num_hidden"] = 512
-DEFAULT_LOFAR_ANN_DIVNORM["model"]["num_layers"] = 3
+DEFAULT_LOFAR_ANN_DIVNORM["model"]["num_layers"] = 2
 DEFAULT_LOFAR_ANN_DIVNORM["data_source"]["delta_normalization"] = True
 
 
@@ -377,11 +387,6 @@ def get_default_params(
                     params = copy.deepcopy(DEFAULT_HERA_FORWARD_DIVNORM)
                 else:
                     params = copy.deepcopy(DEFAULT_HERA_FORWARD)
-                    params["encoder"]["exposure_mode"] = "direct"
-                    params["encoder"]["exposure"] = 9
-                    params["model"]["beta"] = 0.10223713665629142
-                    params["model"]["num_hidden"] = 512
-                    params["model"]["num_layers"] = 6
             elif exposure_mode == "latency":
                 params = copy.deepcopy(DEFAULT_HERA_FORWARD)
                 params["encoder"]["exposure_mode"] = "latency"
