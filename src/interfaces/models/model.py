@@ -66,7 +66,7 @@ class BaseLitModel(pl.LightningModule):
                     )
                 )
             else:
-                layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
+                layers.append(snn.Synaptic(alpha=0.9, beta=self.beta))
         return layers
 
     def set_converter(self, converter: SpikeConverter):
@@ -80,6 +80,15 @@ class BaseLitModel(pl.LightningModule):
         if self.recurrent:
             return [lif.init_rleaky() for lif in self.snn_layers]
         return [lif.init_leaky() for lif in self.snn_layers]
+
+    def _init_synapses(self):
+        membranes = []
+        synapses = []
+        for i in range(len(self.snn_layers)):
+            syn_curr, mem_curr = self.snn_layers[i].init_synaptic()
+            synapses.append(syn_curr)
+            membranes.append(mem_curr)
+        return synapses, membranes
 
     @abc.abstractmethod
     def forward(self, x):
@@ -150,11 +159,11 @@ class LitModel(BaseLitModel):
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent
         )
 
-    def _infer_slice(self, x, membranes):
+    def _infer_slice(self, x, synapses, membranes):
         spike = None
         for n in range(self.num_layers):
             curr = self.ann_layers[n](x)
-            spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
+            spike, synapses[n], membranes[n] = self.snn_layers[n](curr, synapses[n], membranes[n])
             x = spike
         return spike, membranes[-1]
 
@@ -169,13 +178,14 @@ class LitModel(BaseLitModel):
         full_spike = []
         full_mem = []
         # x -> [N x exp x C x freq x time]
-        membranes = self._init_membranes()
+        # membranes = self._init_membranes()
+        synapses, membranes = self._init_synapses()
         for t in range(x.shape[-1]):
             data = x[:, :, 0, :, t]
             if self.recurrent:
                 spike, mem = self._infer_slice_recurrent(data, membranes)
             else:
-                spike, mem = self._infer_slice(data, membranes)
+                spike, mem = self._infer_slice(data, synapses, membranes)
             full_spike.append(spike)
             full_mem.append(mem)
         full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
