@@ -14,7 +14,6 @@ import torch
 from data.data_loaders import (
     HeraDataLoader,
     LofarDataLoader,
-    TabascalDataLoader,
     HeraDeltaNormLoader,
     LofarDeltaNormLoader,
 )
@@ -70,10 +69,6 @@ def data_source_from_config(config: dict) -> RawDataLoader:
             data_source = LofarDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit
             )
-    elif dataset == "TABASCAL":
-        data_source = TabascalDataLoader(
-            data_path, patch_size=patch_size, stride=stride, limit=limit
-        )
     else:
         raise NotImplementedError(f"Dataset {dataset} is not supported.")
     return data_source

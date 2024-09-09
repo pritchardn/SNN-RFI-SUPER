@@ -6,9 +6,7 @@ import os
 import pickle
 from typing import Union
 
-import h5py
 import numpy as np
-import sklearn.model_selection
 from tqdm import tqdm
 
 from interfaces.data.raw_data_loader import RawDataLoader
@@ -40,7 +38,7 @@ def _delta_normalize(image_data: np.ndarray, kernel_size=3) -> np.ndarray:
 
 
 def _normalize(
-    image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
+        image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
 ) -> np.ndarray:
     _max = np.mean(image_data[np.invert(masks)]) + max_threshold * np.std(
         image_data[np.invert(masks)]
@@ -167,48 +165,6 @@ class LofarDeltaNormLoader(RawDataLoader):
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
         self.filter_noiseless_train_patches()
-
-
-class TabascalDataLoader(RawDataLoader):
-    def _prepare_data(self):
-        self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
-        self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max
-        self.test_x = self.test_x.astype("float32")
-        self.train_x = self.train_x.astype("float32")
-        self.test_x = _normalize(self.test_x, self.test_y, 3, 95)
-        self.train_x = _normalize(self.train_x, self.train_y, 3, 95)
-        self.convert_pytorch()
-        self.val_x = self.test_x.copy()
-        self.val_y = self.test_y.copy()
-        self.limit_datasets()
-
-    def load_data(self, num_sat: int = 2, num_ground: int = 3):
-        filepath = os.path.join(
-            self.data_dir,
-            f"obs_100AST_{num_sat}SAT_{num_ground}"
-            f"GRD_512BSL_64A_512T-0440-1462_016I_512F-1.227e+09-1.334e+09.hdf5",
-        )
-        print(f"Loading Tabascal data from {filepath}")
-        h5file = h5py.File(filepath, "r")
-        image_data = h5file.get("vis")
-        image_data = np.array(image_data)
-        mask_fieldname = "masks_median"
-        masks = h5file.get(mask_fieldname)
-        masks = np.array(masks).astype("bool")
-        train_x, test_x, train_y, test_y = sklearn.model_selection.train_test_split(
-            image_data, masks, test_size=0.2
-        )
-        h5file.close()
-        self.train_x = np.moveaxisd(train_x, 1, 2)
-        self.train_y = np.moveaxis(train_y, 1, 2)
-        self.test_x = np.moveaxis(test_x, 1, 2)
-        self.test_y = np.moveaxis(test_y, 1, 2)
-        self.original_size = self.train_x.shape[1]
-        self._prepare_data()
-        if self.patch_size:
-            self.create_patches(self.patch_size, self.stride)
-        # self.filter_noiseless_val_patches()
-        # self.filter_noiseless_train_patches()
 
 
 def create_delta_normalized_hera():

@@ -44,8 +44,6 @@ DEFAULT_LOFAR_LATENCY["model"]["beta"] = 0.170258427768513
 DEFAULT_LOFAR_LATENCY["model"]["num_hidden"] = 128
 DEFAULT_LOFAR_LATENCY["model"]["num_layers"] = 2
 DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 48
-DEFAULT_TABASCAL_LATENCY = copy.deepcopy(DEFAULT_HERA_LATENCY)
-DEFAULT_TABASCAL_LATENCY["data_source"]["dataset"] = "TABASCAL"
 
 DEFAULT_HERA_LATENCY_DIVNORM = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_hidden"] = 256
@@ -95,8 +93,6 @@ DEFAULT_HERA_RATE_RNN = copy.deepcopy(DEFAULT_HERA_RATE)
 DEFAULT_HERA_RATE_RNN["model"]["type"] = "RNN_RATE"
 DEFAULT_LOFAR_RATE = copy.deepcopy(DEFAULT_HERA_RATE)
 DEFAULT_LOFAR_RATE["data_source"]["dataset"] = "LOFAR"
-DEFAULT_TABASCAL_RATE = copy.deepcopy(DEFAULT_HERA_RATE)
-DEFAULT_TABASCAL_RATE["data_source"]["dataset"] = "TABASCAL"
 
 DEFAULT_HERA_DELTA = {
     "data_source": {
@@ -130,8 +126,6 @@ DEFAULT_HERA_DELTA_RNN = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_HERA_DELTA_RNN["model"]["type"] = "RNN_DELTA"
 DEFAULT_LOFAR_DELTA = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_LOFAR_DELTA["data_source"]["dataset"] = "LOFAR"
-DEFAULT_TABASCAL_DELTA = copy.deepcopy(DEFAULT_HERA_DELTA)
-DEFAULT_TABASCAL_DELTA["data_source"]["dataset"] = "TABASCAL"
 
 DEFAULT_HERA_DELTA_ON = {
     "data_source": {
@@ -165,8 +159,6 @@ DEFAULT_HERA_DELTA_ON_RNN = copy.deepcopy(DEFAULT_HERA_DELTA_ON)
 DEFAULT_HERA_DELTA_ON_RNN["model"]["type"] = "RNN_DELTA_ON"
 DEFAULT_LOFAR_DELTA_ON = copy.deepcopy(DEFAULT_HERA_DELTA)
 DEFAULT_LOFAR_DELTA_ON["data_source"]["dataset"] = "LOFAR"
-DEFAULT_TABASCAL_DELTA_ON = copy.deepcopy(DEFAULT_HERA_DELTA)
-DEFAULT_TABASCAL_DELTA_ON["data_source"]["dataset"] = "TABASCAL"
 
 DEFAULT_HERA_DELTA_EXPOSURE = {
     "data_source": {
@@ -203,8 +195,6 @@ DEFAULT_LOFAR_DELTA_EXPOSURE["model"]["num_hidden"] = 256
 DEFAULT_LOFAR_DELTA_EXPOSURE["model"]["num_layers"] = 2
 DEFAULT_LOFAR_DELTA_EXPOSURE["model"]["beta"] = 0.0136105244484559
 DEFAULT_LOFAR_DELTA_EXPOSURE["encoder"]["exposure"] = 59
-DEFAULT_TABASCAL_DELTA_EXPOSURE = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
-DEFAULT_TABASCAL_DELTA_EXPOSURE["data_source"]["dataset"] = "TABASCAL"
 
 DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
 DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM["model"]["num_hidden"] = 512
@@ -263,8 +253,6 @@ DEFAULT_LOFAR_FORWARD["model"]["beta"] = 0.215156267815746
 DEFAULT_LOFAR_FORWARD["model"]["num_layers"] = 2
 DEFAULT_LOFAR_FORWARD["encoder"]["exposure"] = 14
 DEFAULT_LOFAR_FORWARD["encoder"]["exposure_mode"] = "direct"
-DEFAULT_TABASCAL_FORWARD = copy.deepcopy(DEFAULT_HERA_FORWARD)
-DEFAULT_TABASCAL_FORWARD["data_source"]["dataset"] = "TABASCAL"
 
 DEFAULT_HERA_FORWARD_DIVNORM = copy.deepcopy(DEFAULT_HERA_FORWARD)
 DEFAULT_HERA_FORWARD_DIVNORM["model"]["num_hidden"] = 256
@@ -510,23 +498,6 @@ def get_default_params(
                 params = DEFAULT_LOFAR_ANN_DIVNORM
             else:
                 params = DEFAULT_LOFAR_ANN
-        else:
-            raise ValueError(f"Unknown model type {model_type}")
-    elif dataset == "TABASCAL":
-        if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
-            params = DEFAULT_TABASCAL_LATENCY
-        elif model_type == "FC_RATE" or model_type == "RNN_RATE":
-            params = DEFAULT_TABASCAL_RATE
-        elif model_type == "FC_DELTA" or model_type == "RNN_DELTA":
-            params = DEFAULT_TABASCAL_DELTA
-        elif model_type == "FC_DELTA_ON" or model_type == "RNN_DELTA_ON":
-            params = DEFAULT_TABASCAL_DELTA_ON
-        elif model_type == "FC_DELTA_EXPOSURE" or model_type == "RNN_DELTA_EXPOSURE":
-            params = DEFAULT_TABASCAL_DELTA_EXPOSURE
-        elif model_type == "FC_FORWARD_STEP" or model_type == "RNN_FORWARD_STEP":
-            params = DEFAULT_TABASCAL_FORWARD
-        elif model_type == "FC_ANN":
-            params = DEFAULT_HERA_ANN
         else:
             raise ValueError(f"Unknown model type {model_type}")
     else:

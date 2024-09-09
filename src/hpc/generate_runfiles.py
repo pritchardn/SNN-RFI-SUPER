@@ -20,7 +20,7 @@ models = {
         ("RNN_FORWARD_STEP", "FORWARDSTEP"),
     ],
 }
-datasets = ["HERA", "LOFAR", "TABASCAL"]
+datasets = ["HERA", "LOFAR"]
 forwardstep_exposures = ["direct", "first", "latency"]
 delta_normalization = [True, False]
 
