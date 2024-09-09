@@ -91,7 +91,7 @@ def prepare_optuna(
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
     study_name = (
-        f"""export STUDY_NAME="SNN-SUPER-B-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
+        f"""export STUDY_NAME="SNN-SUPER-C-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
         + ("""-${FORWARD_EXPOSURE}""" if forward_step_exposure != "None" else """""")
         + '-${DELTA_NORMALIZATION}"'
     )
@@ -108,7 +108,7 @@ def prepare_optuna(
 #SBATCH --account=pawsey0411-gpu
 
 export DATASET="{dataset}"
-export LIMIT="{limit / 100.0}"
+export LIMIT="{round(limit / 100.0, 3)}"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
@@ -204,7 +204,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
         )
     limit = 100
     if dataset == "LOFAR":
-        limit = 50
+        limit = 5.6
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
