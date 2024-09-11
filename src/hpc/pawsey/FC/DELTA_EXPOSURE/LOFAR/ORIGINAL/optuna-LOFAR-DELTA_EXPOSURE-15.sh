@@ -10,12 +10,12 @@
 #SBATCH --account=pawsey0411-gpu
 
 export DATASET="LOFAR"
-export LIMIT="0.056"
+export LIMIT="0.15"
 export MODEL_TYPE="FC_DELTA_EXPOSURE"
 export ENCODER_METHOD="DELTA_EXPOSURE"
 export FORWARD_EXPOSURE="None"
 export NNODES=1
-export DELTA_NORMALIZATION="True"
+export DELTA_NORMALIZATION="False"
 
 
 module load python/3.10.10
@@ -25,7 +25,7 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${OPTUNA_URL} # Need to change on super-computer before submitting
-export STUDY_NAME="SNN-SUPER-C-${DATASET}-${ENCODER_METHOD}-${MODEL_TYPE}-5.6-${NUM_HIDDEN}-${DELTA_NORMALIZATION}"
+export STUDY_NAME="SNN-SUPER-C-${DATASET}-${ENCODER_METHOD}-${MODEL_TYPE}-15-${NUM_HIDDEN}-${DELTA_NORMALIZATION}"
 export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${DELTA_NORMALIZATION}/${NUM_HIDDEN}/${LIMIT}"
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
