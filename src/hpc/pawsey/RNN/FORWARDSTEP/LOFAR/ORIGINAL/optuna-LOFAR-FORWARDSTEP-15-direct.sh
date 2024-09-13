@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=SNN-SUPER-FC_RATE-RATE-LOFAR
+#SBATCH --job-name=SNN-SUPER-RNN_FORWARD_STEP-FORWARDSTEP-LOFAR
 #SBATCH --nodes=1
 #SBATCH --time=24:00:00
 #SBATCH --exclusive
@@ -10,10 +10,10 @@
 #SBATCH --account=pawsey0411-gpu
 
 export DATASET="LOFAR"
-export LIMIT="0.056"
-export MODEL_TYPE="FC_RATE"
-export ENCODER_METHOD="RATE"
-export FORWARD_EXPOSURE="None"
+export LIMIT="0.15"
+export MODEL_TYPE="RNN_FORWARD_STEP"
+export ENCODER_METHOD="FORWARDSTEP"
+export FORWARD_EXPOSURE="direct"
 export NNODES=1
 export DELTA_NORMALIZATION="False"
 
@@ -25,8 +25,8 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${OPTUNA_URL} # Need to change on super-computer before submitting
-export STUDY_NAME="SNN-SUPER-C-${DATASET}-${ENCODER_METHOD}-${MODEL_TYPE}-5.6-${NUM_HIDDEN}-${DELTA_NORMALIZATION}"
-export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${DELTA_NORMALIZATION}/${NUM_HIDDEN}/${LIMIT}"
+export STUDY_NAME="SNN-SUPER-C-${DATASET}-${ENCODER_METHOD}-${MODEL_TYPE}-15-${NUM_HIDDEN}-${FORWARD_EXPOSURE}-${DELTA_NORMALIZATION}"
+export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${DELTA_NORMALIZATION}/${NUM_HIDDEN}/${LIMIT}/${FORWARD_EXPOSURE}"
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1

@@ -108,7 +108,7 @@ def prepare_optuna(
 #SBATCH --account=pawsey0411-gpu
 
 export DATASET="{dataset}"
-export LIMIT="{round(limit / 100.0, 3)}"
+export LIMIT="{limit / 100}"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
@@ -204,7 +204,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
         )
     limit = 100
     if dataset == "LOFAR":
-        limit = 5.6
+        limit = 15
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
