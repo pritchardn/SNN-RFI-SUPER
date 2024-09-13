@@ -10,7 +10,7 @@
 #SBATCH --account=pawsey0411-gpu
 
 export DATASET="LOFAR"
-export LIMIT="1.0"
+export LIMIT="0.15"
 export MODEL_TYPE="FC_LATENCY"
 export ENCODER_METHOD="LATENCY"
 export FORWARD_EXPOSURE="None"

@@ -36,6 +36,7 @@ def prepare_singlerun(
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
+    limit = 1.0 if dataset == "HERA" else 0.15
     runfiletext = (
         f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
@@ -49,7 +50,7 @@ def prepare_singlerun(
 #SBATCH --account=pawsey0411-gpu
 
 export DATASET="{dataset}"
-export LIMIT="1.0"
+export LIMIT="{limit}"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
