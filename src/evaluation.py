@@ -64,14 +64,18 @@ def final_evaluation(
 def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray):
     y_true = ensure_tflow(y_true)
     y_pred = ensure_tflow(y_pred)
+    if np.any(y_true):
+        pos_label = 1
+    else:
+        pos_label = 0
     false_pos_rate, true_pos_rate, _ = roc_curve(
-        y_true.flatten() > 0, y_pred.flatten() > 0
+        y_true.flatten() > 0, y_pred.flatten() > 0, pos_label=pos_label
     )
     accuracy = accuracy_score(y_true.flatten(), y_pred.flatten() > 0)
     mse = mean_squared_error(y_true.flatten(), y_pred.flatten() > 0)
     auroc = auc(false_pos_rate, true_pos_rate)
     precision, recall, _ = precision_recall_curve(
-        y_true.flatten() > 0, y_pred.flatten() > 0
+        y_true.flatten() > 0, y_pred.flatten() > 0, pos_label=pos_label
     )
     auprc = auc(recall, precision)
     f1 = 2 * (precision * recall) / (precision + recall)

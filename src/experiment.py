@@ -14,7 +14,6 @@ import torch
 from data.data_loaders import (
     HeraDataLoader,
     LofarDataLoader,
-    TabascalDataLoader,
     HeraDeltaNormLoader,
     LofarDeltaNormLoader,
 )
@@ -70,10 +69,6 @@ def data_source_from_config(config: dict) -> RawDataLoader:
             data_source = LofarDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit
             )
-    elif dataset == "TABASCAL":
-        data_source = TabascalDataLoader(
-            data_path, patch_size=patch_size, stride=stride, limit=limit
-        )
     else:
         raise NotImplementedError(f"Dataset {dataset} is not supported.")
     return data_source
@@ -339,14 +334,6 @@ class Experiment:
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:
             self.configuration = json.load(ifile)
-
-    def save_model(self):
-        out_dir = self.trainer.log_dir
-        os.makedirs(out_dir, exist_ok=True)
-        input_sample, _ = next(iter(self.dataset.test_dataloader()))
-        self.model.to_onnx(
-            os.path.join(out_dir, "model.onnx"), input_sample, export_params=True
-        )
 
     def prepare(self):
         err_msg = ""

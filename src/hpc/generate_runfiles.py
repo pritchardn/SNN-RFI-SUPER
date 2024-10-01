@@ -11,6 +11,7 @@ models = {
         ("FC_DELTA", "DELTA"),
         ("FC_FORWARD_STEP", "FORWARDSTEP"),
         ("FC_DELTA_EXPOSURE", "DELTA_EXPOSURE"),
+        ("FC_ANN", "ANN")
     ],
     "RNN": [
         ("RNN_LATENCY", "LATENCY"),
@@ -19,7 +20,7 @@ models = {
         ("RNN_FORWARD_STEP", "FORWARDSTEP"),
     ],
 }
-datasets = ["HERA", "LOFAR", "TABASCAL"]
+datasets = ["HERA", "LOFAR"]
 forwardstep_exposures = ["direct", "first", "latency"]
 delta_normalization = [True, False]
 
@@ -35,22 +36,21 @@ def prepare_singlerun(
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
+    limit = 1.0 if dataset == "HERA" else 0.15
     runfiletext = (
         f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
 #SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
-#SBATCH --mem={"230" if dataset == "LOFAR" else "115"}G 
-#SBATCH --cpus-per-task=32
-#SBATCH --ntasks-per-node=1
+#SBATCH --exclusive
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
 #SBATCH --array=0-9
-#SBATCH --partition=work
-#SBATCH --account=pawsey0411
+#SBATCH --partition=gpu
+#SBATCH --account=pawsey0411-gpu
 
 export DATASET="{dataset}"
-export LIMIT="1.0"
+export LIMIT="{limit}"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
@@ -69,11 +69,11 @@ export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYP
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1
+export MPICH_GPU_SUPPORT_ENABLED=1
 export OMP_PLACES=cores     
 export OMP_PROC_BIND=close  
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
    
-srun -N $SLURM_JOB_NUM_NODES -n $SLURM_NTASKS -c $OMP_NUM_THREADS -m block:block:block python3 main.py
+srun -N 1 -n 1 -c 64 --gpus-per-task=8 --gpu-bind=closest python3 main.py
     """
     )
     return runfiletext
@@ -92,30 +92,28 @@ def prepare_optuna(
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
     study_name = (
-        f"""export STUDY_NAME="SNN-SUPER-B-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
+        f"""export STUDY_NAME="SNN-SUPER-C-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
         + ("""-${FORWARD_EXPOSURE}""" if forward_step_exposure != "None" else """""")
         + '-${DELTA_NORMALIZATION}"'
     )
     runfiletext = (
         f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
-#SBATCH --nodes={num_nodes}
+#SBATCH --nodes=1
 #SBATCH --time=24:00:00
-#SBATCH --mem={"230" if dataset == "LOFAR" else "115"}G 
-#SBATCH --cpus-per-task=32
-#SBATCH --ntasks-per-node=1
+#SBATCH --exclusive
 #SBATCH --output=super_%A_%a.out
 #SBATCH --error=super_%A_%a.err
 #SBATCH --array=0-49%4
-#SBATCH --partition=work
-#SBATCH --account=pawsey0411
+#SBATCH --partition=gpu
+#SBATCH --account=pawsey0411-gpu
 
 export DATASET="{dataset}"
-export LIMIT="{limit / 100.0}"
+export LIMIT="{limit / 100}"
 export MODEL_TYPE="{model}"
 export ENCODER_METHOD="{encoding}"
 export FORWARD_EXPOSURE="{forward_step_exposure}"
-export NNODES="{num_nodes}"
+export NNODES=1
 export DELTA_NORMALIZATION="{delta_norm}"
 
 
@@ -134,11 +132,11 @@ export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MOD
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1
+export MPICH_GPU_SUPPORT_ENABLED=1
 export OMP_PLACES=cores     
 export OMP_PROC_BIND=close  
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-srun -N $SLURM_JOB_NUM_NODES -n $SLURM_NTASKS -c $OMP_NUM_THREADS -m block:block:block python3 optuna_main_mpi.py
+srun -N 1 -n 1 -c 64 --gpus-per-task=8 --gpu-bind=closest python3 optuna_main.py
 """
     )
     return runfiletext
@@ -207,7 +205,7 @@ def write_runfiles(out_dir, model, encoding, dataset, num_nodes, delta_norm):
         )
     limit = 100
     if dataset == "LOFAR":
-        limit = 50
+        limit = 15
     if encoding == "FORWARDSTEP":
         for forward_step_exposure in forwardstep_exposures:
             write_bashfile(
@@ -262,4 +260,4 @@ def main(out_dir, num_nodes):
 
 
 if __name__ == "__main__":
-    main(f".{os.sep}src{os.sep}hpc{os.sep}pawsey", 8)
+    main(f".{os.sep}src{os.sep}hpc{os.sep}pawsey", 1)
