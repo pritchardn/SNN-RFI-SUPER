@@ -4,8 +4,10 @@ Evaluation functions for the model
 
 import os
 
-import numpy as np
 import lightning.pytorch as pl
+import matplotlib.colors
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from sklearn.metrics import (
     roc_curve,
@@ -22,13 +24,56 @@ from interfaces.data.spiking_data_module import SpikeConverter
 from plotting import plot_final_examples
 
 
+def plot_example_raster(
+        spike_x, frequency_width, stride, exposure, i, title: str, mode=1, outdir="./"
+):
+    # plt.tight_layout()
+    plt.rcParams.update(plt.rcParamsDefault)
+    plt.rc("axes", labelsize=10 * mode)
+    plt.rc("xtick", labelsize=8 * mode)
+    plt.rc("ytick", labelsize=8 * mode)
+    plt.figure(figsize=(10, 5))
+    example = spike_x
+    example = example.squeeze(1)  # Remove channel dimension
+    out = np.zeros((frequency_width, stride * exposure))
+    for t in range(example.shape[-1]):  # t
+        out[:, t * exposure: (t + 1) * exposure] = np.moveaxis(example[:, :, t], 0, -1)
+    if min(spike_x.flatten()) < 0:
+        ticks = [-1, 0, 1]
+        cmap = plt.get_cmap("viridis", 3)
+        # cmaplist = [cmap(i) for i in range(cmap.N)]
+        cmaplist = [cmap(1), cmap(0), cmap(2)]
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            "Custom cmap", cmaplist, cmap.N
+        )
+    else:
+        ticks = [0, 1]
+        cmap = plt.get_cmap("viridis", 3)
+        cmaplist = [cmap(i) for i in range(cmap.N)]
+        # cmaplist[0] = (1.0, 1.0, 1.0, 1.0)
+        cmaplist = [cmap(0), cmap(2)]
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            "Custom cmap", cmaplist, cmap.N - 1
+        )
+    plt.imshow(out, cmap=cmap)
+    plt.gca().invert_yaxis()
+    plt.ylabel("Frequency bin")
+    plt.xlabel("Time [s]")
+
+    plt.colorbar(location="right", ticks=ticks, shrink=0.5 * mode)
+    plt.savefig(os.path.join(outdir, f"raster_{title}_example_{i}.png"), bbox_inches="tight", dpi=300)
+    plt.close()
+
+
 def final_evaluation(
-    model: pl.LightningModule,
-    data_module: ConfiguredDataModule,
-    converter: SpikeConverter,
-    data_orig,
-    mask_orig,
-    outdir: str,
+        model: pl.LightningModule,
+        data_module: ConfiguredDataModule,
+        converter: SpikeConverter,
+        data_orig,
+        mask_orig,
+        test_patches_x,
+        test_patches_y,
+        outdir: str,
 ):
     os.makedirs(outdir, exist_ok=True)
     # Run through the whole validation set
@@ -43,13 +88,16 @@ def final_evaluation(
         full_spike_hat.detach().cpu().numpy(),
     )
     # Decode outputs into masks
-    output = converter.decode_inference(full_spike_hat.detach().cpu().numpy())
+    inference = full_spike_hat.detach().cpu().numpy()
+    output = converter.decode_inference(inference)
     # Stitch masks together
     recon_output = reconstruct_patches(
         output, mask_orig.shape[-1], full_spike_hat.shape[-1]
     )
+    inference = np.moveaxis(inference, 0, 1)
     # Plot a sample
-    for i in range(min(10, mask_orig.shape[0])):
+    print("PLOTTING")
+    for i in tqdm(range(min(10, mask_orig.shape[0]))):
         mask_example = mask_orig[i]
         mask_example[mask_example > 0.0] = 1.0
         plot_final_examples(
@@ -58,6 +106,24 @@ def final_evaluation(
             np.moveaxis(recon_output[i], 0, -1),
             f"final_{i}",
             outdir,
+        )
+    for i in tqdm(range(output.shape[0])):
+        plot_final_examples(
+            np.moveaxis(test_patches_x[i], 0, -1),
+            np.moveaxis(test_patches_y[i], 0, -1),
+            np.moveaxis(output[i], 0, -1),
+            f"final_patch_{i}",
+            outdir
+        )
+        plot_example_raster(
+            inference[i],
+            32,
+            32,
+            4,
+            i,
+            f"final_patch",
+            mode=1,
+            outdir=outdir
         )
 
 

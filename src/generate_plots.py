@@ -49,7 +49,7 @@ def plot_example_original(x, y, i, title: str):
 
 
 def plot_example_raster(
-    spike_x, frequency_width, stride, exposure, i, title: str, mode=1
+    spike_x, frequency_width, stride, exposure, i, title: str, mode=1, outdir="./"
 ):
     # plt.tight_layout()
     plt.rcParams.update(plt.rcParamsDefault)
