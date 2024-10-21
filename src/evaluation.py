@@ -73,6 +73,7 @@ def final_evaluation(
         mask_orig,
         test_patches_x,
         test_patches_y,
+        exposure,
         outdir: str,
 ):
     os.makedirs(outdir, exist_ok=True)
@@ -119,7 +120,7 @@ def final_evaluation(
             inference[i],
             32,
             32,
-            4,
+            exposure,
             i,
             f"final_patch",
             mode=1,

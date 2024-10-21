@@ -411,6 +411,7 @@ class Experiment:
                     mask_orig,
                     self.data_source.fetch_test_x(),
                     self.data_source.fetch_test_y(),
+                    self.encoder.exposure,
                     self.trainer.log_dir,
                 )
             except RuntimeError as e:
