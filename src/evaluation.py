@@ -108,7 +108,7 @@ def final_evaluation(
             f"final_{i}",
             outdir,
         )
-    for i in tqdm(range(output.shape[0])):
+    for i in tqdm(range(min(10, output.shape[0]))):
         plot_final_examples(
             np.moveaxis(test_patches_x[i], 0, -1),
             np.moveaxis(test_patches_y[i], 0, -1),
