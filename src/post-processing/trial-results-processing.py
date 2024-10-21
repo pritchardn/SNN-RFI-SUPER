@@ -122,11 +122,11 @@ def main_process_supercomputer():
 
 def main_process_custom():
     root_dir = (
-        "./outputs/snn-super/FC_DELTA_EXPOSURE/DELTA_EXPOSURE/HERA/False/1.0/False/"
+        "./outputs/snn-super/FC_LATENCY/LATENCY/HERA/False/1.0/"
     )
     log_dir = "lightning_logs/"
     output_dir = "./"
-    main(os.path.join(root_dir, log_dir), output_dir, "DELTA_EXPOSURE_HERA")
+    main(os.path.join(root_dir, log_dir), output_dir, "LATENCY_DIVNORM_HERA")
 
 
 if __name__ == "__main__":
