@@ -35,7 +35,7 @@ def plot_image_patch(
     plt.gca().invert_yaxis()
     plt.savefig(
         os.path.join(output_dir, f"{filename_prefix}_image.png"),
-        bbox_inches="tight",
+        bbox_inches="tight", dpi=300
     )
     plt.close("all")
 

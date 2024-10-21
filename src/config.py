@@ -210,7 +210,6 @@ DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM["model"]["beta"] = 0.734944135280315
 DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM["data_source"]["delta_normalization"] = True
 DEFAULT_LOFAR_DELTA_EXPOSURE_DIVNORM["encoder"]["exposure"] = 55
 
-
 DEFAULT_HERA_FORWARD = {
     "data_source": {
         "data_path": "./data",
@@ -336,11 +335,11 @@ DEFAULT_LOFAR_ANN_DIVNORM["data_source"]["delta_normalization"] = True
 
 
 def get_default_params(
-    dataset: str,
-    model_type: str,
-    model_size: int = 128,
-    exposure_mode: str = None,
-    delta_normalization: bool = False,
+        dataset: str,
+        model_type: str,
+        model_size: int = 128,
+        exposure_mode: str = None,
+        delta_normalization: bool = False,
 ):
     if dataset == "HERA":
         if model_type == "FC_LATENCY":
@@ -382,6 +381,9 @@ def get_default_params(
                 params["trainer"]["epochs"] = 83
                 params["model"]["beta"] = 0.920967991589638
                 params["dataset"]["batch_size"] = 54
+            elif exposure_mode == "first":
+                params = copy.deepcopy(DEFAULT_HERA_FORWARD)
+                params["encoder"]["exposure_mode"] = "first"
             else:
                 params = DEFAULT_HERA_FORWARD
         elif model_type == "RNN_FORWARD_STEP":
