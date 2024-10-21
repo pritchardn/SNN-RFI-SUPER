@@ -84,21 +84,12 @@ class RawDataLoader(ABC):
         self.train_x = self.train_x[:limit]
         self.train_y = self.train_y[:limit]
 
-        self.test_x = np.vstack(
-            [self.test_x[30], self.test_x[41], self.test_x[44],
-             self.test_x[48], self.test_x[98]])
-        self.test_y = np.vstack(
-            [self.test_y[30], self.test_y[41], self.test_y[44],
-             self.test_y[48], self.test_y[98]])
-        self.test_x = np.expand_dims(self.test_x, axis=1)
-        self.test_y = np.expand_dims(self.test_y, axis=1)
-
-        # limit = calc_limit_int(self.limit, len(self.test_x))
-        # self.test_x = self.test_x[:limit]
-        # self.test_y = self.test_y[:limit]
-        # limit = calc_limit_int(self.limit, len(self.val_x))
-        # self.val_x = self.val_x[:limit]
-        # self.val_y = self.val_y[:limit]
+        limit = calc_limit_int(self.limit, len(self.test_x))
+        self.test_x = self.test_x[:limit]
+        self.test_y = self.test_y[:limit]
+        limit = calc_limit_int(self.limit, len(self.val_x))
+        self.val_x = self.val_x[:limit]
+        self.val_y = self.val_y[:limit]
 
     def filter_noiseless_val_patches(self):
         self.val_x, self.val_y = filter_noiseless_patches(self.val_x, self.val_y)
