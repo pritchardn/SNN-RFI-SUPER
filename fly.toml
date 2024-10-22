@@ -1,0 +1,24 @@
+# fly.toml app configuration file generated for snn-rfi-super on 2024-08-29T11:05:52+08:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'snn-rfi-super'
+primary_region = 'syd'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '26gb'
+  cpu_kind = 'performance'
+  cpus = 4
+
+[mounts]
+  source = "snn_super_data"
+  destination = "/data"
+  intial_size = "30gb"

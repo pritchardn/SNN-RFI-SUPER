@@ -18,11 +18,11 @@ def calc_limit_int(limit: float, data_len: int) -> int:
 
 class RawDataLoader(ABC):
     def __init__(
-        self,
-        data_dir: str,
-        limit: float = None,
-        patch_size: int = None,
-        stride: int = None,
+            self,
+            data_dir: str,
+            limit: float = None,
+            patch_size: int = None,
+            stride: int = None,
     ):
         self.train_x = None
         self.train_y = None
@@ -83,12 +83,13 @@ class RawDataLoader(ABC):
         limit = calc_limit_int(self.limit, len(self.train_x))
         self.train_x = self.train_x[:limit]
         self.train_y = self.train_y[:limit]
-        # limit = calc_limit_int(self.limit, len(self.test_x))
-        # self.test_x = self.test_x[:limit]
-        # self.test_y = self.test_y[:limit]
-        # limit = calc_limit_int(self.limit, len(self.val_x))
-        # self.val_x = self.val_x[:limit]
-        # self.val_y = self.val_y[:limit]
+
+        limit = calc_limit_int(self.limit, len(self.test_x))
+        self.test_x = self.test_x[:limit]
+        self.test_y = self.test_y[:limit]
+        limit = calc_limit_int(self.limit, len(self.val_x))
+        self.val_x = self.val_x[:limit]
+        self.val_y = self.val_y[:limit]
 
     def filter_noiseless_val_patches(self):
         self.val_x, self.val_y = filter_noiseless_patches(self.val_x, self.val_y)

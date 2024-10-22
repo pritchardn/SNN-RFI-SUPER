@@ -1,6 +1,7 @@
 """
 This script is used to extract the best trials from an optuna study and save them to a JSON file.
 """
+
 import json
 import os
 
@@ -51,13 +52,22 @@ def main(optuna_db):
 if __name__ == "__main__":
     OPTUNA_DB = os.getenv("OPTUNA_DB", None)
     experiment_list = [
-        "SNN-SUPER-HERA-ANN-100-128",
-        "SNN-SUPER-HERA-DELTA-100-128",
-        "SNN-SUPER-HERA-LATENCY-100",
-        "SNN-SUPER-HERA-RATE-100-128",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-direct",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-first",
-        "SNN-SUPER-HERA-FORWARDSTEP-100-128-latency",
+        "SNN-SUPER-B-HERA-LATENCY-FC_LATENCY-100--False",
+        "SNN-SUPER-B-HERA-LATENCY-FC_LATENCY-100--True",
+        "SNN-SUPER-B-HERA-DELTA_EXPOSURE-FC_DELTA_EXPOSURE-100--False",
+        "SNN-SUPER-B-HERA-DELTA_EXPOSURE-FC_DELTA_EXPOSURE-100--True-True",
+        "SNN-SUPER-B-HERA-FORWARDSTEP-FC_FORWARD_STEP-100--direct-False",
+        "SNN-SUPER-B-HERA-FORWARDSTEP-FC_FORWARD_STEP-100--direct-True",
+        "SNN-SUPER-B-HERA-ANN-ANN-100-False",
+        "SNN-SUPER-B-HERA-ANN-ANN-100-True",
+        "SNN-SUPER-C-LOFAR-FORWARDSTEP-FC_FORWARD_STEP-15--direct-True",
+        "SNN-SUPER-C-LOFAR-FORWARDSTEP-FC_FORWARD_STEP-15--direct-False",
+        "SNN-SUPER-C-LOFAR-LATENCY-FC_LATENCY-15--True",
+        "SNN-SUPER-C-LOFAR-LATENCY-FC_LATENCY-15--False",
+        "SNN-SUPER-C-LOFAR-DELTA_EXPOSURE-FC_DELTA_EXPOSURE-15--True",
+        "SNN-SUPER-C-LOFAR-DELTA_EXPOSURE-FC_DELTA_EXPOSURE-15--False",
+        "SNN-SUPER-C-LOFAR-ANN-FC_ANN-15--True",
+        "SNN-SUPER-C-LOFAR-ANN-FC_ANN-15--False",
     ]
     for experiment_name in tqdm(experiment_list):
         os.environ["STUDY_NAME"] = experiment_name
