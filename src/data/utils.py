@@ -154,3 +154,17 @@ def decode_delta_inference(
     if use_numpy:
         return _decode_delta_inference_numpy(spike_hat)
     return _decode_delta_inference_torch(spike_hat)
+
+
+def test_train_split(data, masks, train_size: float = 0.8):
+    # Split the training data into training and test sets
+    train_size = int(train_size * data.shape[0])
+    indices = np.random.permutation(data.shape[0])
+    train_indices, test_indices = indices[:train_size], indices[train_size:]
+    train_x, test_x = data[train_indices], data[test_indices]
+    train_y, test_y = masks[train_indices], masks[test_indices]
+    return train_x, train_y, test_x, test_y
+
+
+def extract_polarization(data, masks, polarization: int):
+    return np.expand_dims(data[:, :, :, polarization], -1), np.expand_dims(masks[:, :, :, polarization], -1)

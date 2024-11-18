@@ -9,6 +9,7 @@ from typing import Union
 import numpy as np
 from tqdm import tqdm
 
+from data.utils import test_train_split, extract_polarization
 from interfaces.data.raw_data_loader import RawDataLoader
 
 
@@ -71,7 +72,63 @@ class HeraDataLoader(RawDataLoader):
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
             rfi_models = []
-            file_path = os.path.join(self.data_dir, "HERA_04-03-2022_all.pkl")
+            file_path = os.path.join(self.data_dir, "HERA_18-11-2024_all.pkl")
+            data, _, masks = np.load(file_path, allow_pickle=True)
+            train_x, train_y, test_x, test_y = test_train_split(data, masks)
+            train_x, train_y = extract_polarization(train_x, train_y, 1)
+            test_x, test_y = extract_polarization(test_x, test_y, 1)
+        else:
+            raise NotImplementedError("Excluded RFI not implemented for HERA dataset with Polarization")
+        self.train_x = np.moveaxis(train_x, 1, 2)
+        self.train_y = np.moveaxis(train_y, 1, 2)
+        self.test_x = np.moveaxis(test_x, 1, 2)
+        self.test_y = np.moveaxis(test_y, 1, 2)
+        self.rfi_models = rfi_models
+        self.original_size = self.train_x.shape[1]
+        self._prepare_data()
+        if self.patch_size:
+            self.create_patches(self.patch_size, self.stride)
+        # self.filter_noiseless_val_patches()
+        # self.filter_noiseless_train_patches()
+
+
+class HeraDeltaNormLoader(RawDataLoader):
+    def load_data(self):
+        file_path = os.path.join(self.data_dir, "HERA-04-03-2022_all_delta_norm.pkl")
+        train_x, train_y, test_x, test_y, val_x, val_y = np.load(
+            file_path, allow_pickle=True
+        )
+        self.train_x = train_x
+        self.train_y = train_y
+        self.test_x = test_x
+        self.test_y = test_y
+        self.val_x = val_x
+        self.val_y = val_y
+        self.limit_datasets()
+        self.original_size = self.train_x.shape[-1]
+        if self.patch_size:
+            self.create_patches(self.patch_size, self.stride)
+        self.filter_noiseless_val_patches()
+        self.filter_noiseless_train_patches()
+
+
+class HeraPolarizationDataLoader(RawDataLoader):
+    def _prepare_data(self):
+        self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
+        self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max
+        self.test_x = self.test_x.astype("float32")
+        self.train_x = self.train_x.astype("float32")
+        self.test_x = _normalize(self.test_x, self.test_y, 1, 4)
+        self.train_x = _normalize(self.train_x, self.train_y, 1, 4)
+        self.convert_pytorch()
+        self.val_x = self.test_x.copy()
+        self.val_y = self.test_y.copy()
+        self.limit_datasets()
+
+    def load_data(self, excluded_rfi: Union[str, None] = None):
+        if excluded_rfi is None:
+            rfi_models = []
+            file_path = os.path.join(self.data_dir, "HERA_18-11-2024_all.pkl")
             train_x, train_y, test_x, test_y = np.load(file_path, allow_pickle=True)
         else:
             rfi_models = ["rfi_stations", "rfi_dtv", "rfi_impulse", "rfi_scatter"]
@@ -92,26 +149,6 @@ class HeraDataLoader(RawDataLoader):
         self.rfi_models = rfi_models
         self.original_size = self.train_x.shape[1]
         self._prepare_data()
-        if self.patch_size:
-            self.create_patches(self.patch_size, self.stride)
-        self.filter_noiseless_val_patches()
-        self.filter_noiseless_train_patches()
-
-
-class HeraDeltaNormLoader(RawDataLoader):
-    def load_data(self):
-        file_path = os.path.join(self.data_dir, "HERA-04-03-2022_all_delta_norm.pkl")
-        train_x, train_y, test_x, test_y, val_x, val_y = np.load(
-            file_path, allow_pickle=True
-        )
-        self.train_x = train_x
-        self.train_y = train_y
-        self.test_x = test_x
-        self.test_y = test_y
-        self.val_x = val_x
-        self.val_y = val_y
-        self.limit_datasets()
-        self.original_size = self.train_x.shape[-1]
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
         self.filter_noiseless_val_patches()

@@ -473,6 +473,9 @@ def get_default_params(
             params["model"]["type"] = model_type
         else:
             raise ValueError(f"Unknown model type {model_type}")
+    elif dataset == "HERA_POLAR":
+        if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
+            params = DEFAULT_HERA_LATENCY
     elif dataset == "LOFAR":
         if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
             if delta_normalization:
