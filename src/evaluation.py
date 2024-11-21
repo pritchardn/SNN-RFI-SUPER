@@ -34,7 +34,11 @@ def plot_example_raster(
     plt.rc("ytick", labelsize=8 * mode)
     plt.figure(figsize=(10, 5))
     example = spike_x
-    example = example.squeeze(1)  # Remove channel dimension
+    num_polarizations = example.shape[1]
+    if num_polarizations == 1:
+        example = example.squeeze(1)  # Remove channel dimension
+    else:
+        example = example[:, 0, ...]
     out = np.zeros((frequency_width, stride * exposure))
     for t in range(example.shape[-1]):  # t
         out[:, t * exposure: (t + 1) * exposure] = np.moveaxis(example[:, :, t], 0, -1)

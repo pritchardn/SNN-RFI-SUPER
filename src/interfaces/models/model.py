@@ -170,18 +170,27 @@ class LitModel(BaseLitModel):
         full_mem = []
         # x -> [N x exp x C x freq x time]
         membranes = self._init_membranes()
+        num_polarizations = x.shape[2]
+        if num_polarizations != 1:
+            x = torch.flatten(x, 2, 3).unsqueeze(2)
         for t in range(x.shape[-1]):
             data = x[:, :, 0, :, t]
             if self.recurrent:
                 spike, mem = self._infer_slice_recurrent(data, membranes)
             else:
                 spike, mem = self._infer_slice(data, membranes)
+            if num_polarizations != 1:
+                spike = spike.view(*(spike.shape[:-1]), num_polarizations, -1)
+                mem = mem.view(*(mem.shape[:-1]), num_polarizations, -1)
             full_spike.append(spike)
             full_mem.append(mem)
         full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
         full_mem = torch.stack(full_mem, dim=0)
-        full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
-        full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
+        full_spike = torch.moveaxis(full_spike, 0, -1)
+        full_mem = torch.moveaxis(full_mem, 0, -1)
+        if num_polarizations == 1:
+            full_spike = full_spike.unsqueeze(2)
+            full_mem = full_mem.unsqueeze(2)
         return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
 
 

@@ -476,6 +476,9 @@ def get_default_params(
     elif dataset == "HERA_POLAR":
         if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
             params = DEFAULT_HERA_LATENCY
+            params["data_source"]["dataset"] = "HERA_POLAR"
+            params["model"]["num_inputs"] = params["model"]["num_inputs"] * 4
+            params["model"]["num_outputs"] = params["model"]["num_outputs"] * 4
     elif dataset == "LOFAR":
         if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
             if delta_normalization:

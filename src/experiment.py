@@ -66,7 +66,7 @@ def data_source_from_config(config: dict) -> RawDataLoader:
             raise NotImplementedError(f"Dataset {dataset} is not supported.")
         else:
             data_source = HeraPolarizationDataLoader(
-                data_path, patch_size=patch_size, stride=stride, limit=limit, polar=True
+                data_path, patch_size=patch_size, stride=stride, limit=limit
             )
     elif dataset == "LOFAR":
         if delta_normalization:

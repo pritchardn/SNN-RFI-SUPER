@@ -72,11 +72,11 @@ class HeraDataLoader(RawDataLoader):
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
             rfi_models = []
-            file_path = os.path.join(self.data_dir, "HERA_18-11-2024_all.pkl")
+            file_path = os.path.join(self.data_dir, "HERA_21-11-2024_all.pkl")
             data, _, masks = np.load(file_path, allow_pickle=True)
             train_x, train_y, test_x, test_y = test_train_split(data, masks)
-            train_x, train_y = extract_polarization(train_x, train_y, 1)
-            test_x, test_y = extract_polarization(test_x, test_y, 1)
+            train_x, train_y = extract_polarization(train_x, train_y, 0)
+            test_x, test_y = extract_polarization(test_x, test_y, 0)
         else:
             raise NotImplementedError("Excluded RFI not implemented for HERA dataset with Polarization")
         self.train_x = np.moveaxis(train_x, 1, 2)
@@ -88,8 +88,8 @@ class HeraDataLoader(RawDataLoader):
         self._prepare_data()
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
-        # self.filter_noiseless_val_patches()
-        # self.filter_noiseless_train_patches()
+        self.filter_noiseless_val_patches()
+        self.filter_noiseless_train_patches()
 
 
 class HeraDeltaNormLoader(RawDataLoader):
@@ -128,8 +128,9 @@ class HeraPolarizationDataLoader(RawDataLoader):
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
             rfi_models = []
-            file_path = os.path.join(self.data_dir, "HERA_18-11-2024_all.pkl")
-            train_x, train_y, test_x, test_y = np.load(file_path, allow_pickle=True)
+            file_path = os.path.join(self.data_dir, "HERA_21-11-2024_all.pkl")
+            data, _, masks = np.load(file_path, allow_pickle=True)
+            train_x, train_y, test_x, test_y = test_train_split(data, masks)
         else:
             rfi_models = ["rfi_stations", "rfi_dtv", "rfi_impulse", "rfi_scatter"]
             rfi_models.remove(excluded_rfi)
