@@ -9,7 +9,7 @@ from typing import Union
 import numpy as np
 from tqdm import tqdm
 
-from data.utils import test_train_split, extract_polarization
+from data.utils import test_train_split, extract_polarization, expand_polarization
 from interfaces.data.raw_data_loader import RawDataLoader
 
 
@@ -152,6 +152,13 @@ class HeraPolarizationDataLoader(RawDataLoader):
         self._prepare_data()
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
+        # Now extract polarization
+        self.train_y = extract_polarization(self.train_y, 0)
+        self.test_y = extract_polarization(self.test_y, 0)
+        self.val_y = extract_polarization(self.val_y, 0)
+        self.train_x = expand_polarization(self.train_x)
+        self.test_x = expand_polarization(self.test_x)
+        self.val_x = expand_polarization(self.val_x)
         self.filter_noiseless_val_patches()
         self.filter_noiseless_train_patches()
 

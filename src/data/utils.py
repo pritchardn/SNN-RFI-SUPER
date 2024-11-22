@@ -166,5 +166,10 @@ def test_train_split(data, masks, train_size: float = 0.8):
     return train_x, train_y, test_x, test_y
 
 
-def extract_polarization(data, masks, polarization: int):
-    return np.expand_dims(data[:, :, :, polarization], -1), np.expand_dims(masks[:, :, :, polarization], -1)
+def extract_polarization(data, polarization: int):
+    return np.expand_dims(data[:, polarization, :, :], 1)
+
+
+def expand_polarization(data):
+    # [N, C, freq, time] -> [N, C * freq, time]
+    return np.expand_dims(np.reshape(data, (data.shape[0], -1, data.shape[-1])), 1)
