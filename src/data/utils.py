@@ -27,6 +27,9 @@ def reconstruct_patches(images: np.array, original_size: int, kernel_size: int):
     Transposes the images to match the tensorflow implementation but returns the images in the
     original format.
     """
+    # Check for DoP entry
+    if images.shape[-1] != images.shape[-2]:
+        images = images[:, :, :-1, :]
     transposed = images.transpose(0, 3, 2, 1)
     n_patches = original_size // kernel_size
     recon = np.empty(

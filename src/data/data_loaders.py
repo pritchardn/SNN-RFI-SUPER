@@ -1,7 +1,7 @@
 """
 Contains implemented data loaders for various radio astronomy datasets.
 """
-
+import abc
 import os
 import pickle
 from typing import Union
@@ -75,8 +75,6 @@ class HeraDataLoader(RawDataLoader):
             file_path = os.path.join(self.data_dir, "HERA_21-11-2024_all.pkl")
             data, _, masks = np.load(file_path, allow_pickle=True)
             train_x, train_y, test_x, test_y = test_train_split(data, masks)
-            train_x, train_y = extract_polarization(train_x, train_y, 0)
-            test_x, test_y = extract_polarization(test_x, test_y, 0)
         else:
             rfi_models = ["rfi_stations", "rfi_dtv", "rfi_impulse", "rfi_scatter"]
             rfi_models.remove(excluded_rfi)
@@ -122,18 +120,57 @@ class HeraDeltaNormLoader(RawDataLoader):
         self.filter_noiseless_train_patches()
 
 
+def calculate_dop(xx, yy):
+    g0 = np.abs(xx) ** 2 + np.abs(yy) ** 2
+    g1 = np.abs(xx) ** 2 - np.abs(yy) ** 2
+    g2 = 2 * np.real(yy * np.conj(xx))
+    g3 = 2 * np.imag(yy * np.conj(xx))
+    out = np.zeros((xx.shape[0], 1, xx.shape[-1]))
+    for n in range(xx.shape[0]):
+        for t in range(xx.shape[-1]):
+            dop = np.sqrt(np.average(g1[n, :, t]) ** 2 + np.average(g2[n, :, t]) ** 2 + np.average(
+                g3[n, :, t]) ** 2) / np.average(g0[n, :, t])
+            out[n, 0, t] = dop
+    return out
+
+
+def splice_dop_in(data):
+    dop = calculate_dop(data[:, 0], data[:, 1])
+    data = np.abs(data).astype("float32")
+    data[data == np.inf] = np.finfo(data.dtype).max
+    new_train_x = np.zeros((data.shape[0], data.shape[1], data.shape[2] + 1,
+                            data.shape[3]))
+    new_train_x[:, :, :-1] = data
+    new_train_x[:, :, -1, :] = dop
+    data = new_train_x
+    return data
+
+
 class HeraPolarizationDataLoader(RawDataLoader):
     def _prepare_data(self):
-        self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
-        self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max
-        self.test_x = self.test_x.astype("float32")
-        self.train_x = self.train_x.astype("float32")
-        self.test_x = _normalize(self.test_x, self.test_y, 1, 4)
-        self.train_x = _normalize(self.train_x, self.train_y, 1, 4)
         self.convert_pytorch()
         self.val_x = self.test_x.copy()
         self.val_y = self.test_y.copy()
         self.limit_datasets()
+
+    def _normalize_data(self):
+        self.test_x[:, :, :-1, :] = _normalize(self.test_x[:, :, :-1, :], self.test_y.astype("bool"), 1, 4)
+        self.train_x[:, :, :-1, :] = _normalize(self.train_x[:, :, :-1, :], self.train_y.astype("bool"), 1, 4)
+        self.val_x[:, :, :-1, :] = _normalize(self.val_x[:, :, :-1, :], self.val_y.astype("bool"), 1, 4)
+
+    def _convert_abs(self):
+        self.test_x = np.abs(self.test_x).astype("float32")
+        self.train_x = np.abs(self.train_x).astype("float32")
+        self.val_x = np.abs(self.val_x).astype("float32")
+        self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
+        self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max
+        self.val_x[self.val_x == np.inf] = np.finfo(self.val_x.dtype).max
+
+    def _calc_dop(self):
+        self.train_x = splice_dop_in(self.train_x)
+        self.test_x = splice_dop_in(self.test_x)
+        self.val_x = splice_dop_in(self.val_x)
+
 
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
@@ -152,13 +189,16 @@ class HeraPolarizationDataLoader(RawDataLoader):
         self._prepare_data()
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
+        self._calc_dop()
+        self._convert_abs()
+        self._normalize_data()
         # Now extract polarization
         self.train_y = extract_polarization(self.train_y, 0)
         self.test_y = extract_polarization(self.test_y, 0)
         self.val_y = extract_polarization(self.val_y, 0)
-        self.train_x = expand_polarization(self.train_x)
-        self.test_x = expand_polarization(self.test_x)
-        self.val_x = expand_polarization(self.val_x)
+        self.train_x = extract_polarization(self.train_x, 0)
+        self.test_x = extract_polarization(self.test_x, 0)
+        self.val_x = extract_polarization(self.val_x, 0)
         self.filter_noiseless_val_patches()
         self.filter_noiseless_train_patches()
 
