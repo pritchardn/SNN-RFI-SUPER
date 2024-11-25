@@ -130,7 +130,7 @@ def calculate_dop(xx, yy):
         for t in range(xx.shape[-1]):
             dop = np.sqrt(np.average(g1[n, :, t]) ** 2 + np.average(g2[n, :, t]) ** 2 + np.average(
                 g3[n, :, t]) ** 2) / np.average(g0[n, :, t])
-            out[n, 0, t] = dop
+            out[n, 0, t] = np.clip(dop, 0.0, 1.0)
     return out
 
 
