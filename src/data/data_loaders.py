@@ -78,7 +78,17 @@ class HeraDataLoader(RawDataLoader):
             train_x, train_y = extract_polarization(train_x, train_y, 0)
             test_x, test_y = extract_polarization(test_x, test_y, 0)
         else:
-            raise NotImplementedError("Excluded RFI not implemented for HERA dataset with Polarization")
+            rfi_models = ["rfi_stations", "rfi_dtv", "rfi_impulse", "rfi_scatter"]
+            rfi_models.remove(excluded_rfi)
+            test_file_path = os.path.join(
+                self.data_dir, f"HERA_21-11-2024_{excluded_rfi}.pkl"
+            )
+            _, _, test_x, test_y = np.load(test_file_path, allow_pickle=True)
+
+            train_file_path = os.path.join(
+                self.data_dir, f'HERA_21-11-2024_{"-".join(rfi_models)}.pkl'
+            )
+            train_x, train_y, _, _ = np.load(train_file_path, allow_pickle=True)
         self.train_x = np.moveaxis(train_x, 1, 2)
         self.train_y = np.moveaxis(train_y, 1, 2)
         self.test_x = np.moveaxis(test_x, 1, 2)
@@ -128,21 +138,11 @@ class HeraPolarizationDataLoader(RawDataLoader):
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
             rfi_models = []
-            file_path = os.path.join(self.data_dir, "HERA_21-11-2024_all.pkl")
+            file_path = os.path.join(self.data_dir, "HERA_25-11-2024_all.pkl")
             data, _, masks = np.load(file_path, allow_pickle=True)
             train_x, train_y, test_x, test_y = test_train_split(data, masks)
         else:
-            rfi_models = ["rfi_stations", "rfi_dtv", "rfi_impulse", "rfi_scatter"]
-            rfi_models.remove(excluded_rfi)
-            test_file_path = os.path.join(
-                self.data_dir, f"HERA_04-03-2022_{excluded_rfi}.pkl"
-            )
-            _, _, test_x, test_y = np.load(test_file_path, allow_pickle=True)
-
-            train_file_path = os.path.join(
-                self.data_dir, f'HERA_04-03-2022_{"-".join(rfi_models)}.pkl'
-            )
-            train_x, train_y, _, _ = np.load(train_file_path, allow_pickle=True)
+            raise NotImplementedError("Polarization data loader does not support RFI exclusion")
         self.train_x = np.moveaxis(train_x, 1, 2)
         self.train_y = np.moveaxis(train_y, 1, 2)
         self.test_x = np.moveaxis(test_x, 1, 2)
