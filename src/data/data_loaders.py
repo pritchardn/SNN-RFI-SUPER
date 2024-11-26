@@ -1,7 +1,6 @@
 """
 Contains implemented data loaders for various radio astronomy datasets.
 """
-import abc
 import os
 import pickle
 from typing import Union
@@ -9,7 +8,7 @@ from typing import Union
 import numpy as np
 from tqdm import tqdm
 
-from data.utils import test_train_split, extract_polarization, expand_polarization
+from data.utils import test_train_split, extract_polarization
 from interfaces.data.raw_data_loader import RawDataLoader
 
 
@@ -29,9 +28,21 @@ def _delta_normalize(image_data: np.ndarray, kernel_size=3) -> np.ndarray:
                 for j in range(min_freq, max_freq + 1):
                     neighbouring_activity += frame[tstep - step_back, j]
                     count_elem += 1
-                output_frame[tstep, frequency] = max(
-                    0.0, frame[tstep, frequency] - neighbouring_activity / count_elem
-                )
+                if neighbouring_activity.shape[0] != 0:
+                    if neighbouring_activity.dtype == np.complex64:
+                        for z, val in enumerate(neighbouring_activity):
+                            temp = frame[tstep, frequency, z] - val / count_elem
+                            ex_real = max(0.0, temp.real)
+                            ex_imag = max(0.0, temp.imag)
+                            output_frame[tstep, frequency, z] = complex(ex_real, ex_imag)
+                    else:
+                        for z, val in enumerate(neighbouring_activity):
+                            output_frame[tstep, frequency, z] = max(0.0, frame[
+                                tstep, frequency, z] - val / count_elem)
+                else:
+                    output_frame[tstep, frequency] = max(
+                        0.0, frame[tstep, frequency] - neighbouring_activity / count_elem
+                    )
         image_data[i] = output_frame
     print(f"New mean : {np.mean(image_data)}")
     image_data = np.moveaxis(image_data, 1, 2)
@@ -188,9 +199,12 @@ class HeraPolarizationDoPDataLoader(RawDataLoader):
         self.limit_datasets()
 
     def _normalize_data(self):
-        self.test_x[:, :, :-1, :] = _normalize(self.test_x[:, :, :-1, :], self.test_y.astype("bool"), 1, 4)
-        self.train_x[:, :, :-1, :] = _normalize(self.train_x[:, :, :-1, :], self.train_y.astype("bool"), 1, 4)
-        self.val_x[:, :, :-1, :] = _normalize(self.val_x[:, :, :-1, :], self.val_y.astype("bool"), 1, 4)
+        self.test_x[:, :, :-1, :] = _normalize(self.test_x[:, :, :-1, :],
+                                               self.test_y.astype("bool"), 1, 4)
+        self.train_x[:, :, :-1, :] = _normalize(self.train_x[:, :, :-1, :],
+                                                self.train_y.astype("bool"), 1, 4)
+        self.val_x[:, :, :-1, :] = _normalize(self.val_x[:, :, :-1, :], self.val_y.astype("bool"),
+                                              1, 4)
 
     def _convert_abs(self):
         self.test_x = np.abs(self.test_x).astype("float32")
@@ -339,9 +353,42 @@ def create_delta_normalized_lofar():
         pickle.dump([train_x, train_y, test_x, test_y, val_x, val_y], ofile)
 
 
+def create_delta_normalized_new_hera():
+    file_path = os.path.join("data", "HERA_21-11-2024_all.pkl")
+    data, _, masks = np.load(file_path, allow_pickle=True)
+    train_x = np.moveaxis(data, 1, 2)
+    train_y = np.moveaxis(masks, 1, 2)
+    train_x[train_x == np.inf] = np.finfo(train_x.dtype).max
+    train_x = train_x.astype("float32")
+    train_x = _normalize(train_x, train_y, 1, 4)
+    train_x = _delta_normalize(train_x)
+    train_x = np.moveaxis(train_x, -1, 1).astype(np.float32)
+    train_y = np.moveaxis(train_y, -1, 1).astype(np.float32)
+    file_path = os.path.join("data", "HERA-21-11-2024_all_delta_norm.pkl")
+    with open(file_path, "wb") as ofile:
+        pickle.dump([train_x, train_y], ofile)
+
+
+def create_delta_normalized_complex_hera():
+    file_path = os.path.join("data", "HERA_25-11-2024_all.pkl")
+    data, _, masks = np.load(file_path, allow_pickle=True)
+    train_x = np.moveaxis(data, 1, 2)
+    train_y = np.moveaxis(masks, 1, 2)
+    train_x[train_x == np.inf] = np.finfo(train_x.dtype).max
+    train_x = _normalize(train_x, train_y, 1, 4)
+    train_x = _delta_normalize(train_x)
+    train_x = np.moveaxis(train_x, -1, 1)
+    train_y = np.moveaxis(train_y, -1, 1)
+    file_path = os.path.join("data", "HERA-25-11-2024_all_delta_norm.pkl")
+    with open(file_path, "wb") as ofile:
+        pickle.dump([train_x, train_y], ofile)
+
+
 def main():
-    create_delta_normalized_hera()
-    create_delta_normalized_lofar()
+    # create_delta_normalized_hera()
+    # create_delta_normalized_lofar()
+    # create_delta_normalized_new_hera()
+    create_delta_normalized_complex_hera()
 
 
 if __name__ == "__main__":
