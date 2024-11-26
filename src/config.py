@@ -481,6 +481,7 @@ def get_default_params(
             params["data_source"]["dataset"] = dataset
             params["data_source"]["patch_size"] = 8
             params["data_source"]["stride"] = 8
+            params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 4
         elif model_type == "FC_LATENCY_XYLO":
             params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["data_source"]["dataset"] = dataset
@@ -488,11 +489,13 @@ def get_default_params(
             params["model"]["num_outputs"] = 16
             params["data_source"]["patch_size"] = 4
             params["data_source"]["stride"] = 4
+            params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 8
         elif model_type == "FC_DELTA_EXPOSURE":
             params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
             params["data_source"]["patch_size"] = 8
             params["data_source"]["stride"] = 8
+            params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 4
         elif model_type == "FC_DELTA_EXPOSURE_XYLO":
             params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
@@ -500,6 +503,7 @@ def get_default_params(
             params["model"]["num_outputs"] = 16
             params["data_source"]["patch_size"] = 4
             params["data_source"]["stride"] = 4
+            params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 8
         else:
             raise NotImplementedError(f"No other model types have been tested for {dataset}")
     elif dataset == "HERA_POLAR_DOP":
@@ -516,6 +520,7 @@ def get_default_params(
             params["model"]["num_outputs"] = 15
             params["data_source"]["patch_size"] = 15
             params["data_source"]["stride"] = 15
+            params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 2
         elif model_type == "FC_DELTA_EXPOSURE":
             params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
@@ -527,6 +532,7 @@ def get_default_params(
             params["model"]["num_outputs"] = 15
             params["data_source"]["patch_size"] = 15
             params["data_source"]["stride"] = 15
+            params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 2
         else:
             raise NotImplementedError(f"No other model types have been tested for {dataset}")
     elif dataset == "LOFAR":
