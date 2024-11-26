@@ -262,27 +262,27 @@ def main(out_dir, num_nodes):
                             ("FC_DELTA_EXPOSURE", "DELTA_EXPOSURE"),
                             ("FC_DELTA_EXPOSURE_XYLO", "DELTA_EXPOSURE")]:
         for dataset in ["HERA_POLAR_FULL", "HERA_POLAR_DOP"]:
-            delta_norm = False
-            out_dir_temp = os.path.join(
-                out_dir,
-                "POLAR",
-                model,
-                encoding,
-                dataset,
-                "DELTA_NORM" if delta_norm else "ORIGINAL",
-            )
-            os.makedirs(out_dir_temp, exist_ok=True)
-            write_bashfile(
-                out_dir_temp,
-                f"{dataset}-{encoding}",
-                prepare_singlerun(
+            for delta_norm in [True, False]:
+                out_dir_temp = os.path.join(
+                    out_dir,
+                    "POLAR",
                     model,
                     encoding,
                     dataset,
-                    delta_norm=delta_norm,
-                    num_nodes=num_nodes,
-                ),
-            )
+                    "DELTA_NORM" if delta_norm else "ORIGINAL",
+                )
+                os.makedirs(out_dir_temp, exist_ok=True)
+                write_bashfile(
+                    out_dir_temp,
+                    f"{dataset}-{encoding}",
+                    prepare_singlerun(
+                        model,
+                        encoding,
+                        dataset,
+                        delta_norm=delta_norm,
+                        num_nodes=num_nodes,
+                    ),
+                )
 
 
 if __name__ == "__main__":
