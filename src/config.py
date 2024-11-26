@@ -473,12 +473,62 @@ def get_default_params(
             params["model"]["type"] = model_type
         else:
             raise ValueError(f"Unknown model type {model_type}")
-    elif dataset == "HERA_POLAR":
-        if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
-            params = DEFAULT_HERA_LATENCY
-            params["data_source"]["dataset"] = "HERA_POLAR"
+    elif dataset == "HERA_POLAR_FULL":
+        if delta_normalization:
+            raise NotImplementedError(f"Delta normalization not implemented for {dataset}")
+        if model_type == "FC_LATENCY":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            params["data_source"]["dataset"] = dataset
+            params["data_source"]["patch_size"] = 8
+            params["data_source"]["stride"] = 8
+        elif model_type == "FC_LATENCY_XYLO":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            params["data_source"]["dataset"] = dataset
+            params["model"]["num_inputs"] = 16
+            params["model"]["num_outputs"] = 16
+            params["data_source"]["patch_size"] = 4
+            params["data_source"]["stride"] = 4
+        elif model_type == "FC_DELTA_EXPOSURE":
+            params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+            params["data_source"]["dataset"] = dataset
+            params["data_source"]["patch_size"] = 8
+            params["data_source"]["stride"] = 8
+        elif model_type == "FC_DELTA_EXPOSURE_XYLO":
+            params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+            params["data_source"]["dataset"] = dataset
+            params["model"]["num_inputs"] = 16
+            params["model"]["num_outputs"] = 16
+            params["data_source"]["patch_size"] = 4
+            params["data_source"]["stride"] = 4
+        else:
+            raise NotImplementedError(f"No other model types have been tested for {dataset}")
+    elif dataset == "HERA_POLAR_DOP":
+        if delta_normalization:
+            raise NotImplementedError(f"Delta normalization not implemented for {dataset}")
+        if model_type == "FC_LATENCY":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = params["model"]["num_inputs"] + 1
-            params["model"]["num_outputs"] = params["model"]["num_outputs"]
+        elif model_type == "FC_LATENCY_XYLO":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            params["data_source"]["dataset"] = dataset
+            params["model"]["num_inputs"] = 16
+            params["model"]["num_outputs"] = 15
+            params["data_source"]["patch_size"] = 15
+            params["data_source"]["stride"] = 15
+        elif model_type == "FC_DELTA_EXPOSURE":
+            params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+            params["data_source"]["dataset"] = dataset
+            params["model"]["num_inputs"] = params["model"]["num_inputs"] + 1
+        elif model_type == "FC_DELTA_EXPOSURE_XYLO":
+            params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+            params["data_source"]["dataset"] = dataset
+            params["model"]["num_inputs"] = 16
+            params["model"]["num_outputs"] = 15
+            params["data_source"]["patch_size"] = 15
+            params["data_source"]["stride"] = 15
+        else:
+            raise NotImplementedError(f"No other model types have been tested for {dataset}")
     elif dataset == "LOFAR":
         if model_type == "FC_LATENCY" or model_type == "RNN_LATENCY":
             if delta_normalization:

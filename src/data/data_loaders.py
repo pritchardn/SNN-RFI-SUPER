@@ -146,7 +146,41 @@ def splice_dop_in(data):
     return data
 
 
-class HeraPolarizationDataLoader(RawDataLoader):
+class HeraPolarizationFullDataLoader(RawDataLoader):
+    def _prepare_data(self):
+        self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
+        self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max
+        self.test_x = self.test_x.astype("float32")
+        self.train_x = self.train_x.astype("float32")
+        self.test_x = _normalize(self.test_x, self.test_y, 1, 4)
+        self.train_x = _normalize(self.train_x, self.train_y, 1, 4)
+        self.convert_pytorch()
+        self.val_x = self.test_x.copy()
+        self.val_y = self.test_y.copy()
+        self.limit_datasets()
+
+    def load_data(self, excluded_rfi: Union[str, None] = None):
+        if excluded_rfi is None:
+            rfi_models = []
+            file_path = os.path.join(self.data_dir, "HERA_21-11-2024_all.pkl")
+            data, _, masks = np.load(file_path, allow_pickle=True)
+            train_x, train_y, test_x, test_y = test_train_split(data, masks)
+        else:
+            raise NotImplementedError("Polarization data loader does not support RFI exclusion")
+        self.train_x = np.moveaxis(train_x, 1, 2)
+        self.train_y = np.moveaxis(train_y, 1, 2)
+        self.test_x = np.moveaxis(test_x, 1, 2)
+        self.test_y = np.moveaxis(test_y, 1, 2)
+        self.rfi_models = rfi_models
+        self.original_size = self.train_x.shape[1]
+        self._prepare_data()
+        if self.patch_size:
+            self.create_patches(self.patch_size, self.stride)
+        self.filter_noiseless_val_patches()
+        self.filter_noiseless_train_patches()
+
+
+class HeraPolarizationDoPDataLoader(RawDataLoader):
     def _prepare_data(self):
         self.convert_pytorch()
         self.val_x = self.test_x.copy()
@@ -170,7 +204,6 @@ class HeraPolarizationDataLoader(RawDataLoader):
         self.train_x = splice_dop_in(self.train_x)
         self.test_x = splice_dop_in(self.test_x)
         self.val_x = splice_dop_in(self.val_x)
-
 
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:

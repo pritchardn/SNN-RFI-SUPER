@@ -13,7 +13,8 @@ import torch
 
 from data.data_loaders import (
     HeraDataLoader,
-    HeraPolarizationDataLoader,
+    HeraPolarizationDoPDataLoader,
+    HeraPolarizationFullDataLoader,
     LofarDataLoader,
     HeraDeltaNormLoader,
     LofarDeltaNormLoader,
@@ -61,11 +62,18 @@ def data_source_from_config(config: dict) -> RawDataLoader:
             data_source = HeraDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit
             )
-    elif dataset == "HERA_POLAR":
+    elif dataset == "HERA_POLAR_DOP":
         if delta_normalization:
             raise NotImplementedError(f"Dataset {dataset} is not supported.")
         else:
-            data_source = HeraPolarizationDataLoader(
+            data_source = HeraPolarizationDoPDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
+    elif dataset == "HERA_POLAR_FULL":
+        if delta_normalization:
+            raise NotImplementedError(f"Dataset {dataset} is not supported.")
+        else:
+            data_source = HeraPolarizationFullDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit
             )
     elif dataset == "LOFAR":
