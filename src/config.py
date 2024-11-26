@@ -474,16 +474,20 @@ def get_default_params(
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "HERA_POLAR_FULL":
-        if delta_normalization:
-            raise NotImplementedError(f"Delta normalization not implemented for {dataset}")
         if model_type == "FC_LATENCY":
-            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["data_source"]["dataset"] = dataset
             params["data_source"]["patch_size"] = 8
             params["data_source"]["stride"] = 8
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 4
         elif model_type == "FC_LATENCY_XYLO":
-            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = 16
             params["model"]["num_outputs"] = 16
@@ -491,13 +495,19 @@ def get_default_params(
             params["data_source"]["stride"] = 4
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 8
         elif model_type == "FC_DELTA_EXPOSURE":
-            params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
             params["data_source"]["patch_size"] = 8
             params["data_source"]["stride"] = 8
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 4
         elif model_type == "FC_DELTA_EXPOSURE_XYLO":
-            params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = 16
             params["model"]["num_outputs"] = 16
@@ -507,14 +517,18 @@ def get_default_params(
         else:
             raise NotImplementedError(f"No other model types have been tested for {dataset}")
     elif dataset == "HERA_POLAR_DOP":
-        if delta_normalization:
-            raise NotImplementedError(f"Delta normalization not implemented for {dataset}")
         if model_type == "FC_LATENCY":
-            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = params["model"]["num_inputs"] + 1
         elif model_type == "FC_LATENCY_XYLO":
-            params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = 16
             params["model"]["num_outputs"] = 15
@@ -522,11 +536,17 @@ def get_default_params(
             params["data_source"]["stride"] = 15
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 2
         elif model_type == "FC_DELTA_EXPOSURE":
-            params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = params["model"]["num_inputs"] + 1
         elif model_type == "FC_DELTA_EXPOSURE_XYLO":
-            params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = 16
             params["model"]["num_outputs"] = 15

@@ -15,6 +15,8 @@ from data.data_loaders import (
     HeraDataLoader,
     HeraPolarizationDoPDataLoader,
     HeraPolarizationFullDataLoader,
+    HeraPolarizationDeltaNormFullDataLoader,
+    HeraPolarizationDeltaNormDoPDataLoader,
     LofarDataLoader,
     HeraDeltaNormLoader,
     LofarDeltaNormLoader,
@@ -64,14 +66,18 @@ def data_source_from_config(config: dict) -> RawDataLoader:
             )
     elif dataset == "HERA_POLAR_DOP":
         if delta_normalization:
-            raise NotImplementedError(f"Dataset {dataset} is not supported.")
+            data_source = HeraPolarizationDeltaNormDoPDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
         else:
             data_source = HeraPolarizationDoPDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit
             )
     elif dataset == "HERA_POLAR_FULL":
         if delta_normalization:
-            raise NotImplementedError(f"Dataset {dataset} is not supported.")
+            data_source = HeraPolarizationDeltaNormFullDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
         else:
             data_source = HeraPolarizationFullDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit

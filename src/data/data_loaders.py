@@ -191,6 +191,33 @@ class HeraPolarizationFullDataLoader(RawDataLoader):
         self.filter_noiseless_train_patches()
 
 
+class HeraPolarizationDeltaNormFullDataLoader(RawDataLoader):
+    def _prepare_data(self):
+        self.val_x = self.test_x.copy()
+        self.val_y = self.test_y.copy()
+        self.limit_datasets()
+
+    def load_data(self, excluded_rfi: Union[str, None] = None):
+        if excluded_rfi is None:
+            rfi_models = []
+            file_path = os.path.join(self.data_dir, "HERA-21-11-2024_all_delta_norm.pkl")
+            data, masks = np.load(file_path, allow_pickle=True)
+            train_x, train_y, test_x, test_y = test_train_split(data, masks)
+        else:
+            raise NotImplementedError("Polarization data loader does not support RFI exclusion")
+        self.train_x = train_x
+        self.train_y = train_y
+        self.test_x = test_x
+        self.test_y = test_y
+        self.rfi_models = rfi_models
+        self.original_size = self.train_x.shape[1]
+        self._prepare_data()
+        if self.patch_size:
+            self.create_patches(self.patch_size, self.stride)
+        self.filter_noiseless_val_patches()
+        self.filter_noiseless_train_patches()
+
+
 class HeraPolarizationDoPDataLoader(RawDataLoader):
     def _prepare_data(self):
         self.convert_pytorch()
@@ -210,9 +237,6 @@ class HeraPolarizationDoPDataLoader(RawDataLoader):
         self.test_x = np.abs(self.test_x).astype("float32")
         self.train_x = np.abs(self.train_x).astype("float32")
         self.val_x = np.abs(self.val_x).astype("float32")
-        self.train_x[self.train_x == np.inf] = np.finfo(self.train_x.dtype).max
-        self.test_x[self.test_x == np.inf] = np.finfo(self.test_x.dtype).max
-        self.val_x[self.val_x == np.inf] = np.finfo(self.val_x.dtype).max
 
     def _calc_dop(self):
         self.train_x = splice_dop_in(self.train_x)
@@ -239,6 +263,52 @@ class HeraPolarizationDoPDataLoader(RawDataLoader):
         self._calc_dop()
         self._convert_abs()
         self._normalize_data()
+        # Now extract polarization
+        self.train_y = extract_polarization(self.train_y, 0)
+        self.test_y = extract_polarization(self.test_y, 0)
+        self.val_y = extract_polarization(self.val_y, 0)
+        self.train_x = extract_polarization(self.train_x, 0)
+        self.test_x = extract_polarization(self.test_x, 0)
+        self.val_x = extract_polarization(self.val_x, 0)
+        self.filter_noiseless_val_patches()
+        self.filter_noiseless_train_patches()
+
+
+class HeraPolarizationDeltaNormDoPDataLoader(RawDataLoader):
+    def _prepare_data(self):
+        self.val_x = self.test_x.copy()
+        self.val_y = self.test_y.copy()
+        self.limit_datasets()
+
+    def _convert_abs(self):
+        self.test_x = np.abs(self.test_x).astype("float32")
+        self.train_x = np.abs(self.train_x).astype("float32")
+        self.val_x = np.abs(self.val_x).astype("float32")
+
+    def _calc_dop(self):
+        self.train_x = splice_dop_in(self.train_x)
+        self.test_x = splice_dop_in(self.test_x)
+        self.val_x = splice_dop_in(self.val_x)
+
+    def load_data(self, excluded_rfi: Union[str, None] = None):
+        if excluded_rfi is None:
+            rfi_models = []
+            file_path = os.path.join(self.data_dir, "HERA-25-11-2024_all_delta_norm.pkl")
+            data, masks = np.load(file_path, allow_pickle=True)
+            train_x, train_y, test_x, test_y = test_train_split(data, masks)
+        else:
+            raise NotImplementedError("Polarization data loader does not support RFI exclusion")
+        self.train_x = train_x
+        self.train_y = train_y.astype("float32")
+        self.test_x = test_x
+        self.test_y = test_y.astype("float32")
+        self.rfi_models = rfi_models
+        self.original_size = self.train_x.shape[1]
+        self._prepare_data()
+        if self.patch_size:
+            self.create_patches(self.patch_size, self.stride)
+        self._calc_dop()
+        self._convert_abs()
         # Now extract polarization
         self.train_y = extract_polarization(self.train_y, 0)
         self.test_y = extract_polarization(self.test_y, 0)
