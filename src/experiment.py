@@ -108,7 +108,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
     num_hidden = config.get("num_hidden")
     num_outputs = config.get("num_outputs")
     num_layers = config.get("num_layers", 2)
-    if model_type == "FC_LATENCY":
+    if model_type == "FC_LATENCY" or model_type == "FC_LATENCY_XYLO":
         model = LitFcLatency(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
         )
@@ -172,7 +172,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
             num_layers,
             recurrent=False,
         )
-    elif model_type == "FC_DELTA_EXPOSURE":
+    elif model_type == "FC_DELTA_EXPOSURE" or model_type == "FC_DELTA_EXPOSURE_XYLO":
         model = LitFcDeltaExposure(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
         )
