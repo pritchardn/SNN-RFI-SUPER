@@ -36,7 +36,7 @@ def prepare_singlerun(
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
-    limit = 1.0 if dataset == "HERA" else 0.15
+    limit = 1.0 if dataset.find("HERA") >= 0 else 0.15
     runfiletext = (
             f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}

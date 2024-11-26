@@ -10,7 +10,7 @@
 #SBATCH --account=pawsey0411-gpu
 
 export DATASET="HERA_POLAR_DOP"
-export LIMIT="0.15"
+export LIMIT="1.0"
 export MODEL_TYPE="FC_DELTA_EXPOSURE_XYLO"
 export ENCODER_METHOD="DELTA_EXPOSURE"
 export FORWARD_EXPOSURE="None"
