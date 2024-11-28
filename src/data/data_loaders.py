@@ -139,8 +139,12 @@ def calculate_dop(xx, yy):
     out = np.zeros((xx.shape[0], 1, xx.shape[-1]))
     for n in range(xx.shape[0]):
         for t in range(xx.shape[-1]):
+            denominator = np.average(g0[n, :, t])
+            if denominator == 0.0:
+                out[n, 0, t] = 0.0
+                continue
             dop = np.sqrt(np.average(g1[n, :, t]) ** 2 + np.average(g2[n, :, t]) ** 2 + np.average(
-                g3[n, :, t]) ** 2) / np.average(g0[n, :, t])
+                g3[n, :, t]) ** 2) / denominator
             out[n, 0, t] = np.clip(dop, 0.0, 1.0)
     return out
 
