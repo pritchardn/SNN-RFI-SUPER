@@ -494,6 +494,18 @@ def get_default_params(
             params["data_source"]["patch_size"] = 4
             params["data_source"]["stride"] = 4
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 8
+        elif model_type == "FC_LATENCY_FULL":
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            params["data_source"]["dataset"] = dataset
+            params["data_source"]["patch_size"] = 512
+            params["data_source"]["stride"] = 512
+            params["model"]["num_inputs"] = 2048
+            params["model"]["num_outputs"] = 2048
+            params["model"]["num_hidden"] = 2048
+            params["dataset"]["batch_size"] = params["dataset"]["batch_size"] // 8
         elif model_type == "FC_DELTA_EXPOSURE":
             if delta_normalization:
                 params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM)
@@ -535,6 +547,18 @@ def get_default_params(
             params["data_source"]["patch_size"] = 15
             params["data_source"]["stride"] = 15
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 2
+        elif model_type == "FC_LATENCY_FULL":
+            if delta_normalization:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY_DIVNORM)
+            else:
+                params = copy.deepcopy(DEFAULT_HERA_LATENCY)
+            params["data_source"]["dataset"] = dataset
+            params["data_source"]["patch_size"] = 512
+            params["data_source"]["stride"] = 512
+            params["model"]["num_inputs"] = 513
+            params["model"]["num_outputs"] = 512
+            params["model"]["num_hidden"] = 2048
+            params["dataset"]["batch_size"] = params["dataset"]["batch_size"] // 8
         elif model_type == "FC_DELTA_EXPOSURE":
             if delta_normalization:
                 params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE_DIVNORM)

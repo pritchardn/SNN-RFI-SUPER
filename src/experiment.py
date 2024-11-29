@@ -114,7 +114,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
     num_hidden = config.get("num_hidden")
     num_outputs = config.get("num_outputs")
     num_layers = config.get("num_layers", 2)
-    if model_type == "FC_LATENCY" or model_type == "FC_LATENCY_XYLO":
+    if model_type == "FC_LATENCY" or model_type == "FC_LATENCY_XYLO" or model_type == "FC_LATENCY_FULL":
         model = LitFcLatency(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
         )
