@@ -83,7 +83,7 @@ class HeraDataLoader(RawDataLoader):
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
             rfi_models = []
-            file_path = os.path.join(self.data_dir, "HERA_21-11-2024_all.pkl")
+            file_path = os.path.join(self.data_dir, "HERA-21-11-2024_all.pkl")
             data, _, masks = np.load(file_path, allow_pickle=True)
             train_x, train_y, test_x, test_y = test_train_split(data, masks)
         else:
@@ -177,7 +177,7 @@ class HeraPolarizationFullDataLoader(RawDataLoader):
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
             rfi_models = []
-            file_path = os.path.join(self.data_dir, "HERA_21-11-2024_all.pkl")
+            file_path = os.path.join(self.data_dir, "HERA-21-11-2024_all.pkl")
             data, _, masks = np.load(file_path, allow_pickle=True)
             train_x, train_y, test_x, test_y = test_train_split(data, masks)
         else:
@@ -250,7 +250,7 @@ class HeraPolarizationDoPDataLoader(RawDataLoader):
     def load_data(self, excluded_rfi: Union[str, None] = None):
         if excluded_rfi is None:
             rfi_models = []
-            file_path = os.path.join(self.data_dir, "HERA_25-11-2024_all.pkl")
+            file_path = os.path.join(self.data_dir, "HERA-25-11-2024_all.pkl")
             data, _, masks = np.load(file_path, allow_pickle=True)
             train_x, train_y, test_x, test_y = test_train_split(data, masks)
         else:
@@ -428,7 +428,7 @@ def create_delta_normalized_lofar():
 
 
 def create_delta_normalized_new_hera():
-    file_path = os.path.join("data", "HERA_21-11-2024_all.pkl")
+    file_path = os.path.join("data", "HERA-21-11-2024_all.pkl")
     data, _, masks = np.load(file_path, allow_pickle=True)
     train_x = np.moveaxis(data, 1, 2)
     train_y = np.moveaxis(masks, 1, 2)
@@ -444,7 +444,7 @@ def create_delta_normalized_new_hera():
 
 
 def create_delta_normalized_complex_hera():
-    file_path = os.path.join("data", "HERA_25-11-2024_all.pkl")
+    file_path = os.path.join("data", "HERA-25-11-2024_all.pkl")
     data, _, masks = np.load(file_path, allow_pickle=True)
     train_x = np.moveaxis(data, 1, 2)
     train_y = np.moveaxis(masks, 1, 2)
