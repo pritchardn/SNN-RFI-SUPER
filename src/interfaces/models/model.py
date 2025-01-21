@@ -179,7 +179,7 @@ class LitModel(BaseLitModel):
                 spike, mem = self._infer_slice_recurrent(data, membranes)
             else:
                 spike, mem = self._infer_slice(data, membranes)
-            if num_polarizations != 1:
+            if num_polarizations != 1 and self.num_outputs == self.num_inputs:  # Only catch polarized output
                 spike = spike.view(*(spike.shape[:-1]), num_polarizations, -1)
                 mem = mem.view(*(mem.shape[:-1]), num_polarizations, -1)
             full_spike.append(spike)
@@ -188,7 +188,7 @@ class LitModel(BaseLitModel):
         full_mem = torch.stack(full_mem, dim=0)
         full_spike = torch.moveaxis(full_spike, 0, -1)
         full_mem = torch.moveaxis(full_mem, 0, -1)
-        if num_polarizations == 1:
+        if num_polarizations == 1 or self.num_outputs != self.num_inputs:
             full_spike = full_spike.unsqueeze(2)
             full_mem = full_mem.unsqueeze(2)
         return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)

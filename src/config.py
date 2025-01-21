@@ -490,7 +490,7 @@ def get_default_params(
                 params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = 16
-            params["model"]["num_outputs"] = 16
+            params["model"]["num_outputs"] = 4
             params["data_source"]["patch_size"] = 4
             params["data_source"]["stride"] = 4
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 8
@@ -522,7 +522,7 @@ def get_default_params(
                 params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
             params["model"]["num_inputs"] = 16
-            params["model"]["num_outputs"] = 16
+            params["model"]["num_outputs"] = 8
             params["data_source"]["patch_size"] = 4
             params["data_source"]["stride"] = 4
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 8
@@ -542,10 +542,10 @@ def get_default_params(
             else:
                 params = copy.deepcopy(DEFAULT_HERA_LATENCY)
             params["data_source"]["dataset"] = dataset
-            params["model"]["num_inputs"] = 16
-            params["model"]["num_outputs"] = 15
-            params["data_source"]["patch_size"] = 15
-            params["data_source"]["stride"] = 15
+            params["model"]["num_inputs"] = 9
+            params["model"]["num_outputs"] = 8
+            params["data_source"]["patch_size"] = 8
+            params["data_source"]["stride"] = 8
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 2
         elif model_type == "FC_LATENCY_FULL":
             if delta_normalization:
@@ -572,10 +572,10 @@ def get_default_params(
             else:
                 params = copy.deepcopy(DEFAULT_HERA_DELTA_EXPOSURE)
             params["data_source"]["dataset"] = dataset
-            params["model"]["num_inputs"] = 16
-            params["model"]["num_outputs"] = 15
-            params["data_source"]["patch_size"] = 15
-            params["data_source"]["stride"] = 15
+            params["model"]["num_inputs"] = 9
+            params["model"]["num_outputs"] = 8
+            params["data_source"]["patch_size"] = 8
+            params["data_source"]["stride"] = 8
             params["dataset"]["batch_size"] = params["dataset"]["batch_size"] * 2
         else:
             raise NotImplementedError(f"No other model types have been tested for {dataset}")

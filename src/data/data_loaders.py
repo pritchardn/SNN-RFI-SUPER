@@ -170,6 +170,8 @@ class HeraPolarizationFullDataLoader(RawDataLoader):
         self.test_x = _normalize(self.test_x, self.test_y, 1, 4)
         self.train_x = _normalize(self.train_x, self.train_y, 1, 4)
         self.convert_pytorch()
+        self.test_y = extract_polarization(self.test_y, 0)
+        self.train_y = extract_polarization(self.train_y, 0)
         self.val_x = self.test_x.copy()
         self.val_y = self.test_y.copy()
         self.limit_datasets()
@@ -211,8 +213,10 @@ class HeraPolarizationDeltaNormFullDataLoader(RawDataLoader):
             raise NotImplementedError("Polarization data loader does not support RFI exclusion")
         self.train_x = train_x
         self.train_y = train_y
+        self.train_y = extract_polarization(self.train_y, 0)
         self.test_x = test_x
         self.test_y = test_y
+        self.test_y = extract_polarization(self.test_y, 0)
         self.rfi_models = rfi_models
         self.original_size = self.train_x.shape[1]
         self._prepare_data()
