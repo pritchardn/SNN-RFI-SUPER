@@ -1,7 +1,7 @@
 """
 Evaluation functions for the model
 """
-
+import json
 import os
 
 import lightning.pytorch as pl
@@ -83,15 +83,36 @@ def final_evaluation(
     os.makedirs(outdir, exist_ok=True)
     # Run through the whole validation set
     full_spike_hat = []
+    spike_recordings = []
     for x, y in tqdm(data_module.test_dataloader()):
-        spike_hat, mem_hat = model(x)
+        spike_hat, spike_recording = model(x)
         full_spike_hat.append(spike_hat)
+        spike_recordings.append(spike_recording)
     full_spike_hat = torch.cat(full_spike_hat, dim=1)
+    full_spike_recordings = np.concat(spike_recordings)
     # save full_spike_hat into .npy file
     np.save(
         os.path.join(outdir, "full_spike_hat.npy"),
         full_spike_hat.detach().cpu().numpy(),
     )
+    np.save(
+        os.path.join(outdir, "full_spike_recording.npy"),
+        full_spike_recordings,
+    )
+    # Dataset information
+    dataset_info = {}
+    dataset_info["num_batches"] = len(data_module.test_dataloader())
+    dataset_info["batch_sizes"] = data_module.batch_size
+    dataset_info["exposure"] = exposure
+    dataset_info["num_samples"] = len(data_module.test_dataloader().dataset)
+    dataset_info["num_outputs"] = model.num_outputs
+    dataset_info["num_hidden"] = model.num_hidden
+    dataset_info["num_layers"] = model.num_layers
+    dataset_info["num_inputs"] = model.num_inputs
+    # I need the stride of the input
+    dataset_info["stride"] = data_module.stride
+    with open(os.path.join(outdir, "dataset_info.json"), "w") as f:
+        json.dump(dataset_info, f)
     # Decode outputs into masks
     inference = full_spike_hat.detach().cpu().numpy()
     output = converter.decode_inference(inference)

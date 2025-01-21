@@ -152,11 +152,13 @@ class LitModel(BaseLitModel):
 
     def _infer_slice(self, x, membranes):
         spike = None
+        spike_counts = []
         for n in range(self.num_layers):
             curr = self.ann_layers[n](x)
             spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
             x = spike
-        return spike, membranes[-1]
+            spike_counts.append(torch.count_nonzero(spike).item())
+        return spike, membranes[-1], spike_counts
 
     def _infer_slice_recurrent(self, x, states):
         for n in range(self.num_layers):
@@ -168,6 +170,7 @@ class LitModel(BaseLitModel):
     def forward(self, x):
         full_spike = []
         full_mem = []
+        spike_recordings = []
         # x -> [N x exp x C x freq x time]
         membranes = self._init_membranes()
         num_polarizations = x.shape[2]
@@ -178,7 +181,8 @@ class LitModel(BaseLitModel):
             if self.recurrent:
                 spike, mem = self._infer_slice_recurrent(data, membranes)
             else:
-                spike, mem = self._infer_slice(data, membranes)
+                spike, mem, spike_rec = self._infer_slice(data, membranes)
+                spike_recordings.append(spike_rec)
             if num_polarizations != 1 and self.num_outputs == self.num_inputs:  # Only catch polarized output
                 spike = spike.view(*(spike.shape[:-1]), num_polarizations, -1)
                 mem = mem.view(*(mem.shape[:-1]), num_polarizations, -1)
@@ -191,7 +195,7 @@ class LitModel(BaseLitModel):
         if num_polarizations == 1 or self.num_outputs != self.num_inputs:
             full_spike = full_spike.unsqueeze(2)
             full_mem = full_mem.unsqueeze(2)
-        return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
+        return torch.moveaxis(full_spike, 0, 1), spike_recordings
 
 
 class LitPatchedModel(BaseLitModel):
