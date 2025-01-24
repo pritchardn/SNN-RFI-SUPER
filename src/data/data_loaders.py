@@ -218,7 +218,7 @@ class HeraPolarizationDeltaNormFullDataLoader(RawDataLoader):
         self.test_y = test_y
         self.test_y = extract_polarization(self.test_y, 0)
         self.rfi_models = rfi_models
-        self.original_size = self.train_x.shape[1]
+        self.original_size = self.train_x.shape[-1]
         self._prepare_data()
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
@@ -311,7 +311,7 @@ class HeraPolarizationDeltaNormDoPDataLoader(RawDataLoader):
         self.test_x = test_x
         self.test_y = test_y.astype("float32")
         self.rfi_models = rfi_models
-        self.original_size = self.train_x.shape[1]
+        self.original_size = self.train_x.shape[-1]
         self._prepare_data()
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
