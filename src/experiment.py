@@ -8,6 +8,9 @@ import glob
 import json
 import os
 
+import nir
+import snntorch
+
 import lightning.pytorch as pl
 import torch
 
@@ -344,14 +347,8 @@ class Experiment:
         out_dir = self.trainer.log_dir
         os.makedirs(out_dir, exist_ok=True)
         sample, _ = next(iter(self.dataset.train_dataloader()))
-        torch.onnx.export(
-            self.model,
-            sample,
-            os.path.join(out_dir, "model.onnx"),
-            input_names=["inputs"],
-            output_names=["outputs"],
-            dynamic_axes={"inputs": {0: "batch_size"}, "outputs": {0: "batch_size"}},
-        )
+        nir_model = snntorch.export_to_nir(self.model, sample, "model.nir")
+        nir.write(os.path.join(self.trainer.log_dir, "model.nir"), nir_model)
 
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:
