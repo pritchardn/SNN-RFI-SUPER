@@ -37,23 +37,17 @@ class BaseLitModel(pl.LightningModule):
         self.recurrent = recurrent
         self.regularization = None
 
-        self.ann_layers = self._init_ann_layers()
-        self.snn_layers = self._init_snn_layers()
+        self.layers = self._init_layers()
 
-    def _init_ann_layers(self):
-        layers = nn.ModuleList()
+    def _init_layers(self):
+        layers = []
         for i in range(self.num_layers):
             if i == 0:
-                layers.append(nn.Linear(self.num_inputs, self.num_hidden))
+                layers.append(nn.Linear(self.num_inputs, self.num_hidden, bias=False))
             elif i == self.num_layers - 1:
-                layers.append(nn.Linear(self.num_hidden, self.num_outputs))
+                layers.append(nn.Linear(self.num_hidden, self.num_outputs, bias=False))
             else:
-                layers.append(nn.Linear(self.num_hidden, self.num_hidden))
-        return layers
-
-    def _init_snn_layers(self):
-        layers = nn.ModuleList()
-        for i in range(self.num_layers):
+                layers.append(nn.Linear(self.num_hidden, self.num_hidden, bias=False))
             if self.recurrent:
                 num_features = self.num_hidden
                 if i == self.num_layers - 1:
@@ -67,7 +61,7 @@ class BaseLitModel(pl.LightningModule):
                 )
             else:
                 layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
-        return layers
+        return torch.nn.Sequential(*layers)
 
     def set_converter(self, converter: SpikeConverter):
         self.converter = converter
@@ -78,8 +72,8 @@ class BaseLitModel(pl.LightningModule):
 
     def _init_membranes(self):
         if self.recurrent:
-            return [lif.init_rleaky() for lif in self.snn_layers]
-        return [lif.init_leaky() for lif in self.snn_layers]
+            return [lif.init_rleaky() for lif in self.layers[1:self.num_layers * 2:2]]
+        return [lif.init_leaky() for lif in self.layers[1:self.num_layers * 2:2]]
 
     @abc.abstractmethod
     def forward(self, x):
@@ -154,16 +148,16 @@ class LitModel(BaseLitModel):
         spike = None
         spike_counts = []
         for n in range(self.num_layers):
-            curr = self.ann_layers[n](x)
-            spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
+            curr = self.layers[n * 2](x)
+            spike, membranes[n] = self.layers[n * 2 + 1](curr, membranes[n])
             x = spike
             spike_counts.append(torch.count_nonzero(spike).item())
         return spike, membranes[-1], spike_counts
 
     def _infer_slice_recurrent(self, x, states):
         for n in range(self.num_layers):
-            curr = self.ann_layers[n](x)
-            states[n] = self.snn_layers[n](curr, states[n][0], states[n][1])
+            curr = self.layers[n * 2](x)
+            states[n] = self.layers[n * 2 + 1](curr, states[n][0], states[n][1])
             x = states[n][0]
         return x, states[-1][1]
 
