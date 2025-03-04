@@ -347,6 +347,17 @@ def get_default_params(
                 params = DEFAULT_HERA_LATENCY_DIVNORM
             else:
                 params = DEFAULT_HERA_LATENCY
+        elif model_type == "FC_LATENCY_XYLO":
+            if delta_normalization:
+                params = DEFAULT_HERA_LATENCY_DIVNORM
+            else:
+                params = DEFAULT_HERA_LATENCY
+            params["model"]["num_inputs"] = 8
+            params["model"]["num_outputs"] = 8
+            params["model"]["num_layers"] = 3
+            params["model"]["num_hidden"] = 128
+            params["data_source"]["patch_size"] = 8
+            params["data_source"]["stride"] = 8
         elif model_type == "RNN_LATENCY":
             params = DEFAULT_HERA_LATENCY_RNN
         elif model_type == "FC_RATE":
