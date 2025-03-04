@@ -100,10 +100,10 @@ class RawDataLoader(ABC):
         )
 
     def convert_pytorch(self):
-        self.train_x = np.moveaxis(self.train_x, -1, 1).astype(np.float32)
-        self.train_y = np.moveaxis(self.train_y, -1, 1).astype(np.float32)
-        self.test_x = np.moveaxis(self.test_x, -1, 1).astype(np.float32)
-        self.test_y = np.moveaxis(self.test_y, -1, 1).astype(np.float32)
+        self.train_x = np.moveaxis(self.train_x, -1, 1)
+        self.train_y = np.moveaxis(self.train_y, -1, 1).astype("float32")
+        self.test_x = np.moveaxis(self.test_x, -1, 1)
+        self.test_y = np.moveaxis(self.test_y, -1, 1).astype("float32")
 
     def release_memory(self):
         del self.train_x

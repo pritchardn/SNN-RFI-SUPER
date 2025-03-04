@@ -13,12 +13,14 @@ class ConfiguredDataModule(pl.LightningDataModule):
         test_dataset: Dataset,
         val_dataset: Dataset,
         batch_size: int,
+        stride: int,
     ):
         super().__init__()
         self.train = train_dataset
         self.test = test_dataset
         self.val = val_dataset
         self.batch_size = batch_size
+        self.stride = stride
 
     def train_dataloader(self):
         return DataLoader(

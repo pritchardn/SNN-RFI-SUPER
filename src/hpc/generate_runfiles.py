@@ -26,19 +26,19 @@ delta_normalization = [True, False]
 
 
 def prepare_singlerun(
-    model,
-    encoding,
-    dataset,
-    forward_step_exposure="None",
-    delta_norm=False,
-    num_nodes=1,
+        model,
+        encoding,
+        dataset,
+        forward_step_exposure="None",
+        delta_norm=False,
+        num_nodes=1,
 ):
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
-    limit = 1.0 if dataset == "HERA" else 0.15
+    limit = 1.0 if dataset.find("HERA") >= 0 else 0.15
     runfiletext = (
-        f"""#!/bin/bash
+            f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
 #SBATCH --nodes={num_nodes}
 #SBATCH --time=24:00:00
@@ -64,8 +64,8 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/${{MODEL_TYPE}}/${{ENCODER_METHOD}}/${{DATASET}}/${{DELTA_NORMALIZATION}}/${{NUM_HIDDEN}}/${{LIMIT}}"""
-        + forward_step_directory
-        + """
+            + forward_step_directory
+            + """
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1
@@ -80,24 +80,24 @@ srun -N 1 -n 1 -c 64 --gpus-per-task=8 --gpu-bind=closest python3 main.py
 
 
 def prepare_optuna(
-    model,
-    encoding,
-    dataset,
-    limit,
-    forward_step_exposure="None",
-    delta_norm=False,
-    num_nodes=1,
+        model,
+        encoding,
+        dataset,
+        limit,
+        forward_step_exposure="None",
+        delta_norm=False,
+        num_nodes=1,
 ):
     forward_step_directory = (
         '''/${FORWARD_EXPOSURE}"''' if forward_step_exposure != "None" else '"'
     )
     study_name = (
-        f"""export STUDY_NAME="SNN-SUPER-C-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
-        + ("""-${FORWARD_EXPOSURE}""" if forward_step_exposure != "None" else """""")
-        + '-${DELTA_NORMALIZATION}"'
+            f"""export STUDY_NAME="SNN-SUPER-C-${{DATASET}}-${{ENCODER_METHOD}}-${{MODEL_TYPE}}-{limit}-${{NUM_HIDDEN}}"""
+            + ("""-${FORWARD_EXPOSURE}""" if forward_step_exposure != "None" else """""")
+            + '-${DELTA_NORMALIZATION}"'
     )
     runfiletext = (
-        f"""#!/bin/bash
+            f"""#!/bin/bash
 #SBATCH --job-name=SNN-SUPER-{model}-{encoding}-{dataset}
 #SBATCH --nodes=1
 #SBATCH --time=24:00:00
@@ -124,11 +124,11 @@ source /software/projects/pawsey0411/npritchard/setonix/2023.08/python/snn-nln/b
 
 export DATA_PATH="/scratch/pawsey0411/npritchard/data"
 export OPTUNA_DB=${{OPTUNA_URL}} # Need to change on super-computer before submitting\n"""
-        + study_name
-        + """
+            + study_name
+            + """
 export OUTPUT_DIR="/scratch/pawsey0411/npritchard/outputs/snn-super/optuna/${MODEL_TYPE}/${ENCODER_METHOD}/${DATASET}/${DELTA_NORMALIZATION}/${NUM_HIDDEN}/${LIMIT}"""
-        + forward_step_directory
-        + """
+            + forward_step_directory
+            + """
 export FI_CXI_DEFAULT_VNI=$(od -vAn -N4 -tu < /dev/urandom)
 export MPICH_OFI_STARTUP_CONNECT=1
 export MPICH_OFI_VERBOSE=1
@@ -257,6 +257,32 @@ def main(out_dir, num_nodes):
                         num_nodes,
                         delta_norm,
                     )
+    # Polarization runs
+    for model, encoding in [("FC_LATENCY", "LATENCY"), ("FC_LATENCY_XYLO", "LATENCY"),
+                            ("FC_DELTA_EXPOSURE", "DELTA_EXPOSURE"),
+                            ("FC_DELTA_EXPOSURE_XYLO", "DELTA_EXPOSURE")]:
+        for dataset in ["HERA_POLAR_FULL", "HERA_POLAR_DOP"]:
+            for delta_norm in [True, False]:
+                out_dir_temp = os.path.join(
+                    out_dir,
+                    "POLAR",
+                    model,
+                    encoding,
+                    dataset,
+                    "DELTA_NORM" if delta_norm else "ORIGINAL",
+                )
+                os.makedirs(out_dir_temp, exist_ok=True)
+                write_bashfile(
+                    out_dir_temp,
+                    f"{dataset}-{encoding}",
+                    prepare_singlerun(
+                        model,
+                        encoding,
+                        dataset,
+                        delta_norm=delta_norm,
+                        num_nodes=num_nodes,
+                    ),
+                )
 
 
 if __name__ == "__main__":

@@ -27,6 +27,9 @@ def reconstruct_patches(images: np.array, original_size: int, kernel_size: int):
     Transposes the images to match the tensorflow implementation but returns the images in the
     original format.
     """
+    # Check for DoP entry
+    if images.shape[-1] != images.shape[-2]:
+        images = images[:, :, :-1, :]
     transposed = images.transpose(0, 3, 2, 1)
     n_patches = original_size // kernel_size
     recon = np.empty(
@@ -154,3 +157,22 @@ def decode_delta_inference(
     if use_numpy:
         return _decode_delta_inference_numpy(spike_hat)
     return _decode_delta_inference_torch(spike_hat)
+
+
+def test_train_split(data, masks, train_size: float = 0.8):
+    # Split the training data into training and test sets
+    train_size = int(train_size * data.shape[0])
+    indices = np.random.permutation(data.shape[0])
+    train_indices, test_indices = indices[:train_size], indices[train_size:]
+    train_x, test_x = data[train_indices], data[test_indices]
+    train_y, test_y = masks[train_indices], masks[test_indices]
+    return train_x, train_y, test_x, test_y
+
+
+def extract_polarization(data, polarization: int):
+    return np.expand_dims(data[:, polarization, :, :], 1)
+
+
+def expand_polarization(data):
+    # [N, C, freq, time] -> [N, C * freq, time]
+    return np.expand_dims(np.reshape(data, (data.shape[0], -1, data.shape[-1])), 1)

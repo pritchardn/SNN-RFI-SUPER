@@ -8,11 +8,18 @@ import glob
 import json
 import os
 
+import nir
+import snntorch
+
 import lightning.pytorch as pl
 import torch
 
 from data.data_loaders import (
     HeraDataLoader,
+    HeraPolarizationDoPDataLoader,
+    HeraPolarizationFullDataLoader,
+    HeraPolarizationDeltaNormFullDataLoader,
+    HeraPolarizationDeltaNormDoPDataLoader,
     LofarDataLoader,
     HeraDeltaNormLoader,
     LofarDeltaNormLoader,
@@ -60,6 +67,24 @@ def data_source_from_config(config: dict) -> RawDataLoader:
             data_source = HeraDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit
             )
+    elif dataset == "HERA_POLAR_DOP":
+        if delta_normalization:
+            data_source = HeraPolarizationDeltaNormDoPDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
+        else:
+            data_source = HeraPolarizationDoPDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
+    elif dataset == "HERA_POLAR_FULL":
+        if delta_normalization:
+            data_source = HeraPolarizationDeltaNormFullDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
+        else:
+            data_source = HeraPolarizationFullDataLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
     elif dataset == "LOFAR":
         if delta_normalization:
             data_source = LofarDeltaNormLoader(
@@ -92,7 +117,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
     num_hidden = config.get("num_hidden")
     num_outputs = config.get("num_outputs")
     num_layers = config.get("num_layers", 2)
-    if model_type == "FC_LATENCY":
+    if model_type == "FC_LATENCY" or model_type == "FC_LATENCY_XYLO" or model_type == "FC_LATENCY_FULL":
         model = LitFcLatency(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
         )
@@ -156,7 +181,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
             num_layers,
             recurrent=False,
         )
-    elif model_type == "FC_DELTA_EXPOSURE":
+    elif model_type == "FC_DELTA_EXPOSURE" or model_type == "FC_DELTA_EXPOSURE_XYLO":
         model = LitFcDeltaExposure(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
         )
@@ -322,14 +347,8 @@ class Experiment:
         out_dir = self.trainer.log_dir
         os.makedirs(out_dir, exist_ok=True)
         sample, _ = next(iter(self.dataset.train_dataloader()))
-        torch.onnx.export(
-            self.model,
-            sample,
-            os.path.join(out_dir, "model.onnx"),
-            input_names=["inputs"],
-            output_names=["outputs"],
-            dynamic_axes={"inputs": {0: "batch_size"}, "outputs": {0: "batch_size"}},
-        )
+        nir_model = snntorch.export_to_nir(self.model, sample, "model.nir")
+        nir.write(os.path.join(self.trainer.log_dir, "model.nir"), nir_model)
 
     def load_config(self, config_path: str):
         with open(config_path, "r") as ifile:

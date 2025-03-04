@@ -37,23 +37,17 @@ class BaseLitModel(pl.LightningModule):
         self.recurrent = recurrent
         self.regularization = None
 
-        self.ann_layers = self._init_ann_layers()
-        self.snn_layers = self._init_snn_layers()
+        self.layers = self._init_layers()
 
-    def _init_ann_layers(self):
-        layers = nn.ModuleList()
+    def _init_layers(self):
+        layers = []
         for i in range(self.num_layers):
             if i == 0:
-                layers.append(nn.Linear(self.num_inputs, self.num_hidden))
+                layers.append(nn.Linear(self.num_inputs, self.num_hidden, bias=False))
             elif i == self.num_layers - 1:
-                layers.append(nn.Linear(self.num_hidden, self.num_outputs))
+                layers.append(nn.Linear(self.num_hidden, self.num_outputs, bias=False))
             else:
-                layers.append(nn.Linear(self.num_hidden, self.num_hidden))
-        return layers
-
-    def _init_snn_layers(self):
-        layers = nn.ModuleList()
-        for i in range(self.num_layers):
+                layers.append(nn.Linear(self.num_hidden, self.num_hidden, bias=False))
             if self.recurrent:
                 num_features = self.num_hidden
                 if i == self.num_layers - 1:
@@ -67,7 +61,7 @@ class BaseLitModel(pl.LightningModule):
                 )
             else:
                 layers.append(snn.Leaky(beta=self.beta, learn_threshold=True))
-        return layers
+        return torch.nn.Sequential(*layers)
 
     def set_converter(self, converter: SpikeConverter):
         self.converter = converter
@@ -78,8 +72,8 @@ class BaseLitModel(pl.LightningModule):
 
     def _init_membranes(self):
         if self.recurrent:
-            return [lif.init_rleaky() for lif in self.snn_layers]
-        return [lif.init_leaky() for lif in self.snn_layers]
+            return [lif.init_rleaky() for lif in self.layers[1:self.num_layers * 2:2]]
+        return [lif.init_leaky() for lif in self.layers[1:self.num_layers * 2:2]]
 
     @abc.abstractmethod
     def forward(self, x):
@@ -152,37 +146,50 @@ class LitModel(BaseLitModel):
 
     def _infer_slice(self, x, membranes):
         spike = None
+        spike_counts = []
         for n in range(self.num_layers):
-            curr = self.ann_layers[n](x)
-            spike, membranes[n] = self.snn_layers[n](curr, membranes[n])
+            curr = self.layers[n * 2](x)
+            spike, membranes[n] = self.layers[n * 2 + 1](curr, membranes[n])
             x = spike
-        return spike, membranes[-1]
+            spike_counts.append(torch.count_nonzero(spike).item())
+        return spike, membranes[-1], spike_counts
 
     def _infer_slice_recurrent(self, x, states):
         for n in range(self.num_layers):
-            curr = self.ann_layers[n](x)
-            states[n] = self.snn_layers[n](curr, states[n][0], states[n][1])
+            curr = self.layers[n * 2](x)
+            states[n] = self.layers[n * 2 + 1](curr, states[n][0], states[n][1])
             x = states[n][0]
         return x, states[-1][1]
 
     def forward(self, x):
         full_spike = []
         full_mem = []
+        spike_recordings = []
         # x -> [N x exp x C x freq x time]
         membranes = self._init_membranes()
+        num_polarizations = x.shape[2]
+        if num_polarizations != 1:
+            x = torch.flatten(x, 2, 3).unsqueeze(2)
         for t in range(x.shape[-1]):
             data = x[:, :, 0, :, t]
             if self.recurrent:
                 spike, mem = self._infer_slice_recurrent(data, membranes)
             else:
-                spike, mem = self._infer_slice(data, membranes)
+                spike, mem, spike_rec = self._infer_slice(data, membranes)
+                spike_recordings.append(spike_rec)
+            if num_polarizations != 1 and self.num_outputs == self.num_inputs:  # Only catch polarized output
+                spike = spike.view(*(spike.shape[:-1]), num_polarizations, -1)
+                mem = mem.view(*(mem.shape[:-1]), num_polarizations, -1)
             full_spike.append(spike)
             full_mem.append(mem)
         full_spike = torch.stack(full_spike, dim=0)  # [time x N x exp x C x freq]
         full_mem = torch.stack(full_mem, dim=0)
-        full_spike = torch.moveaxis(full_spike, 0, -1).unsqueeze(2)
-        full_mem = torch.moveaxis(full_mem, 0, -1).unsqueeze(2)
-        return torch.moveaxis(full_spike, 0, 1), torch.moveaxis(full_mem, 0, 1)
+        full_spike = torch.moveaxis(full_spike, 0, -1)
+        full_mem = torch.moveaxis(full_mem, 0, -1)
+        if num_polarizations == 1 or self.num_outputs != self.num_inputs:
+            full_spike = full_spike.unsqueeze(2)
+            full_mem = full_mem.unsqueeze(2)
+        return torch.moveaxis(full_spike, 0, 1), spike_recordings
 
 
 class LitPatchedModel(BaseLitModel):
