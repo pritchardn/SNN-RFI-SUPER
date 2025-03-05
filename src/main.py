@@ -22,7 +22,7 @@ def main():
     config["data_source"]["data_path"] = os.getenv(
         "DATA_PATH", config["data_source"]["data_path"]
     )
-    config["model"]["num_hidden"] = num_hidden
+    # config["model"]["num_hidden"] = num_hidden
     # config["model"]["num_layers"] = num_layers
     config["data_source"]["limit"] = float(
         os.getenv("LIMIT", config["data_source"]["limit"])

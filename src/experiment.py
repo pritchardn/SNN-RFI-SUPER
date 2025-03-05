@@ -49,6 +49,7 @@ from models.fcp_delta import LitFcPDelta
 from models.fcp_forwardstep import LitFcPForwardStep
 from models.fcp_latency import LitFcPLatency
 from models.fcp_rate import LitFcPRate
+from models.mh_latency import MHLitLatency
 
 
 def data_source_from_config(config: dict) -> RawDataLoader:
@@ -117,6 +118,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
     num_hidden = config.get("num_hidden")
     num_outputs = config.get("num_outputs")
     num_layers = config.get("num_layers", 2)
+    num_hidden_layers = config.get("num_hidden_layers", num_layers)
     if model_type == "FC_LATENCY" or model_type == "FC_LATENCY_XYLO" or model_type == "FC_LATENCY_FULL":
         model = LitFcLatency(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
@@ -229,6 +231,20 @@ def model_from_config(config: dict) -> pl.LightningModule:
         )
     elif model_type == "FCP_FORWARD_STEP":
         model = LitFcPForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
+    elif model_type == "MH_LATENCY":
+        alpha = config.get("alpha")
+        head_width = config.get("head_width")
+        head_stride = config.get("head_stride")
+        model = MHLitLatency(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            alpha,
+            beta,
+            head_width,
+            head_stride,
+            num_hidden_layers
+        )
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model
