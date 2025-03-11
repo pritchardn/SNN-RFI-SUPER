@@ -45,21 +45,28 @@ class MHBaseLitModel(pl.LightningModule):
         self.head_stride = head_stride
         self.num_hidden_layers = num_hidden_layers
         self.num_layers = self.num_hidden_layers + 2 # For Input and Output
+        self.num_heads = (self.num_inputs - self.head_width) // self.head_stride + 1
         self.regularization = None
 
         self.layers = self._init_layers()
+        pass
 
     def _init_layers(self):
+        heads = []
+        for i in range(self.num_heads):
+            curr_head = [nn.Linear(self.head_width, self.head_width, bias=False), snn.Synaptic(alpha=self.alpha, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True)]
+            heads.append(nn.Sequential(*curr_head))
+        heads = nn.ModuleList(heads)
         layers = []
-        for i in range(self.num_layers):
-            if i == 0:
+        for i in range(1, self.num_layers):
+            if i == 1:
                 layers.append(nn.Linear(self.num_inputs, self.num_hidden, bias=False))
             elif i == self.num_layers - 1:
                 layers.append(nn.Linear(self.num_hidden, self.num_outputs, bias=False))
             else:
                 layers.append(nn.Linear(self.num_hidden, self.num_hidden, bias=False))
             layers.append(snn.Synaptic(alpha=self.alpha, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True))
-        return torch.nn.Sequential(*layers)
+        return torch.nn.ModuleList([heads, *layers])
 
     def set_converter(self, converter: SpikeConverter):
         self.converter = converter
@@ -69,7 +76,15 @@ class MHBaseLitModel(pl.LightningModule):
         self.log("accuracy", score)
 
     def _init_membranes(self):
-        return [lif.init_synaptic() for lif in self.layers[1:self.num_layers * 2:2]]
+        membranes = []
+        head_membranes = []
+        for i in range(self.num_heads):
+            head_membranes.append(self.layers[0][i][1].init_synaptic())
+        membranes.append(
+            head_membranes
+        )
+        membranes.extend(lif.init_synaptic() for lif in self.layers[2:self.num_layers * 2:2])
+        return membranes
 
     @abc.abstractmethod
     def forward(self, x):
@@ -145,11 +160,23 @@ class MHLitModel(MHBaseLitModel):
     def _infer_slice(self, x, membranes):
         spike = None
         spike_counts = []
-        for n in range(self.num_layers):
-            curr = self.layers[n * 2](x)
-            spike, syn_mem, mem_mem = self.layers[n * 2 + 1](curr, membranes[n][0], membranes[n][1])
+        # Deal with head layer first
+        head_membranes = membranes[0]
+        head_layer = self.layers[0]
+        chunks = x.unfold(dimension=-1, size=self.head_width, step=self.head_stride)
+        outputs = []
+        for i, head in enumerate(head_layer):
+            curr = head[0](chunks[:, :, i, :])
+            spike, syn_mem, mem_mem = head[1](curr, head_membranes[i][0], head_membranes[i][1])
+            head_membranes[i] = (syn_mem, mem_mem)
+            outputs.append(spike)
+        membranes[0] = head_membranes
+        output = torch.cat(outputs, dim=-1)
+        for n in range(1, self.num_layers):
+            curr = self.layers[((n-1) * 2) + 1](output)
+            spike, syn_mem, mem_mem = self.layers[n * 2](curr, membranes[n][0], membranes[n][1])
             membranes[n] = (syn_mem, mem_mem)
-            x = spike
+            output = spike
             spike_counts.append(torch.count_nonzero(spike).item())
         return spike, membranes[-1], spike_counts
 

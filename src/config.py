@@ -49,8 +49,8 @@ DEFAULT_HERA_LATENCY_MH = {
     "data_source": {
         "data_path": "./data",
         "limit": 1.0,
-        "patch_size": 512,
-        "stride": 512,
+        "patch_size": 32,
+        "stride": 32,
         "dataset": "HERA",
     },
     "dataset": {
@@ -58,14 +58,14 @@ DEFAULT_HERA_LATENCY_MH = {
     },
     "model": {
         "type": "MH_LATENCY",
-        "num_inputs": 512,
-        "num_hidden": 4096,
-        "num_outputs": 512,
+        "num_inputs": 32,
+        "num_hidden": 128,
+        "num_outputs": 32,
         "num_hidden_layers": 2,
         "alpha": 0.10,
         "beta": 0.245507490258551,
-        "head_width": 32,
-        "head_stride": 32,
+        "head_width": 16,
+        "head_stride": 16,
     },
     "trainer": {
         "epochs": 100,
