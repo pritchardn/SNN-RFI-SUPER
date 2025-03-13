@@ -54,18 +54,18 @@ class MHBaseLitModel(pl.LightningModule):
     def _init_layers(self):
         heads = []
         for i in range(self.num_heads):
-            curr_head = [nn.Linear(self.head_width, self.head_width, bias=False), snn.Synaptic(alpha=self.alpha, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True)]
+            curr_head = [nn.Linear(self.head_width, 2 * self.head_width, bias=False), snn.Synaptic(alpha=self.alpha, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True, threshold=0.01)]
             heads.append(nn.Sequential(*curr_head))
         heads = nn.ModuleList(heads)
         layers = []
         for i in range(1, self.num_layers):
             if i == 1:
-                layers.append(nn.Linear(self.num_inputs, self.num_hidden, bias=False))
+                layers.append(nn.Linear(2 * self.num_inputs, self.num_hidden, bias=False))
             elif i == self.num_layers - 1:
                 layers.append(nn.Linear(self.num_hidden, self.num_outputs, bias=False))
             else:
                 layers.append(nn.Linear(self.num_hidden, self.num_hidden, bias=False))
-            layers.append(snn.Synaptic(alpha=self.alpha, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True))
+            layers.append(snn.Synaptic(alpha=self.alpha, beta=self.beta, threshold=0.01, learn_threshold=True, learn_beta=True, learn_alpha=True))
         return torch.nn.ModuleList([heads, *layers])
 
     def set_converter(self, converter: SpikeConverter):
@@ -97,11 +97,24 @@ class MHBaseLitModel(pl.LightningModule):
                 loss += reg_method(y_hat)
         return loss
 
+    def calculate_gradient_norm(self):
+        total_norm = 0
+        for p in self.parameters():
+            if p.grad is not None:
+                param_norm = p.grad.data.norm(2)
+                total_norm += param_norm.item() ** 2
+        total_norm = total_norm ** 0.5
+        return total_norm
+
     def training_step(self, batch, batch_idx):
         x, y = batch
         spike_hat, _ = self(x)
         loss = self.calc_loss(spike_hat, y)
         self.log("train_loss", loss, sync_dist=True)
+        grad_norm = self.calculate_gradient_norm()
+        self.log("grad_norm", grad_norm, sync_dist=True)
+        spike_rate = spike_hat.sum().item()
+        self.log("spike_rate", spike_rate, sync_dist=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
