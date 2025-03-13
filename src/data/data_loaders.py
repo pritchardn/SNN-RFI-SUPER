@@ -9,7 +9,7 @@ import numpy as np
 from tqdm import tqdm
 
 from data.utils import test_train_split, extract_polarization
-from interfaces.data.raw_data_loader import RawDataLoader
+from interfaces.data.raw_data_loader import RawDataLoader, calc_limit_int
 
 
 def _delta_normalize(image_data: np.ndarray, kernel_size=3) -> np.ndarray:
@@ -52,6 +52,7 @@ def _delta_normalize(image_data: np.ndarray, kernel_size=3) -> np.ndarray:
 def _normalize(
         image_data: np.ndarray, masks: np.ndarray, min_threshold: int, max_threshold: int
 ) -> np.ndarray:
+    normalized_data = (image_data - np.mean(image_data, axis=0)) / np.std(image_data, axis=0)
     _max = np.mean(image_data[np.invert(masks)]) + max_threshold * np.std(
         image_data[np.invert(masks)]
     )
@@ -131,6 +132,7 @@ class HeraDeltaNormLoader(RawDataLoader):
             self.create_patches(self.patch_size, self.stride)
         self.filter_noiseless_val_patches()
         self.filter_noiseless_train_patches()
+        pass
 
 
 def calculate_dop(xx, yy):
@@ -197,7 +199,6 @@ class HeraPolarizationFullDataLoader(RawDataLoader):
             self.create_patches(self.patch_size, self.stride)
         self.filter_noiseless_val_patches()
         self.filter_noiseless_train_patches()
-
 
 class HeraPolarizationDeltaNormFullDataLoader(RawDataLoader):
     def _prepare_data(self):
@@ -373,6 +374,44 @@ class LofarDeltaNormLoader(RawDataLoader):
         self.val_x = val_x
         self.val_y = val_y
         self.limit_datasets()
+        self.original_size = self.train_x.shape[-1]
+        if self.patch_size:
+            self.create_patches(self.patch_size, self.stride)
+        self.filter_noiseless_train_patches()
+
+
+class MixedDeltaNormLoader(RawDataLoader):
+
+    def custom_limit_dataset(self, data, limit):
+        if limit >= 1.0:
+            return data
+        int_limit = calc_limit_int(limit, len(data))
+        return data[:int_limit]
+
+
+    def load_data(self):
+        file_path = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset_delta_norm.pkl")
+        train_x, train_y, test_x, test_y, val_x, val_y = np.load(
+            file_path, allow_pickle=True
+        )
+        file_path = os.path.join(self.data_dir, "HERA-21-11-2024_all_delta_norm.pkl")
+        data, masks = np.load(
+            file_path, allow_pickle=True
+        )
+        data = np.expand_dims(data[:, 0, :, :], 1)
+        masks = np.expand_dims(masks[:, 0, :, :], 1)
+        hera_train_x, hera_train_y, hera_test_x, hera_test_y = test_train_split(data, masks)
+
+        self.test_x = _normalize(test_x, test_y, 3, 95)
+        self.train_x = _normalize(train_x, train_y, 3, 95)
+        hera_test_x = _normalize(hera_test_x, hera_test_y, 3, 95)
+        hera_test_y = _normalize(hera_test_y, hera_test_y, 3, 95)
+        self.train_x = np.concatenate((self.custom_limit_dataset(train_x, self.limit), self.custom_limit_dataset(hera_train_x, self.limit * 10)), axis=0)
+        self.train_y = np.concatenate((self.custom_limit_dataset(train_y, self.limit), self.custom_limit_dataset(hera_train_y, self.limit * 10)), axis=0)
+        self.test_x = np.concatenate((self.custom_limit_dataset(test_x, self.limit), self.custom_limit_dataset(hera_test_x, self.limit * 10)), axis=0)
+        self.test_y = np.concatenate((self.custom_limit_dataset(test_y, self.limit), self.custom_limit_dataset(hera_test_y, self.limit * 10)), axis=0)
+        self.val_x = val_x
+        self.val_y = val_y
         self.original_size = self.train_x.shape[-1]
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)

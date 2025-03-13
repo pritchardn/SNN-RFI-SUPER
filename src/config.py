@@ -49,8 +49,8 @@ DEFAULT_HERA_LATENCY_MH = {
     "data_source": {
         "data_path": "./data",
         "limit": 1.0,
-        "patch_size": 32,
-        "stride": 32,
+        "patch_size": 512,
+        "stride": 512,
         "dataset": "HERA",
     },
     "dataset": {
@@ -58,9 +58,9 @@ DEFAULT_HERA_LATENCY_MH = {
     },
     "model": {
         "type": "MH_LATENCY",
-        "num_inputs": 32,
-        "num_hidden": 128,
-        "num_outputs": 32,
+        "num_inputs": 512,
+        "num_hidden": 2048,
+        "num_outputs": 512,
         "num_hidden_layers": 2,
         "alpha": 0.10,
         "beta": 0.245507490258551,
@@ -653,6 +653,20 @@ def get_default_params(
                 params = DEFAULT_LOFAR_ANN_DIVNORM
             else:
                 params = DEFAULT_LOFAR_ANN
+
+        elif model_type == "MH_LATENCY":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY_MH)
+            params["data_source"]["dataset"] = dataset
+            params["encoder"]["exposure"] = 32
+            params["model"]["beta"] = 0.1
+        else:
+            raise ValueError(f"Unknown model type {model_type}")
+    elif dataset == "MIXED":
+        if model_type == "MH_LATENCY":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY_MH)
+            params["data_source"]["dataset"] = dataset
+            params["encoder"]["exposure"] = 32
+            params["model"]["beta"] = 0.1
         else:
             raise ValueError(f"Unknown model type {model_type}")
     else:
