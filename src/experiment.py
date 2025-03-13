@@ -22,7 +22,7 @@ from data.data_loaders import (
     HeraPolarizationDeltaNormDoPDataLoader,
     LofarDataLoader,
     HeraDeltaNormLoader,
-    LofarDeltaNormLoader,
+    LofarDeltaNormLoader, MixedDeltaNormLoader,
 )
 from data.data_module import ConfiguredDataModule
 from data.data_module_builder import DataModuleBuilder
@@ -95,6 +95,13 @@ def data_source_from_config(config: dict) -> RawDataLoader:
             data_source = LofarDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit
             )
+    elif dataset == "MIXED":
+        if delta_normalization:
+            data_source = MixedDeltaNormLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
+        else:
+            NotImplementedError(f"Dataset {dataset} must use delta normalization")
     else:
         raise NotImplementedError(f"Dataset {dataset} is not supported.")
     return data_source
@@ -272,6 +279,7 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
             default_root_dir=root_dir,
             num_nodes=config.get("num_nodes", 1),
             accelerator="cpu",
+            log_every_n_steps=4
         )
     return trainer
 
@@ -328,17 +336,17 @@ class Experiment:
 
     def from_config(self, config: dict):
         self.configuration = config
-        if self.configuration.get("encoder"):
+        if not self.encoder and self.configuration.get("encoder"):
             self.encoder = encoder_from_config(config.get("encoder"))
-        if self.configuration.get("data_source"):
+        if not self.data_source and self.configuration.get("data_source"):
             self.data_source = data_source_from_config(config.get("data_source"))
             if self.configuration.get("dataset") and self.encoder:
                 self.dataset = dataset_from_config(
                     config.get("dataset"), self.data_source, self.encoder
                 )
-        if self.configuration.get("model"):
+        if not self.model and self.configuration.get("model"):
             self.model = model_from_config(config.get("model"))
-        if self.configuration.get("trainer"):
+        if not self.trainer and self.configuration.get("trainer"):
             self.trainer = trainer_from_config(config.get("trainer"), self.root_dir)
 
     def from_checkpoint(self, working_dir: str):
