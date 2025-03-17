@@ -21,9 +21,10 @@ class MHLitLatency(MHLitModel):
         head_width: int,
         head_stride: int,
         num_hidden_layers: int,
+        learning_rate: float,
     ):
         super().__init__(
-            num_inputs, num_hidden, num_outputs, alpha, beta, head_width, head_stride, num_hidden_layers
+            num_inputs, num_hidden, num_outputs, alpha, beta, head_width, head_stride, num_hidden_layers, learning_rate
         )
         self.loss = SF.mse_temporal_loss(target_is_time=True)
         self.float()

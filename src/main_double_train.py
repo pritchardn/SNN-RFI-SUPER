@@ -44,7 +44,9 @@ def main():
     # Load LOFAR dataset
     config["data_source"]["limit"] = config["data_source"]["limit"] * 0.1
     config["data_source"]["dataset"] = "LOFAR"
-    # config["trainer"]["epochs"]
+    config["trainer"]["epochs"] = config["trainer"]["epochs"] * 3
+    config["data_source"]["delta_normalization"] = True
+    config["model"]["learning_rate"] = 1e-4
     # Set data source
     experiment.data_source = None
     experiment.trainer = None

@@ -66,6 +66,7 @@ DEFAULT_HERA_LATENCY_MH = {
         "beta": 0.245507490258551,
         "head_width": 16,
         "head_stride": 16,
+        "learning_rate": 1e-3,
     },
     "trainer": {
         "epochs": 100,

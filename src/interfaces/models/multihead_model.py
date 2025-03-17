@@ -33,6 +33,7 @@ class MHBaseLitModel(pl.LightningModule):
         head_width: int,
         head_stride: int,
         num_hidden_layers: int,
+        learning_rate: float,
     ):
         super().__init__()
         self.converter = None
@@ -47,6 +48,7 @@ class MHBaseLitModel(pl.LightningModule):
         self.num_layers = self.num_hidden_layers + 2 # For Input and Output
         self.num_heads = (self.num_inputs - self.head_width) // self.head_stride + 1
         self.regularization = None
+        self.learning_rate = learning_rate
 
         self.layers = self._init_layers()
         pass
@@ -54,7 +56,7 @@ class MHBaseLitModel(pl.LightningModule):
     def _init_layers(self):
         heads = []
         for i in range(self.num_heads):
-            curr_head = [nn.Linear(self.head_width, 2 * self.head_width, bias=False), snn.Synaptic(alpha=self.alpha, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True, threshold=0.01)]
+            curr_head = [nn.Linear(self.head_width, 2 * self.head_width, bias=False), snn.RSynaptic(alpha=self.alpha, linear_features=2 * self.head_width, learn_recurrent=True, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True, threshold=0.1)]
             heads.append(nn.Sequential(*curr_head))
         heads = nn.ModuleList(heads)
         layers = []
@@ -65,7 +67,7 @@ class MHBaseLitModel(pl.LightningModule):
                 layers.append(nn.Linear(self.num_hidden, self.num_outputs, bias=False))
             else:
                 layers.append(nn.Linear(self.num_hidden, self.num_hidden, bias=False))
-            layers.append(snn.Synaptic(alpha=self.alpha, beta=self.beta, threshold=0.01, learn_threshold=True, learn_beta=True, learn_alpha=True))
+            layers.append(snn.Synaptic(alpha=self.alpha, beta=self.beta, threshold=0.1, learn_threshold=True, learn_beta=True, learn_alpha=True))
         return torch.nn.ModuleList([heads, *layers])
 
     def set_converter(self, converter: SpikeConverter):
@@ -79,7 +81,7 @@ class MHBaseLitModel(pl.LightningModule):
         membranes = []
         head_membranes = []
         for i in range(self.num_heads):
-            head_membranes.append(self.layers[0][i][1].init_synaptic())
+            head_membranes.append(self.layers[0][i][1].init_rsynaptic())
         membranes.append(
             head_membranes
         )
@@ -145,11 +147,11 @@ class MHBaseLitModel(pl.LightningModule):
         return accuracy, mse, auroc, auprc, f1
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        scheduler = ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=10)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        # scheduler = ReduceLROnPlateau(optimizer, mode="min", factor=0.5, patience=10)
         return {
             "optimizer": optimizer,
-            "lr_scheduler": scheduler,
+            # "lr_scheduler": scheduler,
             "monitor": "val_loss",
         }
 
@@ -165,9 +167,10 @@ class MHLitModel(MHBaseLitModel):
         head_width: int,
         head_stride: int,
         num_hidden_layers: int,
+        learning_rate: float,
     ):
         super().__init__(
-            num_inputs, num_hidden, num_outputs, alpha, beta, head_width, head_stride, num_hidden_layers,
+            num_inputs, num_hidden, num_outputs, alpha, beta, head_width, head_stride, num_hidden_layers, learning_rate
         )
 
     def _infer_slice(self, x, membranes):

@@ -242,6 +242,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
         alpha = config.get("alpha")
         head_width = config.get("head_width")
         head_stride = config.get("head_stride")
+        learning_rate = config.get("learning_rate")
         model = MHLitLatency(
             num_inputs,
             num_hidden,
@@ -250,7 +251,8 @@ def model_from_config(config: dict) -> pl.LightningModule:
             beta,
             head_width,
             head_stride,
-            num_hidden_layers
+            num_hidden_layers,
+            learning_rate,
         )
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
