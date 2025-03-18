@@ -21,6 +21,10 @@ from evaluation import calculate_metrics
 from interfaces.data.spiking_data_module import SpikeConverter
 from plotting import plot_example_inference
 
+def spike_rate_reg(y_hat):
+    spike_rate = y_hat.sum(dim=0).mean()
+    return 1.0 - spike_rate.item()
+
 
 class MHBaseLitModel(pl.LightningModule):
     def __init__(
@@ -47,7 +51,7 @@ class MHBaseLitModel(pl.LightningModule):
         self.num_hidden_layers = num_hidden_layers
         self.num_layers = self.num_hidden_layers + 2 # For Input and Output
         self.num_heads = (self.num_inputs - self.head_width) // self.head_stride + 1
-        self.regularization = None
+        self.regularization = [spike_rate_reg]
         self.learning_rate = learning_rate
 
         self.layers = self._init_layers()
@@ -56,7 +60,7 @@ class MHBaseLitModel(pl.LightningModule):
     def _init_layers(self):
         heads = []
         for i in range(self.num_heads):
-            curr_head = [nn.Linear(self.head_width, 2 * self.head_width, bias=False), snn.RSynaptic(alpha=self.alpha, linear_features=2 * self.head_width, learn_recurrent=True, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True, threshold=0.1)]
+            curr_head = [nn.Linear(self.head_width, 2 * self.head_width, bias=False), snn.Synaptic(alpha=self.alpha, beta=self.beta, learn_threshold=True, learn_beta=True, learn_alpha=True, threshold=0.1)]
             heads.append(nn.Sequential(*curr_head))
         heads = nn.ModuleList(heads)
         layers = []
@@ -81,7 +85,7 @@ class MHBaseLitModel(pl.LightningModule):
         membranes = []
         head_membranes = []
         for i in range(self.num_heads):
-            head_membranes.append(self.layers[0][i][1].init_rsynaptic())
+            head_membranes.append(self.layers[0][i][1].init_synaptic())
         membranes.append(
             head_membranes
         )
