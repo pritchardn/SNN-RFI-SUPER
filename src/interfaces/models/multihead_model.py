@@ -15,6 +15,7 @@ from torch import nn
 import snntorch as snn
 import snntorch.functional as functional
 from sklearn.metrics import balanced_accuracy_score
+from sklearn.mixture import GaussianMixture
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from evaluation import calculate_metrics
@@ -51,7 +52,7 @@ class MHBaseLitModel(pl.LightningModule):
         self.num_hidden_layers = num_hidden_layers
         self.num_layers = self.num_hidden_layers + 2 # For Input and Output
         self.num_heads = (self.num_inputs - self.head_width) // self.head_stride + 1
-        self.regularization = [spike_rate_reg]
+        self.regularization = None
         self.learning_rate = learning_rate
 
         self.layers = self._init_layers()
@@ -121,7 +122,20 @@ class MHBaseLitModel(pl.LightningModule):
         self.log("grad_norm", grad_norm, sync_dist=True)
         spike_rate = spike_hat.sum().item()
         self.log("spike_rate", spike_rate, sync_dist=True)
-        return loss
+        # Add dual-modal regularization loss
+        gmm_reg = torch.tensor(0.0)
+        for head in self.layers[0]:
+            gmm = GaussianMixture(n_components=2).fit(head[0].weight.detach().cpu().numpy().reshape(-1, 1))
+            means = torch.tensor(gmm.means_.flatten(), dtype=torch.float32, device=head[0].weight.device)
+            variances = torch.tensor(gmm.covariances_.flatten(), dtype=torch.float32, device=head[0].weight.device)
+
+            # Regularization loss: maximize mean separation and minimize variance
+            l_reg = -torch.abs(means[0] - means[1]) - (variances[0] + variances[1])
+
+            # Normalize by the number of modules (optional)
+            gmm_reg += l_reg / len(self.layers[0])
+        self.log("gmm_reg", gmm_reg, sync_dist=True)
+        return loss + gmm_reg
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
