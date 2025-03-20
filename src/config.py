@@ -45,6 +45,41 @@ DEFAULT_LOFAR_LATENCY["model"]["num_hidden"] = 512
 DEFAULT_LOFAR_LATENCY["model"]["num_layers"] = 2
 DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 61
 
+DEFAULT_HERA_LATENCY_MH = {
+    "data_source": {
+        "data_path": "./data",
+        "limit": 1.0,
+        "patch_size": 512,
+        "stride": 512,
+        "dataset": "HERA",
+    },
+    "dataset": {
+        "batch_size": 4,
+    },
+    "model": {
+        "type": "MH_LATENCY",
+        "num_inputs": 512,
+        "num_hidden": 2048,
+        "num_outputs": 512,
+        "num_hidden_layers": 2,
+        "alpha": 0.10,
+        "beta": 0.245507490258551,
+        "head_width": 16,
+        "head_stride": 16,
+        "learning_rate": 1e-3,
+    },
+    "trainer": {
+        "epochs": 100,
+        "num_nodes": int(os.getenv("NNODES", 1)),
+    },
+    "encoder": {
+        "method": "LATENCY",
+        "exposure": 10,
+        "tau": 1.0,
+        "normalize": True,
+    },
+}
+
 DEFAULT_HERA_LATENCY_DIVNORM = copy.deepcopy(DEFAULT_HERA_LATENCY)
 DEFAULT_HERA_LATENCY_DIVNORM["model"]["num_hidden"] = 256
 DEFAULT_HERA_LATENCY_DIVNORM["model"]["beta"] = 0.239039586173328
@@ -482,6 +517,8 @@ def get_default_params(
             params["model"]["num_outputs"] = stride * stride
             params["model"]["num_hidden"] = model_size
             params["model"]["type"] = model_type
+        elif model_type == "MH_LATENCY":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY_MH)
         else:
             raise ValueError(f"Unknown model type {model_type}")
     elif dataset == "HERA_POLAR_FULL":
@@ -617,6 +654,20 @@ def get_default_params(
                 params = DEFAULT_LOFAR_ANN_DIVNORM
             else:
                 params = DEFAULT_LOFAR_ANN
+
+        elif model_type == "MH_LATENCY":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY_MH)
+            params["data_source"]["dataset"] = dataset
+            params["encoder"]["exposure"] = 32
+            params["model"]["beta"] = 0.1
+        else:
+            raise ValueError(f"Unknown model type {model_type}")
+    elif dataset == "MIXED":
+        if model_type == "MH_LATENCY":
+            params = copy.deepcopy(DEFAULT_HERA_LATENCY_MH)
+            params["data_source"]["dataset"] = dataset
+            params["encoder"]["exposure"] = 32
+            params["model"]["beta"] = 0.1
         else:
             raise ValueError(f"Unknown model type {model_type}")
     else:

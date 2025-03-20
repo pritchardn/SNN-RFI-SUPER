@@ -5,7 +5,7 @@ Main script to run the experiment
 import os
 
 from config import get_default_params
-from experiment import Experiment
+from experiment import Experiment, data_source_from_config
 
 
 def main():
@@ -40,7 +40,26 @@ def main():
     print("Training complete")
     experiment.evaluate(plot)
     print("Evaluation complete")
+    # experiment.save_model()
+    # Load LOFAR dataset
+    config["data_source"]["limit"] = config["data_source"]["limit"] * 0.1
+    config["data_source"]["dataset"] = "LOFAR"
+    config["trainer"]["epochs"] = config["trainer"]["epochs"] * 3
+    config["data_source"]["delta_normalization"] = True
+    config["model"]["learning_rate"] = 1e-4
+    # Set data source
+    experiment.data_source = None
+    experiment.trainer = None
+    # Set data set
+    experiment.from_config(config)
+    # Train for a second time
+    experiment.train()
+    # Evaluate Again
+    experiment.evaluate(plot)
+    # Save final model
     experiment.save_model()
+
+
 
 
 if __name__ == "__main__":

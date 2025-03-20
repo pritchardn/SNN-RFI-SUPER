@@ -22,7 +22,7 @@ from data.data_loaders import (
     HeraPolarizationDeltaNormDoPDataLoader,
     LofarDataLoader,
     HeraDeltaNormLoader,
-    LofarDeltaNormLoader,
+    LofarDeltaNormLoader, MixedDeltaNormLoader,
 )
 from data.data_module import ConfiguredDataModule
 from data.data_module_builder import DataModuleBuilder
@@ -49,6 +49,7 @@ from models.fcp_delta import LitFcPDelta
 from models.fcp_forwardstep import LitFcPForwardStep
 from models.fcp_latency import LitFcPLatency
 from models.fcp_rate import LitFcPRate
+from models.mh_latency import MHLitLatency
 
 
 def data_source_from_config(config: dict) -> RawDataLoader:
@@ -94,6 +95,13 @@ def data_source_from_config(config: dict) -> RawDataLoader:
             data_source = LofarDataLoader(
                 data_path, patch_size=patch_size, stride=stride, limit=limit
             )
+    elif dataset == "MIXED":
+        if delta_normalization:
+            data_source = MixedDeltaNormLoader(
+                data_path, patch_size=patch_size, stride=stride, limit=limit
+            )
+        else:
+            NotImplementedError(f"Dataset {dataset} must use delta normalization")
     else:
         raise NotImplementedError(f"Dataset {dataset} is not supported.")
     return data_source
@@ -117,6 +125,7 @@ def model_from_config(config: dict) -> pl.LightningModule:
     num_hidden = config.get("num_hidden")
     num_outputs = config.get("num_outputs")
     num_layers = config.get("num_layers", 2)
+    num_hidden_layers = config.get("num_hidden_layers", num_layers)
     if model_type == "FC_LATENCY" or model_type == "FC_LATENCY_XYLO" or model_type == "FC_LATENCY_FULL":
         model = LitFcLatency(
             num_inputs, num_hidden, num_outputs, beta, num_layers, recurrent=False
@@ -229,6 +238,22 @@ def model_from_config(config: dict) -> pl.LightningModule:
         )
     elif model_type == "FCP_FORWARD_STEP":
         model = LitFcPForwardStep(num_inputs, num_hidden, num_outputs, beta, num_layers)
+    elif model_type == "MH_LATENCY":
+        alpha = config.get("alpha")
+        head_width = config.get("head_width")
+        head_stride = config.get("head_stride")
+        learning_rate = config.get("learning_rate")
+        model = MHLitLatency(
+            num_inputs,
+            num_hidden,
+            num_outputs,
+            alpha,
+            beta,
+            head_width,
+            head_stride,
+            num_hidden_layers,
+            learning_rate,
+        )
     else:
         raise NotImplementedError(f"Model type {model_type} is not supported.")
     return model
@@ -256,6 +281,7 @@ def trainer_from_config(config: dict, root_dir: str) -> pl.Trainer:
             default_root_dir=root_dir,
             num_nodes=config.get("num_nodes", 1),
             accelerator="cpu",
+            log_every_n_steps=4
         )
     return trainer
 
@@ -312,17 +338,17 @@ class Experiment:
 
     def from_config(self, config: dict):
         self.configuration = config
-        if self.configuration.get("encoder"):
+        if not self.encoder and self.configuration.get("encoder"):
             self.encoder = encoder_from_config(config.get("encoder"))
-        if self.configuration.get("data_source"):
+        if not self.data_source and self.configuration.get("data_source"):
             self.data_source = data_source_from_config(config.get("data_source"))
             if self.configuration.get("dataset") and self.encoder:
                 self.dataset = dataset_from_config(
                     config.get("dataset"), self.data_source, self.encoder
                 )
-        if self.configuration.get("model"):
+        if not self.model and self.configuration.get("model"):
             self.model = model_from_config(config.get("model"))
-        if self.configuration.get("trainer"):
+        if not self.trainer and self.configuration.get("trainer"):
             self.trainer = trainer_from_config(config.get("trainer"), self.root_dir)
 
     def from_checkpoint(self, working_dir: str):

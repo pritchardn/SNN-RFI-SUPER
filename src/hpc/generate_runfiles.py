@@ -19,6 +19,9 @@ models = {
         ("RNN_DELTA", "DELTA"),
         ("RNN_FORWARD_STEP", "FORWARDSTEP"),
     ],
+    "MH":[
+        ("MH_LATENCY", "LATENCY"),
+    ]
 }
 datasets = ["HERA", "LOFAR"]
 forwardstep_exposures = ["direct", "first", "latency"]
