@@ -56,10 +56,10 @@ def plot_example_raster(
 ):
     # plt.tight_layout()
     plt.rcParams.update(plt.rcParamsDefault)
-    plt.rc("axes", labelsize=10 * mode)
-    plt.rc("xtick", labelsize=8 * mode)
-    plt.rc("ytick", labelsize=8 * mode)
-    plt.figure(figsize=(10, 5))
+    # plt.rc("axes", labelsize=10 * mode)
+    # plt.rc("xtick", labelsize=8 * mode)
+    # plt.rc("ytick", labelsize=8 * mode)
+    plt.figure(figsize=(40, 20))
     example = spike_x
     example = example.squeeze(1)  # Remove channel dimension
     out = np.zeros((frequency_width, stride * exposure))
@@ -88,7 +88,7 @@ def plot_example_raster(
     plt.xlabel("Time [s]")
 
     plt.colorbar(location="right", ticks=ticks, shrink=0.5 * mode)
-    plt.savefig(os.path.join(outdir, f"raster_{title}_example_{i}.png"), bbox_inches="tight")
+    plt.savefig(os.path.join(outdir, f"raster_{title}_example_{i}.png"), bbox_inches="tight", dpi=1200)
     plt.close()
 
 
@@ -120,7 +120,7 @@ def plot_example(x, y, spike_x, frequency_width, stride, exposure, i, title: str
 
 
 def setup_config(model, exposure, exposure_mode, stride):
-    config = get_default_params("HERA", model, 128, exposure_mode)
+    config = get_default_params("HERA", model, 128, exposure_mode, delta_normalization=True)
     frequency_width = stride
     if model == "FC_FORWARD_STEP":
         frequency_width *= 2
@@ -140,7 +140,7 @@ def main_single(model, exposure_mode, stride, exposure, limit: int = 10):
     encoder = encoder_from_config(config["encoder"])
     spike_x = encoder.encode_x(test_x)
     # Plot examples
-    for i in range(limit):
+    for i in tqdm(range(limit)):
         plot_example(
             test_x[i],
             test_y[i],
@@ -150,6 +150,17 @@ def main_single(model, exposure_mode, stride, exposure, limit: int = 10):
             exposure,
             i,
             f"{model}" + f"_{exposure_mode}" if exposure_mode else "",
+            outdir="./example_plots"
+        )
+        plot_example_raster(
+            spike_x[i],
+            frequency_width,
+            stride,
+            exposure,
+            i,
+            f"{model}" + f"_{exposure_mode}" if exposure_mode else "",
+            mode=1,
+            outdir="./example_plots"
         )
 
 
@@ -211,9 +222,9 @@ def main_all(stride, exposure, limit: int = 10, outdir="./"):
 
 
 if __name__ == "__main__":
-    model = "FC_FORWARD_STEP"
+    model = "MH_LATENCY"
     exposure_mode = "first"
-    stride = 32
-    exposure = 4
-    # main_single(model, exposure_mode, stride, exposure, limit=10)
-    main_all(stride, exposure, limit=1280, outdir="./example_plots")
+    stride = 128
+    exposure = 16
+    main_single(model, exposure_mode, stride, exposure, limit=10)
+    # main_all(stride, exposure, limit=1280, outdir="./example_plots")

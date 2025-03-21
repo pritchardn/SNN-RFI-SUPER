@@ -363,7 +363,7 @@ class LofarDataLoader(RawDataLoader):
 
 class LofarDeltaNormLoader(RawDataLoader):
     def load_data(self):
-        file_path = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset_delta_norm.pkl")
+        file_path = os.path.join(self.data_dir, "LOFAR_Full_RFI_dataset_delta_norm-5.pkl")
         train_x, train_y, test_x, test_y, val_x, val_y = np.load(
             file_path, allow_pickle=True
         )
@@ -453,21 +453,22 @@ def create_delta_normalized_lofar():
         train_y = np.moveaxis(train_y, 1, 2)
         test_x = np.moveaxis(test_x, 1, 2)
         test_y = np.moveaxis(test_y, 1, 2)
+    k = 33
     train_x[train_x == np.inf] = np.finfo(train_x.dtype).max
     test_x[test_x == np.inf] = np.finfo(test_x.dtype).max
     test_x = test_x.astype("float32")
     train_x = train_x.astype("float32")
     test_x = _normalize(test_x, test_y, 3, 95)
     train_x = _normalize(train_x, train_y, 3, 95)
-    test_x = _delta_normalize(test_x)
-    train_x = _delta_normalize(train_x)
+    test_x = _delta_normalize(test_x, kernel_size=k)
+    train_x = _delta_normalize(train_x, kernel_size=k)
     train_x = np.moveaxis(train_x, -1, 1).astype(np.float32)
     train_y = np.moveaxis(train_y, -1, 1).astype(np.float32)
     test_x = np.moveaxis(test_x, -1, 1).astype(np.float32)
     test_y = np.moveaxis(test_y, -1, 1).astype(np.float32)
     val_x = test_x.copy()
     val_y = test_y.copy()
-    file_path = os.path.join("data", "LOFAR_Full_RFI_dataset_delta_norm.pkl")
+    file_path = os.path.join("D:\\Downloads", "data", f"LOFAR_Full_RFI_dataset_delta_norm-{k}.pkl")
     with open(file_path, "wb") as ofile:
         pickle.dump([train_x, train_y, test_x, test_y, val_x, val_y], ofile)
 
@@ -505,9 +506,9 @@ def create_delta_normalized_complex_hera():
 
 def main():
     # create_delta_normalized_hera()
-    # create_delta_normalized_lofar()
+    create_delta_normalized_lofar()
     # create_delta_normalized_new_hera()
-    create_delta_normalized_complex_hera()
+    # create_delta_normalized_complex_hera()
 
 
 if __name__ == "__main__":

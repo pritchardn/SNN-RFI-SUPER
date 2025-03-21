@@ -122,6 +122,7 @@ class MHBaseLitModel(pl.LightningModule):
         self.log("grad_norm", grad_norm, sync_dist=True)
         spike_rate = spike_hat.sum().item()
         self.log("spike_rate", spike_rate, sync_dist=True)
+        """
         # Add dual-modal regularization loss
         gmm_reg = torch.tensor(0.0)
         for head in self.layers[0]:
@@ -135,7 +136,8 @@ class MHBaseLitModel(pl.LightningModule):
             # Normalize by the number of modules (optional)
             gmm_reg += l_reg / len(self.layers[0])
         self.log("gmm_reg", gmm_reg, sync_dist=True)
-        return loss + gmm_reg
+        """
+        return loss
 
     def validation_step(self, batch, batch_idx):
         x, y = batch

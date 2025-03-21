@@ -47,10 +47,11 @@ DEFAULT_LOFAR_LATENCY["encoder"]["exposure"] = 61
 
 DEFAULT_HERA_LATENCY_MH = {
     "data_source": {
-        "data_path": "./data",
+        "data_path": "D:\Downloads\data",
+        # "data_path": "./data",
         "limit": 1.0,
-        "patch_size": 512,
-        "stride": 512,
+        "patch_size": 128,
+        "stride": 128,
         "dataset": "HERA",
     },
     "dataset": {
@@ -58,9 +59,9 @@ DEFAULT_HERA_LATENCY_MH = {
     },
     "model": {
         "type": "MH_LATENCY",
-        "num_inputs": 512,
+        "num_inputs": 128,
         "num_hidden": 2048,
-        "num_outputs": 512,
+        "num_outputs": 128,
         "num_hidden_layers": 2,
         "alpha": 0.10,
         "beta": 0.245507490258551,
@@ -73,8 +74,8 @@ DEFAULT_HERA_LATENCY_MH = {
         "num_nodes": int(os.getenv("NNODES", 1)),
     },
     "encoder": {
-        "method": "LATENCY",
-        "exposure": 10,
+        "method": "DIRECT",
+        "exposure": 16,
         "tau": 1.0,
         "normalize": True,
     },
