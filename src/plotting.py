@@ -24,10 +24,10 @@ def plot_example_mask(mask: np.ndarray, name: str, log_dir: str):
 
 
 def plot_image_patch(
-    image: np.ndarray, filename_prefix: str, output_dir: str, cbar=False
+    image: np.ndarray, filename_prefix: str, output_dir: str, cbar=False, cmap='viridis'
 ):
     plt.figure(figsize=(5, 5))
-    plt.imshow(image, vmin=0, vmax=1, aspect="equal", interpolation="nearest")
+    plt.imshow(image, vmin=0, vmax=1, aspect="equal", interpolation="nearest", cmap=cmap)
     plt.ylabel("Frequency Bins")
     plt.xlabel("Time [s]")
     if cbar:
@@ -49,3 +49,8 @@ def plot_final_examples(
     plot_image_patch(y_pred, f"{name}_inference", log_dir)
     # plot real mask
     plot_image_patch(y_true, f"{name}_mask", log_dir)
+    # plot residual
+    residual = y_true - y_pred
+    plot_image_patch(residual, f"{name}_residual_r", log_dir, cmap='Grays_r')
+    plot_image_patch(residual, f"{name}_residual", log_dir, cmap='Grays')
+    plot_image_patch(residual, f"{name}_residual_v", log_dir)
