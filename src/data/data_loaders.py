@@ -76,7 +76,6 @@ class HeraDataLoader(RawDataLoader):
         self.train_x = self.train_x.astype("float32")
         self.test_x = _normalize(self.test_x, self.test_y, 1, 4)
         self.train_x = _normalize(self.train_x, self.train_y, 1, 4)
-        self.convert_pytorch()
         self.val_x = self.test_x.copy()
         self.val_y = self.test_y.copy()
         self.limit_datasets()
@@ -103,9 +102,20 @@ class HeraDataLoader(RawDataLoader):
         self.train_y = np.moveaxis(train_y, 1, 2)
         self.test_x = np.moveaxis(test_x, 1, 2)
         self.test_y = np.moveaxis(test_y, 1, 2)
+        self.train_x = np.moveaxis(self.train_x, -1, 1)
+        self.train_y = np.moveaxis(self.train_y, -1, 1)
+        self.test_x = np.moveaxis(self.test_x, -1, 1)
+        self.test_y = np.moveaxis(self.test_y, -1, 1)
+        self.train_y = extract_polarization(self.train_y, 0)
+        self.test_y = extract_polarization(self.test_y, 0)
+        self.train_x = extract_polarization(self.train_x, 0)
+        self.test_x = extract_polarization(self.test_x, 0)
         self.rfi_models = rfi_models
-        self.original_size = self.train_x.shape[1]
+        self.original_size = self.train_x.shape[-1]
         self._prepare_data()
+        self.test_y = self.test_y.astype("float32")
+        self.train_y = self.train_y.astype("float32")
+        self.val_y = self.val_y.astype("float32")
         if self.patch_size:
             self.create_patches(self.patch_size, self.stride)
         self.filter_noiseless_val_patches()
